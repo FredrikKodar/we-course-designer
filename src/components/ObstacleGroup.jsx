@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect, useMemo } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { Group, Image as KonvaImage, Rect, Circle, Line, Text } from 'react-konva';
 import { SCALE } from '../data/obstacles';
 import { worldToScreen, screenToWorld } from '../utils/coords';
@@ -6,9 +6,9 @@ import { worldToScreen, screenToWorld } from '../utils/coords';
 // Module-level cache: key → HTMLImageElement
 const imageCache = new Map();
 
-function useSvgImage(svg, viewBox, pixelW, pixelH) {
+function useSvgImage(obstacleType, svg, viewBox, pixelW, pixelH) {
   const [image, setImage] = useState(null);
-  const key = `${svg}|${pixelW}|${pixelH}`;
+  const key = `${obstacleType}|${pixelW}|${pixelH}`;
 
   useEffect(() => {
     if (imageCache.has(key)) {
@@ -24,6 +24,7 @@ function useSvgImage(svg, viewBox, pixelW, pixelH) {
       imageCache.set(key, img);
       setImage(img);
     };
+    img.onerror = () => URL.revokeObjectURL(url);
     img.src = url;
 
     return () => URL.revokeObjectURL(url);
@@ -45,12 +46,12 @@ export default function ObstacleGroup({
   onMove,
   onRotate,
 }) {
-  const groupRef = useRef(null);
+  const HANDLE_RADIUS = 7;
 
   // SVG image
   const pixelW = placed.w * SCALE;
   const pixelH = placed.h * SCALE;
-  const image = useSvgImage(def.svg, def.viewBox, pixelW, pixelH);
+  const image = useSvgImage(placed.type, def.svg, def.viewBox, pixelW, pixelH);
 
   // Screen position of obstacle centre
   const [sx, sy] = worldToScreen(placed.x + placed.w / 2, placed.y + placed.h / 2, coordCtx);
@@ -110,7 +111,6 @@ export default function ObstacleGroup({
     <>
       {/* Main draggable group */}
       <Group
-        ref={groupRef}
         x={sx}
         y={sy}
         draggable
@@ -120,8 +120,6 @@ export default function ObstacleGroup({
           onSelect();
         }}
         rotation={placed.rotation || 0}
-        offsetX={0}
-        offsetY={0}
       >
         {/* SVG image, centred */}
         {image && (
@@ -200,7 +198,7 @@ export default function ObstacleGroup({
       {isSelected && (
         <>
           <Line
-            points={[sx, sy - drawH / 2, handleX, handleY + 7]}
+            points={[sx, sy - drawH / 2, handleX, handleY + HANDLE_RADIUS]}
             stroke="rgba(186,117,23,0.6)"
             strokeWidth={1}
             dash={[3, 3]}
@@ -208,7 +206,7 @@ export default function ObstacleGroup({
           <Circle
             x={handleX}
             y={handleY}
-            radius={7}
+            radius={HANDLE_RADIUS}
             fill="#BA7517"
             draggable
             onDragMove={handleRotateDrag}
