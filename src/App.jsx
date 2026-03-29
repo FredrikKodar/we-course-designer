@@ -1,5 +1,6 @@
 import Topbar from './components/Topbar';
 import Sidebar from './components/Sidebar';
+import Canvas from './components/Canvas';
 
 export default function App() {
   return (
@@ -7,7 +8,7 @@ export default function App() {
       <Topbar />
       <div className="flex flex-1 overflow-hidden">
         <Sidebar />
-        <div className="flex-1 bg-[#c8d4c4]">Canvas</div>
+        <Canvas />
         <div className="w-[172px] border-l border-gray-200 bg-white">Right panel</div>
       </div>
     </div>
