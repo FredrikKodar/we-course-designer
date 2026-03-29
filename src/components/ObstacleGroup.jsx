@@ -48,8 +48,8 @@ export default function ObstacleGroup({
   const groupRef = useRef(null);
 
   // SVG image
-  const pixelW = def.w * SCALE;
-  const pixelH = def.h * SCALE;
+  const pixelW = placed.w * SCALE;
+  const pixelH = placed.h * SCALE;
   const image = useSvgImage(def.svg, def.viewBox, pixelW, pixelH);
 
   // Screen position of obstacle centre
