@@ -19,15 +19,23 @@ function useSvgImage(obstacleType, svg, viewBox, pixelW, pixelH) {
     const fullSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="${pixelW}" height="${pixelH}" viewBox="${viewBox}">${svg}</svg>`;
     const blob = new Blob([fullSvg], { type: 'image/svg+xml' });
     const url = URL.createObjectURL(blob);
+    let revoked = false;
     const img = new window.Image();
     img.onload = () => {
       imageCache.set(key, img);
       setImage(img);
+      revoked = true;
+      // Don't revoke: keep the URL alive since it backs the cached image
     };
-    img.onerror = () => URL.revokeObjectURL(url);
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      revoked = true;
+    };
     img.src = url;
 
-    return () => URL.revokeObjectURL(url);
+    return () => {
+      if (!revoked) URL.revokeObjectURL(url);
+    };
   }, [key, svg, viewBox, pixelW, pixelH]);
 
   return image;

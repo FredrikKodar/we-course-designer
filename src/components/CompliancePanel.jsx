@@ -10,12 +10,15 @@ export default function CompliancePanel() {
 
   const spacingOk = ![...violations.values()].some((msg) => msg.includes('avstånd') || msg.includes('pinnavstånd'));
   const boundsOk = ![...violations.values()].some((msg) => msg.includes('utanför'));
+  const spacingCount = [...violations.values()].filter(
+    (msg) => msg.includes('avstånd') || msg.includes('pinnavstånd')
+  ).length;
 
   return (
     <div className="flex flex-col gap-0.5">
       <ComplianceItem
         ok={spacingOk}
-        text={spacingOk ? 'Spacing OK' : `${violations.size} spacing issue(s)`}
+        text={spacingOk ? 'Spacing OK' : `${spacingCount} spacing issue(s)`}
       />
       <ComplianceItem
         ok={boundsOk}

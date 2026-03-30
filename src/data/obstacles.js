@@ -334,14 +334,17 @@ export const MIN_OBSTACLE_SPACING = 6; // metres, centre-to-centre between diffe
 export function expandPreset(type, cx, cy) {
   const def = OBSTACLES.find(o => o.id === type);
   if (!def?.presetPieces) return null;
-  return def.presetPieces.map(piece => ({
-    type: piece.type,
-    x: cx + piece.dx - (OBSTACLES.find(o => o.id === piece.type)?.w ?? 0) / 2,
-    y: cy + piece.dy - (OBSTACLES.find(o => o.id === piece.type)?.h ?? 0) / 2,
-    w: OBSTACLES.find(o => o.id === piece.type)?.w ?? 1,
-    h: OBSTACLES.find(o => o.id === piece.type)?.h ?? 1,
-    rotation: 0,
-    badgeOffX: 0,
-    badgeOffY: -(OBSTACLES.find(o => o.id === piece.type)?.h / 2 + 1.5),
-  }));
+  return def.presetPieces.map(piece => {
+    const pieceDef = OBSTACLES.find(o => o.id === piece.type);
+    return {
+      type: piece.type,
+      x: cx + piece.dx - (pieceDef?.w ?? 0) / 2,
+      y: cy + piece.dy - (pieceDef?.h ?? 0) / 2,
+      w: pieceDef?.w ?? 1,
+      h: pieceDef?.h ?? 1,
+      rotation: 0,
+      badgeOffX: 0,
+      badgeOffY: -(pieceDef?.h / 2 + 1.5),
+    };
+  });
 }
