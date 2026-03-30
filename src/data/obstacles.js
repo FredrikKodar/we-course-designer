@@ -320,9 +320,9 @@ export const GROUP_RULES = {
     message: (d) => `avstånd ${d.toFixed(1)} m — ska vara 3–4 m`,
   },
   'parallellslalom': {
-    minDist: 6,
-    maxDist: 8,
-    message: (d) => `pinnavstånd ${d.toFixed(1)} m — ska vara 6–8 m`,
+    minDist: 3,
+    maxDist: 9,
+    message: (d) => `pinnavstånd ${d.toFixed(1)} m — ska vara 3–9 m`,
   },
 };
 

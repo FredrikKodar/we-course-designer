@@ -121,6 +121,9 @@ const useStore = create(
         pathLineWeight: state.pathLineWeight,
         pathArrowSize: state.pathArrowSize,
       }),
+      onRehydrateStorage: () => (state) => {
+        if (state) state.runCompliance();
+      },
     },
   ),
 );
