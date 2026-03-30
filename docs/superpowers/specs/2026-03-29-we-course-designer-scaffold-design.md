@@ -73,9 +73,11 @@ All files at repo root (no `ecuestre/` subdirectory — the repo is the app).
 ### SVG rendering
 
 Obstacles render via a `useSvgImage(svg, viewBox, pixelW, pixelH)` hook:
-- Builds an SVG blob URL with explicit `width`/`height`
-- Loads into an `HTMLImageElement`
+- Intrinsic SVG size: `pixelW = placed.w * SCALE`, `pixelH = placed.h * SCALE` (where `SCALE = 20` px/m from `data/obstacles.js`)
+- Builds a complete SVG string: `<svg xmlns="..." width="${pixelW}" height="${pixelH}" viewBox="${viewBox}">${svg}</svg>`
+- Creates a blob URL, loads into an `HTMLImageElement`
 - Memoised in a module-level `Map` keyed by `svg + pixelW + pixelH`
+- At render time, the `KonvaImage` is scaled from intrinsic SVG pixels to screen pixels: `scaleX = (placed.w * scale) / pixelW`
 - Passed to react-konva `Image`
 
 ### Drag-drop placement
@@ -125,7 +127,7 @@ Standard HTML5 drag API: sidebar chips are `draggable`, canvas container `div` h
 **Actions active in Phase 1:**
 `placeObstacle`, `moveObstacle`, `rotateObstacle`, `deleteObstacle`, `selectObstacle`, `setArena`, `setShowGrid`, `setSnapToGrid`, `setShowPath`, `setViewMode`, `setZoom`, `setPan`, `setPathStyle`, `runCompliance`, `clearAll`
 
-**localStorage persistence:** `placed`, `arenaW`, `arenaH`, `pathLineType`, `pathLineWeight`, `pathArrowSize` (not: zoom/pan, selectedId, violations, routing stubs)
+**localStorage persistence** via `persist` middleware with `partialize` — only persists: `placed`, `arenaW`, `arenaH`, `pathLineType`, `pathLineWeight`, `pathArrowSize`. Excluded: zoom/pan, selectedId, violations (`Map` — not JSON-serialisable, and recomputed on load anyway), routing stubs.
 
 ---
 
@@ -136,7 +138,7 @@ Standard HTML5 drag API: sidebar chips are `draggable`, canvas container `div` h
 {
   id: string,           // `${Date.now()}_${Math.random()}`
   type: string,         // OBSTACLES[].id
-  x: number,           // world position, meters (top-left of bounding box)
+  x: number,           // world position, meters (top-left of bounding box); screen centre = worldToScreen(x + w/2, y + h/2)
   y: number,
   w: number,
   h: number,
@@ -167,10 +169,12 @@ Pluggable rule engine. Each rule: `(placed, arenaW, arenaH) => Map<id, message>`
 Phase 1 rules:
 - **spacingRule** — centre-to-centre < 6m between obstacles in *different* groups → `"⚠ avstånd < 6 m"` on both
 - **boundsRule** — any corner of unrotated bounding box outside arena → `"⚠ utanför banan"`
-- **groupRule** — intra-group distance outside `GROUP_RULES[groupId]` range → fires automatically when `groupId` is present
+- **groupRule** — for obstacles sharing a `groupId`, extracts preset type from `groupId` (split on last `_`), looks up `GROUP_RULES[presetType]`, checks pairwise centre-to-centre distance is within `[minDist, maxDist]` → fires automatically when `groupId` is present
 
 ### `presets.js`
-Thin wrapper over `expandPreset` from `data/obstacles.js`. Stamps each piece with a unique `id` and a shared `groupId = \`${type}_${Date.now()}\``. For non-preset types returns a single `PlacedObstacle`.
+Thin wrapper over `expandPreset` from `data/obstacles.js`. Stamps each piece with a unique `id` and a shared `groupId = \`${type}_${Date.now()}\`` (format: `{presetType}_{timestamp}` — preset types use hyphens, so split on last `_` to recover the type). For non-preset types returns a single `PlacedObstacle`.
+
+Preset chips (e.g. `tva-tunnor`) do not appear on the canvas as a single entity — the chip drops N individual pieces which are each independently draggable.
 
 ---
 

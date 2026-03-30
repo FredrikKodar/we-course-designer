@@ -1,0 +1,1415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Working Equitation Course Designer</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: #f0f0ec; height: 100vh;
+  display: flex; flex-direction: column; overflow: hidden;
+}
+#app { display: flex; flex-direction: column; height: 100vh; background: #f5f5f0; }
+
+/* ── TOPBAR ── */
+.topbar {
+  display: flex; align-items: center; gap: 10px; padding: 0 14px;
+  height: 46px; border-bottom: 1px solid #ddd; background: #fff;
+  flex-shrink: 0; box-shadow: 0 1px 3px rgba(0,0,0,0.06); flex-wrap: nowrap;
+}
+.topbar-title { font-size: 15px; font-weight: 600; color: #1a1a18; letter-spacing: -0.01em; white-space: nowrap; }
+.topbar-title span { color: #BA7517; }
+.topbar-sub {
+  font-size: 11px; color: #888; font-family: monospace;
+  padding: 2px 8px; background: #f5f5f0; border: 1px solid #e0e0da; border-radius: 4px; white-space: nowrap;
+}
+.topbar-right { margin-left: auto; display: flex; gap: 6px; align-items: center; }
+button {
+  font-family: inherit; font-size: 12px; padding: 5px 11px;
+  border: 1px solid #ddd; border-radius: 5px; background: #fff;
+  color: #555; cursor: pointer; transition: all 0.12s; white-space: nowrap;
+}
+button:hover { background: #f5f5f0; border-color: #bbb; color: #222; }
+button.active { background: #f5f5f0; border-color: #BA7517; color: #BA7517; font-weight: 500; }
+button.primary { background: #BA7517; border-color: #BA7517; color: #fff; font-weight: 500; }
+button.primary:hover { background: #a5670f; border-color: #a5670f; }
+button.green { background: #3B6D11; border-color: #3B6D11; color: #fff; font-weight: 500; }
+button.green:hover { background: #2f580d; }
+button.danger:hover { border-color: #E24B4A; color: #E24B4A; }
+button.sm { font-size: 11px; padding: 3px 8px; }
+
+.view-toggle { display: flex; border: 1px solid #ddd; border-radius: 5px; overflow: hidden; }
+.view-toggle button { border: none; border-radius: 0; padding: 5px 10px; margin: 0; border-right: 1px solid #ddd; font-size: 11px; }
+.view-toggle button:last-child { border-right: none; }
+.view-toggle button.active { background: #f0f8e8; color: #3B6D11; font-weight: 500; }
+
+/* ── WORKSPACE ── */
+.workspace { display: flex; flex: 1; overflow: hidden; }
+
+/* ── LEFT SIDEBAR ── */
+.sidebar {
+  width: 162px; border-right: 1px solid #ddd; display: flex;
+  flex-direction: column; flex-shrink: 0; background: #fff; overflow-y: auto;
+}
+.sidebar-section { padding: 10px; border-bottom: 1px solid #eee; }
+.section-label { font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; color: #bbb; margin-bottom: 8px; font-family: monospace; }
+.arena-inputs { display: flex; flex-direction: column; gap: 5px; }
+.input-row { display: flex; align-items: center; justify-content: space-between; }
+.input-label { font-size: 11px; color: #666; }
+.dim-input {
+  width: 56px; font-size: 11px; font-family: monospace; border: 1px solid #ddd;
+  border-radius: 4px; padding: 3px 6px; background: #f9f9f7; color: #1a1a18; text-align: right;
+}
+.dim-input:focus { outline: none; border-color: #BA7517; }
+.toggle-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+.toggle-label { font-size: 11px; color: #666; }
+.toggle-btn {
+  width: 32px; height: 17px; border-radius: 9px; border: none;
+  cursor: pointer; position: relative; transition: background 0.15s; padding: 0; flex-shrink: 0;
+}
+.toggle-btn.on { background: #3B6D11; }
+.toggle-btn.off { background: #ccc; }
+.toggle-knob {
+  width: 11px; height: 11px; border-radius: 50%; background: white;
+  position: absolute; top: 3px; transition: left 0.15s; box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+.toggle-btn.on .toggle-knob { left: 18px; }
+.toggle-btn.off .toggle-knob { left: 3px; }
+.obs-list { display: flex; flex-direction: column; gap: 3px; }
+.obs-chip {
+  padding: 6px 8px; border-radius: 5px; border: 1px solid #e8e8e4; background: #fafaf8;
+  font-size: 11px; color: #555; cursor: grab; display: flex; align-items: center;
+  gap: 7px; user-select: none; transition: all 0.1s;
+}
+.obs-chip:hover { border-color: #BA7517; color: #1a1a18; background: #fff8ee; }
+.obs-dot { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+
+/* ── CANVAS ── */
+.canvas-area { flex: 1; position: relative; overflow: hidden; background: #c8d4c4; cursor: crosshair; }
+canvas { position: absolute; top: 0; left: 0; display: block; }
+.view-indicator {
+  position: absolute; top: 10px; right: 10px; background: rgba(255,255,255,0.85);
+  border: 1px solid #ddd; border-radius: 6px; padding: 5px 10px;
+  font-size: 10px; color: #666; font-family: monospace; pointer-events: none;
+  display: flex; align-items: center; gap: 6px;
+}
+.view-indicator-dot { width: 7px; height: 7px; border-radius: 50%; background: #3B6D11; }
+.hint {
+  position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%);
+  background: rgba(0,0,0,0.5); color: white; font-size: 11px;
+  padding: 6px 14px; border-radius: 20px; pointer-events: none; white-space: nowrap; transition: opacity 0.4s;
+}
+
+/* ── RIGHT PANEL ── */
+.right-panel {
+  width: 172px; border-left: 1px solid #ddd; display: flex;
+  flex-direction: column; flex-shrink: 0; background: #fff; overflow-y: auto;
+}
+.panel-section { padding: 10px; border-bottom: 1px solid #eee; }
+.panel-section:last-child { border-bottom: none; }
+.seq-list { display: flex; flex-direction: column; gap: 3px; }
+.seq-item {
+  display: flex; align-items: center; gap: 6px; padding: 5px 6px; border-radius: 4px;
+  border: 1px solid #eee; background: #fafaf8; cursor: pointer; font-size: 11px;
+  color: #555; transition: border-color 0.1s; user-select: none;
+}
+.seq-item:hover { border-color: #BA7517; }
+.seq-item.sel { border-color: #BA7517; background: #fff8ee; color: #1a1a18; }
+.seq-item.drag-over { border-color: #3B6D11; background: #f0f8e8; }
+.seq-item.dragging-item { opacity: 0.4; }
+.seq-handle { color: #ccc; font-size: 11px; cursor: grab; flex-shrink: 0; padding: 0 1px; line-height: 1; }
+.seq-handle:hover { color: #999; }
+.seq-num {
+  width: 16px; height: 16px; border-radius: 50%; display: flex; align-items: center;
+  justify-content: center; color: white; font-size: 8px; font-weight: 700; font-family: monospace; flex-shrink: 0;
+}
+.seq-del { margin-left: auto; color: #ddd; font-size: 10px; cursor: pointer; flex-shrink: 0; }
+.seq-del:hover { color: #E24B4A; }
+.prop-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 5px; }
+.prop-label { font-size: 10px; color: #888; }
+.prop-val { font-family: monospace; font-size: 10px; color: #1a1a18; background: #f5f5f0; border: 1px solid #e0e0da; padding: 2px 6px; border-radius: 3px; }
+.compliance-item { display: flex; align-items: center; gap: 6px; padding: 5px 7px; border-radius: 4px; font-size: 10px; margin-bottom: 3px; border: 1px solid; }
+.comp-ok { background: #f0f8ea; border-color: #b8dda0; color: #3B6D11; }
+.comp-warn { background: #fef0ee; border-color: #f5b8b0; color: #A32D2D; }
+.comp-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.comp-ok .comp-dot { background: #3B6D11; }
+.comp-warn .comp-dot { background: #E24B4A; }
+
+/* ── BOTTOM BAR ── */
+.bottombar {
+  height: 30px; border-top: 1px solid #ddd; background: #fff;
+  display: flex; align-items: center; padding: 0 14px; gap: 18px; flex-shrink: 0;
+}
+.status { font-size: 10px; color: #aaa; font-family: monospace; }
+.status span { color: #666; }
+.zoom-controls { margin-left: auto; display: flex; align-items: center; gap: 4px; }
+.zoom-btn { width: 22px; height: 22px; padding: 0; display: flex; align-items: center; justify-content: center; font-size: 15px; border-radius: 4px; }
+.zoom-val { font-size: 10px; font-family: monospace; color: #888; min-width: 38px; text-align: center; }
+.violation-text { color: #A32D2D; }
+.ok-text { color: #3B6D11; }
+
+/* ── MODAL OVERLAY ── */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.45);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 100; padding: 20px;
+}
+.modal-overlay.hidden { display: none; }
+.modal {
+  background: #fff; border-radius: 10px; box-shadow: 0 8px 40px rgba(0,0,0,0.18);
+  width: 100%; max-width: 780px; max-height: 90vh;
+  display: flex; flex-direction: column; overflow: hidden;
+}
+.modal-header {
+  display: flex; align-items: center; gap: 10px; padding: 14px 18px;
+  border-bottom: 1px solid #eee; flex-shrink: 0;
+}
+.modal-title { font-size: 15px; font-weight: 600; color: #1a1a18; flex: 1; }
+.modal-body { flex: 1; overflow-y: auto; padding: 0; display: flex; flex-direction: column; }
+.modal-footer {
+  display: flex; align-items: center; justify-content: flex-end; gap: 8px;
+  padding: 12px 18px; border-top: 1px solid #eee; flex-shrink: 0;
+}
+
+/* Class tabs */
+.class-tabs-bar {
+  display: flex; align-items: center; gap: 0; padding: 0 18px;
+  border-bottom: 1px solid #eee; background: #fafaf8; flex-shrink: 0; overflow-x: auto;
+}
+.class-tab {
+  padding: 9px 14px; font-size: 12px; color: #888; cursor: pointer;
+  border-bottom: 2px solid transparent; white-space: nowrap;
+  transition: color 0.12s; display: flex; align-items: center; gap: 6px;
+}
+.class-tab:hover { color: #333; }
+.class-tab.active { color: #BA7517; border-bottom-color: #BA7517; font-weight: 500; }
+.class-tab-del { color: #ddd; font-size: 10px; cursor: pointer; margin-left: 2px; }
+.class-tab-del:hover { color: #E24B4A; }
+.add-class-btn {
+  padding: 8px 12px; font-size:12px; color: #3B6D11; cursor: pointer;
+  white-space: nowrap; border: none; background: none; font-family: inherit;
+}
+.add-class-btn:hover { color: #2a5009; background: none; border: none; }
+
+/* Class panel */
+.class-panel { padding: 16px 18px; flex: 1; }
+.class-name-row { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+.class-name-input {
+  flex: 1; font-size: 14px; font-weight: 500; border: 1px solid #ddd;
+  border-radius: 5px; padding: 6px 10px; color: #1a1a18; background: #fff;
+}
+.class-name-input:focus { outline: none; border-color: #BA7517; }
+
+/* Criteria table */
+.criteria-table { width: 100%; border-collapse: collapse; }
+.criteria-table th {
+  text-align: left; font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+  color: #bbb; font-weight: 500; padding: 0 8px 6px 8px; border-bottom: 1px solid #eee;
+}
+.criteria-table td { padding: 5px 8px; border-bottom: 1px solid #f0f0ec; vertical-align: middle; }
+.criteria-table tr:last-child td { border-bottom: none; }
+.criteria-table tr.not-used td { opacity: 0.45; }
+.obs-badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 20px; height: 20px; border-radius: 50%; color: white;
+  font-size: 9px; font-weight: 700; font-family: monospace; flex-shrink: 0;
+}
+.criteria-input {
+  width: 100%; font-size: 12px; border: 1px solid #e8e8e4; border-radius: 4px;
+  padding: 5px 8px; color: #1a1a18; background: #fafaf8; font-family: inherit; resize: none;
+}
+.criteria-input:focus { outline: none; border-color: #BA7517; background: #fff; }
+.criteria-input:disabled { background: #f5f5f0; color: #bbb; cursor: not-allowed; }
+.not-used-check { cursor: pointer; accent-color: #BA7517; width: 14px; height: 14px; }
+.empty-state { padding: 32px 18px; text-align: center; color: #bbb; font-size: 13px; }
+
+/* ── PRINT STYLES ── */
+@media print {
+  body { background: white; height: auto; overflow: visible; }
+  #app { height: auto; }
+  .topbar, .sidebar, .right-panel, .bottombar, .modal-overlay { display: none !important; }
+  .canvas-area { position: static; height: auto; background: white; }
+  canvas { position: static; }
+  .print-section { display: block !important; }
+  .print-page-break { page-break-before: always; }
+}
+.print-section { display: none; }
+
+/* print preview content (hidden until print) */
+#print-content {
+  display: none;
+  position: fixed; inset: 0; background: white; z-index: 200;
+  overflow-y: auto; padding: 32px;
+}
+#print-content.visible { display: block; }
+.print-header { margin-bottom: 24px; border-bottom: 2px solid #1a1a18; padding-bottom: 12px; }
+.print-title { font-size: 22px; font-weight: 700; color: #1a1a18; }
+.print-meta { font-size: 12px; color: #666; margin-top: 4px; font-family: monospace; }
+.print-map-container { margin-bottom: 32px; }
+.print-map-container canvas { border: 1px solid #ccc; display: block; }
+.print-class-section { margin-bottom: 28px; page-break-inside: avoid; }
+.print-class-title {
+  font-size: 15px; font-weight: 700; color: #1a1a18; margin-bottom: 10px;
+  padding-bottom: 5px; border-bottom: 1px solid #ddd;
+}
+.print-criteria-list { list-style: none; }
+.print-criteria-item {
+  display: flex; gap: 12px; padding: 6px 0;
+  border-bottom: 1px solid #f0f0ec; font-size: 12px; align-items: flex-start;
+}
+.print-criteria-item:last-child { border-bottom: none; }
+.print-obs-num {
+  width: 22px; height: 22px; border-radius: 50%; display: flex;
+  align-items: center; justify-content: center; color: white;
+  font-size: 9px; font-weight: 700; font-family: monospace; flex-shrink: 0; margin-top: 1px;
+}
+.print-obs-name { font-weight: 500; color: #1a1a18; min-width: 80px; flex-shrink: 0; }
+.print-criteria-text { color: #333; flex: 1; line-height: 1.4; }
+.print-not-used { color: #aaa; font-style: italic; }
+.print-close-bar {
+  position: sticky; top: 0; background: #1a1a18; color: white;
+  padding: 10px 32px; display: flex; align-items: center; justify-content: space-between;
+  margin: -32px -32px 24px -32px; font-size: 13px;
+}
+.print-close-bar button { background: white; color: #1a1a18; border: none; padding: 5px 14px; border-radius: 4px; font-weight: 600; cursor: pointer; }
+</style>
+</head>
+<body>
+<div id="app">
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-title">🐴 <span>Ecuestre</span> Course Designer</div>
+    <div class="topbar-sub" id="arena-label">60 × 40 m</div>
+
+    <div style="display:flex;align-items:center;gap:6px;">
+      <span style="font-size:11px;color:#888;">View:</span>
+      <div class="view-toggle">
+        <button id="view-side" class="active">⬛ Sideline</button>
+        <button id="view-end">▬ Endline</button>
+      </div>
+    </div>
+
+    <div class="topbar-right">
+      <button id="btn-grid" class="active">Grid</button>
+      <button id="btn-path" class="active">Path</button>
+      <button id="btn-fit">Fit</button>
+      <button id="btn-reset-path">Reset Path</button>
+      <button id="btn-classes" class="primary">Classes &amp; Criteria</button>
+      <button id="btn-clear" class="danger">Clear</button>
+    </div>
+  </div>
+
+  <div class="workspace">
+    <!-- LEFT SIDEBAR -->
+    <div class="sidebar">
+      <div class="sidebar-section">
+        <div class="section-label">Arena (meters)</div>
+        <div class="arena-inputs">
+          <div class="input-row"><span class="input-label">Width</span><input class="dim-input" type="number" id="inp-w" value="60" min="10" max="120"></div>
+          <div class="input-row"><span class="input-label">Length</span><input class="dim-input" type="number" id="inp-h" value="40" min="10" max="120"></div>
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <div class="section-label">Display</div>
+        <div class="toggle-row"><span class="toggle-label">Grid</span><button class="toggle-btn on" id="tog-grid"><div class="toggle-knob"></div></button></div>
+        <div class="toggle-row"><span class="toggle-label">Snap to grid</span><button class="toggle-btn on" id="tog-snap"><div class="toggle-knob"></div></button></div>
+        <div class="toggle-row"><span class="toggle-label">Course path</span><button class="toggle-btn on" id="tog-path"><div class="toggle-knob"></div></button></div>
+      </div>
+      <div class="sidebar-section" id="path-style-section">
+        <div class="section-label">Path style</div>
+        <div class="input-row" style="margin-bottom:6px;">
+          <span class="input-label">Line</span>
+          <select id="path-line-type" style="font-size:11px;border:1px solid #ddd;border-radius:4px;padding:2px 4px;background:#f9f9f7;color:#1a1a18;font-family:inherit;">
+            <option value="dashed" selected>Dashed</option>
+            <option value="solid">Solid</option>
+            <option value="dotted">Dotted</option>
+          </select>
+        </div>
+        <div class="input-row" style="margin-bottom:6px;">
+          <span class="input-label">Weight</span>
+          <div style="display:flex;align-items:center;gap:4px;">
+            <input type="range" id="path-weight" min="0.5" max="5" step="0.5" value="1.8" style="width:60px;">
+            <span id="path-weight-val" style="font-size:10px;font-family:monospace;color:#888;min-width:22px;">1.8</span>
+          </div>
+        </div>
+        <div class="input-row">
+          <span class="input-label">Arrows</span>
+          <div style="display:flex;gap:3px;">
+            <button class="sm" id="arrow-sm">S</button>
+            <button class="sm active" id="arrow-md">M</button>
+            <button class="sm" id="arrow-lg">L</button>
+          </div>
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <div class="section-label">Obstacles — drag to arena</div>
+        <div class="obs-list" id="obs-list"></div>
+      </div>
+    </div>
+
+    <!-- CANVAS -->
+    <div class="canvas-area" id="canvas-area">
+      <canvas id="canvas"></canvas>
+      <div class="view-indicator" id="view-indicator">
+        <div class="view-indicator-dot"></div>
+        <span id="view-indicator-text">Viewing from sideline</span>
+      </div>
+      <div class="hint" id="hint">Drag an obstacle from the sidebar onto the arena</div>
+    </div>
+
+    <!-- RIGHT PANEL -->
+    <div class="right-panel">
+      <div class="panel-section">
+        <div class="section-label">Properties</div>
+        <div id="props-content" style="color:#bbb;font-size:11px;">Select an obstacle</div>
+      </div>
+      <div class="panel-section">
+        <div class="section-label">Sequence — drag to reorder</div>
+        <div class="seq-list" id="sequence"></div>
+      </div>
+      <div class="panel-section">
+        <div class="section-label">Compliance</div>
+        <div id="compliance"><div style="color:#ccc;font-size:11px;">No obstacles placed</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bottombar">
+    <div class="status">Obstacles: <span id="st-obs">0</span></div>
+    <div class="status">Cursor: <span id="st-pos">—</span></div>
+    <div class="status" id="st-viol"></div>
+    <div class="zoom-controls">
+      <button class="zoom-btn" id="zoom-out">−</button>
+      <div class="zoom-val" id="zoom-val">100%</div>
+      <button class="zoom-btn" id="zoom-in">+</button>
+    </div>
+  </div>
+</div>
+
+<!-- CLASSES & CRITERIA MODAL -->
+<div class="modal-overlay hidden" id="modal-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Classes &amp; Criteria</div>
+      <div style="font-size:11px;color:#aaa;flex:1;">Define which classes compete at this event and set per-obstacle criteria.</div>
+      <button onclick="closeModal()" style="font-size:18px;color:#aaa;border:none;background:none;padding:0 4px;cursor:pointer;">✕</button>
+    </div>
+
+    <!-- Tab bar -->
+    <div class="class-tabs-bar" id="class-tabs-bar">
+      <button class="add-class-btn" onclick="addClass()">+ Add class</button>
+    </div>
+
+    <!-- Class content -->
+    <div class="modal-body" id="modal-body">
+      <div class="empty-state" id="modal-empty">
+        No classes added yet.<br>Click <strong>+ Add class</strong> to get started.
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <div style="font-size:11px;color:#aaa;margin-right:auto;">
+        <span id="class-count">0</span> class(es) · <span id="obs-count-modal">0</span> obstacle(s)
+      </div>
+      <button onclick="closeModal()">Done</button>
+      <button class="green" onclick="doPrint()">🖨 Print / Export PDF</button>
+    </div>
+  </div>
+</div>
+
+<!-- PRINT PREVIEW -->
+<div id="print-content">
+  <div class="print-close-bar">
+    <span>Print Preview</span>
+    <div style="display:flex;gap:8px;">
+      <button onclick="window.print()">Print / Save as PDF</button>
+      <button onclick="closePrint()" style="background:#555;color:white;">✕ Close</button>
+    </div>
+  </div>
+  <div id="print-inner"></div>
+</div>
+
+<script>
+/* ─────────────────────────────────────────
+   DATA
+───────────────────────────────────────── */
+const OBSTACLES = [
+  { id:'gate',     label:'Gate',      color:'#BA7517', w:3.5, h:0.3,  entry:{x:0,y:-1},   exit:{x:0,y:1}    },
+  { id:'bridge',   label:'Bridge',    color:'#7F77DD', w:4,   h:1.5,  entry:{x:-2,y:0},   exit:{x:2,y:0}    },
+  { id:'slalom',   label:'Slalom',    color:'#1D9E75', w:8,   h:0.3,  entry:{x:-4,y:0},   exit:{x:4,y:0}    },
+  { id:'corridor', label:'Corridor',  color:'#D85A30', w:1,   h:5,    entry:{x:0,y:-2.5}, exit:{x:0,y:2.5}  },
+  { id:'barrel',   label:'Barrel',    color:'#378ADD', w:0.6, h:0.9,  entry:{x:0,y:-0.8}, exit:{x:0,y:0.8}  },
+  { id:'garrocha', label:'Garrocha',  color:'#639922', w:0.4, h:0.4,  entry:{x:0,y:-0.6}, exit:{x:0,y:0.6}  },
+  { id:'water',    label:'Water',     color:'#185FA5', w:5,   h:3,    entry:{x:-2.5,y:0}, exit:{x:2.5,y:0}  },
+  { id:'sidepass', label:'Sidepass',  color:'#993C1D', w:4,   h:0.3,  entry:{x:0,y:-1},   exit:{x:0,y:1}    },
+  { id:'bullpen',  label:'Bull Pen',  color:'#3C3489', w:6,   h:6,    entry:{x:0,y:-3},   exit:{x:0,y:3}    },
+  { id:'jump',     label:'Jump',      color:'#0F6E56', w:4,   h:0.2,  entry:{x:0,y:-1},   exit:{x:0,y:1}    },
+];
+
+const MIN_SPACING = 6;
+
+// classes: [{ id, name, obstacles: { [placedId]: { criteria: '', notUsed: false } } }]
+let classes = [];
+let activeClassIdx = 0;
+
+/* ─────────────────────────────────────────
+   CANVAS STATE
+───────────────────────────────────────── */
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+const area = document.getElementById('canvas-area');
+
+let arenaW = 60, arenaH = 40;
+let zoom = 1, panX = 0, panY = 0;
+let showGrid = true, snapToGrid = true, showPath = true;
+let pathLineType = 'dashed'; // 'solid' | 'dashed' | 'dotted'
+let pathLineWeight = 1.8;    // px
+let pathArrowSize = 1;       // scale multiplier: 0.5 | 1 | 1.8
+let placed = [];
+let pathControls = {}; // key: "id1_id2", value: {wx, wy} world coords of control point
+let dragging = null, dragOffX = 0, dragOffY = 0;
+let isPanning = false, panStart = null;
+let selectedId = null;
+let nextNum = 1;
+let dragFromSidebar = null;
+let violations = new Set();
+let hintVisible = true;
+let viewMode = 'side';
+
+/* ─────────────────────────────────────────
+   CANVAS HELPERS
+───────────────────────────────────────── */
+function getEffectiveArena() {
+  return viewMode === 'side' ? { w: arenaW, h: arenaH } : { w: arenaH, h: arenaW };
+}
+function getBaseScale() {
+  const mx = 60, ea = getEffectiveArena();
+  return Math.min((area.clientWidth - mx) / ea.w, (area.clientHeight - mx) / ea.h);
+}
+function worldToScreen(wx, wy) {
+  const s = getBaseScale() * zoom;
+  return viewMode === 'side'
+    ? [panX + wx * s, panY + wy * s]
+    : [panX + (arenaH - wy) * s, panY + wx * s];
+}
+function screenToWorld(sx, sy) {
+  const s = getBaseScale() * zoom;
+  if (viewMode === 'side') return [(sx - panX) / s, (sy - panY) / s];
+  const ru = (sx - panX) / s, rv = (sy - panY) / s;
+  return [rv, arenaH - ru];
+}
+function snapWorld(wx, wy) {
+  return snapToGrid ? [Math.round(wx), Math.round(wy)] : [wx, wy];
+}
+
+// Returns world-space {entry, exit} for a placed obstacle, rotated correctly
+function getConnectionPoints(p) {
+  const def = OBSTACLES.find(o => o.id === p.type);
+  const cx = p.x + p.w/2, cy = p.y + p.h/2;
+  const rot = (p.rotation || 0) * Math.PI / 180;
+  function rotate(lx, ly) {
+    return {
+      x: cx + lx * Math.cos(rot) - ly * Math.sin(rot),
+      y: cy + lx * Math.sin(rot) + ly * Math.cos(rot)
+    };
+  }
+  return {
+    entry: rotate(def.entry.x, def.entry.y),
+    exit:  rotate(def.exit.x,  def.exit.y)
+  };
+}
+function fitArena() {
+  const s = getBaseScale(), ea = getEffectiveArena();
+  zoom = 1;
+  panX = (area.clientWidth - ea.w * s) / 2;
+  panY = (area.clientHeight - ea.h * s) / 2;
+  render(); updateZoomLabel();
+}
+
+/* ─────────────────────────────────────────
+   RENDER
+───────────────────────────────────────── */
+function render() {
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+  const s = getBaseScale() * zoom;
+  const ea = getEffectiveArena();
+  const aw = ea.w * s, ah = ea.h * s;
+
+  ctx.fillStyle = '#c0cebb'; ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = '#b4c4aa'; ctx.fillRect(panX, panY, aw, ah);
+
+  if (showGrid) {
+    const drawGrid = (step, alpha, lw) => {
+      ctx.strokeStyle = `rgba(0,0,0,${alpha})`; ctx.lineWidth = lw;
+      for (let i = 0; i <= ea.w; i += step) { const x = panX + i * s; ctx.beginPath(); ctx.moveTo(x, panY); ctx.lineTo(x, panY + ah); ctx.stroke(); }
+      for (let j = 0; j <= ea.h; j += step) { const y = panY + j * s; ctx.beginPath(); ctx.moveTo(panX, y); ctx.lineTo(panX + aw, y); ctx.stroke(); }
+    };
+    drawGrid(1, 0.06, 0.5); drawGrid(5, 0.15, 0.8);
+    ctx.fillStyle = 'rgba(0,0,0,0.28)';
+    const fs = Math.max(9, Math.min(11, s * 0.7));
+    ctx.font = `${fs}px monospace`; ctx.textBaseline = 'top';
+    for (let i = 0; i <= ea.w; i += 5) ctx.fillText(i + 'm', panX + i * s + 2, panY + ah + 3);
+    ctx.textBaseline = 'middle';
+    for (let j = 0; j <= ea.h; j += 5) ctx.fillText(j + 'm', panX - 28, panY + j * s);
+    ctx.textBaseline = 'alphabetic';
+  }
+
+  if (showPath && placed.length > 1) {
+    ctx.save();
+
+    function getCP(i) {
+      const a = placed[i], b = placed[i+1];
+      const key = a.id + '_' + b.id;
+      const aPts = getConnectionPoints(a), bPts = getConnectionPoints(b);
+      const [ax2, ay2] = worldToScreen(aPts.exit.x,  aPts.exit.y);
+      const [bx2, by2] = worldToScreen(bPts.entry.x, bPts.entry.y);
+      if (pathControls[key]) {
+        const [cpx, cpy] = worldToScreen(pathControls[key].wx, pathControls[key].wy);
+        return { cpx, cpy, ax: ax2, ay: ay2, bx: bx2, by: by2 };
+      }
+      return { cpx:(ax2+bx2)/2, cpy:(ay2+by2)/2, ax:ax2, ay:ay2, bx:bx2, by:by2 };
+    }
+
+    // Draw curves
+    const dash = pathLineType === 'solid' ? [] : pathLineType === 'dotted' ? [2, 4] : [6, 5];
+    ctx.strokeStyle = 'rgba(186,117,23,0.55)'; ctx.lineWidth = pathLineWeight; ctx.setLineDash(dash);
+    ctx.beginPath();
+    for (let i = 0; i < placed.length - 1; i++) {
+      const { cpx, cpy, ax: ax2, ay: ay2, bx: bx2, by: by2 } = getCP(i);
+      if (i === 0) ctx.moveTo(ax2, ay2);
+      ctx.quadraticCurveTo(cpx, cpy, bx2, by2);
+    }
+    ctx.stroke(); ctx.setLineDash([]);
+
+    // Arrowheads at t=0.5 — size scales with line weight × user multiplier
+    const arrowBase = pathLineWeight * 4; // base arrow size tied to line weight
+    const as = arrowBase * pathArrowSize;
+    for (let i = 0; i < placed.length - 1; i++) {
+      const { cpx, cpy, ax: ax2, ay: ay2, bx: bx2, by: by2 } = getCP(i);
+      const mx2 = 0.25*ax2 + 0.5*cpx + 0.25*bx2;
+      const my2 = 0.25*ay2 + 0.5*cpy + 0.25*by2;
+      const tx2 = (cpx-ax2) + (bx2-cpx), ty2 = (cpy-ay2) + (by2-cpy);
+      const angle = Math.atan2(ty2, tx2);
+      ctx.fillStyle = 'rgba(186,117,23,0.7)';
+      ctx.beginPath();
+      ctx.moveTo(mx2+Math.cos(angle)*as,       my2+Math.sin(angle)*as);
+      ctx.lineTo(mx2+Math.cos(angle+2.5)*as*0.7, my2+Math.sin(angle+2.5)*as*0.7);
+      ctx.lineTo(mx2+Math.cos(angle-2.5)*as*0.7, my2+Math.sin(angle-2.5)*as*0.7);
+      ctx.closePath(); ctx.fill();
+    }
+
+    // Control point handles
+    for (let i = 0; i < placed.length - 1; i++) {
+      const { cpx, cpy, ax: ax2, ay: ay2, bx: bx2, by: by2 } = getCP(i);
+      const key = placed[i].id + '_' + placed[i+1].id;
+      const isCustom = !!pathControls[key];
+      ctx.strokeStyle = 'rgba(186,117,23,0.2)'; ctx.lineWidth = 1; ctx.setLineDash([3,4]);
+      ctx.beginPath(); ctx.moveTo(ax2,ay2); ctx.lineTo(cpx,cpy); ctx.lineTo(bx2,by2); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = isCustom ? '#BA7517' : 'rgba(186,117,23,0.35)';
+      ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.arc(cpx, cpy, 5, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+    }
+
+    // Entry (green) / exit (red) dots on all obstacles
+    placed.forEach(p => {
+      const pts = getConnectionPoints(p);
+      const isSel = p.id === selectedId;
+      [[pts.entry, '#3B6D11'], [pts.exit, '#A32D2D']].forEach(([pt, col]) => {
+        const [sx2, sy2] = worldToScreen(pt.x, pt.y);
+        ctx.fillStyle = isSel ? col : col + '88';
+        ctx.strokeStyle = '#fff'; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.arc(sx2, sy2, isSel ? 4 : 3, 0, Math.PI*2);
+        ctx.fill(); ctx.stroke();
+      });
+    });
+
+    ctx.restore();
+  }
+
+  placed.forEach((p, idx) => {
+    const def = OBSTACLES.find(o => o.id === p.type);
+    const isViol = violations.has(p.id), isSel = p.id === selectedId;
+    const rot = (p.rotation || 0) * Math.PI / 180;
+    let drawW, drawH, cx, cy;
+    if (viewMode === 'side') {
+      drawW = p.w * s; drawH = p.h * s;
+      const [sx2, sy2] = worldToScreen(p.x + p.w/2, p.y + p.h/2);
+      cx = sx2; cy = sy2;
+    } else {
+      drawW = p.h * s; drawH = p.w * s;
+      const [sx2, sy2] = worldToScreen(p.x + p.w/2, p.y + p.h/2);
+      cx = sx2; cy = sy2;
+    }
+
+    const nr = Math.max(9, Math.min(14, s*0.6));
+    // Badge screen position from stored world-space offset
+    const bx = cx + (p.badgeOffX||0) * s;
+    const by = cy + (p.badgeOffY||0) * s;
+
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(rot);
+    const ox = -drawW/2, oy = -drawH/2;
+    ctx.fillStyle = def.color + '44';
+    ctx.strokeStyle = isViol ? '#E24B4A' : (isSel ? '#BA7517' : def.color);
+    ctx.lineWidth = isSel ? 2.5 : 1.5;
+    ctx.fillRect(ox, oy, drawW, drawH); ctx.strokeRect(ox, oy, drawW, drawH);
+    if (isSel) {
+      ctx.strokeStyle = 'rgba(186,117,23,0.4)'; ctx.lineWidth = 1; ctx.setLineDash([4,3]);
+      ctx.strokeRect(ox-5, oy-5, drawW+10, drawH+10); ctx.setLineDash([]);
+    }
+    // Rotation handle when selected — at local top
+    if (isSel) {
+      const badgeTop = oy - nr*2 - 3;
+      const hx = 0, hy = badgeTop - 18;
+      ctx.strokeStyle = 'rgba(186,117,23,0.6)'; ctx.lineWidth = 1; ctx.setLineDash([3,3]);
+      ctx.beginPath(); ctx.moveTo(0, badgeTop); ctx.lineTo(hx, hy + 7); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = '#BA7517';
+      ctx.beginPath(); ctx.arc(hx, hy, 7, 0, Math.PI*2); ctx.fill();
+      ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.arc(hx, hy, 4, -Math.PI*0.7, Math.PI*0.7); ctx.stroke();
+      ctx.fillStyle = '#fff';
+      ctx.beginPath(); ctx.moveTo(hx+3.5, hy+2.5); ctx.lineTo(hx+6, hy+1); ctx.lineTo(hx+4.5, hy+4.5); ctx.closePath(); ctx.fill();
+    }
+    const lfs = Math.max(9, Math.min(11, s*0.55));
+    ctx.font = `${lfs}px -apple-system,sans-serif`;
+    ctx.fillStyle = 'rgba(0,0,0,0.55)'; ctx.textBaseline = 'top'; ctx.textAlign = 'center';
+    ctx.fillText(def.label, ox + drawW/2, oy + drawH + 4);
+    if (isViol) { ctx.fillStyle='#E24B4A'; ctx.font=`bold ${Math.max(8,lfs*0.85)}px monospace`; ctx.fillText('⚠ spacing', ox+drawW/2, oy+drawH+16); }
+    ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+    ctx.restore();
+
+    // Thin leader line from obstacle centre to badge
+    ctx.strokeStyle = 'rgba(186,117,23,0.35)'; ctx.lineWidth = 1; ctx.setLineDash([3,4]);
+    ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(bx, by); ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Number badge — free position
+    const badgeSel = isSel; // highlight ring when obstacle selected
+    ctx.fillStyle = isViol ? '#E24B4A' : '#BA7517';
+    ctx.beginPath(); ctx.arc(bx, by, nr, 0, Math.PI*2); ctx.fill();
+    if (badgeSel) {
+      ctx.strokeStyle = 'rgba(186,117,23,0.5)'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(bx, by, nr+4, 0, Math.PI*2); ctx.stroke();
+    }
+    ctx.fillStyle = '#fff'; ctx.font = `bold ${Math.max(8,nr)}px monospace`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(p.num, bx, by);
+    ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+  });
+
+  ctx.strokeStyle = '#4a7044'; ctx.lineWidth = 2; ctx.strokeRect(panX, panY, aw, ah);
+  ctx.fillStyle = 'rgba(0,0,0,0.2)'; ctx.font = '11px monospace'; ctx.textBaseline = 'bottom';
+  ctx.fillText(`${arenaW} × ${arenaH} m`, panX+4, panY-3); ctx.textBaseline = 'alphabetic';
+
+  ctx.fillStyle = 'rgba(0,0,0,0.18)'; ctx.font = '10px monospace'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText(viewMode === 'side' ? '← sideline →' : '← endline →', panX + aw/2, panY - 12);
+  ctx.save(); ctx.translate(panX-14, panY+ah/2); ctx.rotate(-Math.PI/2);
+  ctx.fillText(viewMode === 'side' ? '← endline →' : '← sideline →', 0, 0); ctx.restore();
+  ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+}
+
+/* ─────────────────────────────────────────
+   COMPLIANCE
+───────────────────────────────────────── */
+function checkViolations() {
+  violations.clear();
+  for (let i = 0; i < placed.length; i++) {
+    for (let j = i+1; j < placed.length; j++) {
+      const a = placed[i], b = placed[j];
+      const d = Math.sqrt((a.x+a.w/2-b.x-b.w/2)**2 + (a.y+a.h/2-b.y-b.h/2)**2);
+      if (d < MIN_SPACING) { violations.add(a.id); violations.add(b.id); }
+    }
+  }
+  updateCompliance();
+  const el = document.getElementById('st-viol');
+  el.innerHTML = violations.size
+    ? `<span class="violation-text">⚠ ${violations.size} spacing issue(s)</span>`
+    : placed.length > 0 ? '<span class="ok-text">✓ Compliant</span>' : '';
+}
+
+function updateCompliance() {
+  const el = document.getElementById('compliance');
+  if (!placed.length) { el.innerHTML = '<div style="color:#ccc;font-size:11px;">No obstacles placed</div>'; return; }
+  const inBounds = placed.every(p => p.x>=0 && p.y>=0 && p.x+p.w<=arenaW && p.y+p.h<=arenaH);
+  el.innerHTML = `
+    <div class="compliance-item ${violations.size===0?'comp-ok':'comp-warn'}"><div class="comp-dot"></div>${violations.size===0?'Spacing OK':violations.size+' spacing issue(s)'}</div>
+    <div class="compliance-item ${inBounds?'comp-ok':'comp-warn'}"><div class="comp-dot"></div>${inBounds?'All within arena':'Obstacle out of bounds'}</div>
+    <div class="compliance-item comp-ok"><div class="comp-dot"></div>${placed.length} obstacle(s)</div>`;
+}
+
+/* ─────────────────────────────────────────
+   PROPERTIES
+───────────────────────────────────────── */
+function updateProps() {
+  const el = document.getElementById('props-content');
+  const p = placed.find(x => x.id === selectedId);
+  if (!p) { el.innerHTML = '<div style="color:#bbb;font-size:11px;">Select an obstacle</div>'; return; }
+  const def = OBSTACLES.find(o => o.id === p.type);
+  el.innerHTML = `
+    <div class="prop-row"><span class="prop-label">Type</span><span class="prop-val">${def.label}</span></div>
+    <div class="prop-row"><span class="prop-label">Number</span><span class="prop-val">#${p.num}</span></div>
+    <div class="prop-row"><span class="prop-label">X</span><span class="prop-val">${p.x.toFixed(1)} m</span></div>
+    <div class="prop-row"><span class="prop-label">Y</span><span class="prop-val">${p.y.toFixed(1)} m</span></div>
+    <div class="prop-row"><span class="prop-label">Width</span><span class="prop-val">${p.w} m</span></div>
+    <div class="prop-row"><span class="prop-label">Height</span><span class="prop-val">${p.h} m</span></div>
+    <div class="prop-row"><span class="prop-label">Rotation</span>
+      <span style="display:flex;align-items:center;gap:3px;">
+        <input id="rot-input" type="number" min="0" max="359" step="1" value="${Math.round(p.rotation||0)}"
+          style="width:46px;font-size:11px;font-family:monospace;border:1px solid #ddd;border-radius:4px;padding:2px 4px;background:#f9f9f7;text-align:right;">
+        <span style="font-size:10px;color:#888;">°</span>
+      </span>
+    </div>
+    <div style="display:flex;gap:3px;margin-top:4px;">
+      <button class="sm" onclick="rotateSelected(-90)" title="Rotate -90°">↺ 90°</button>
+      <button class="sm" onclick="rotateSelected(90)" title="Rotate +90°">↻ 90°</button>
+      <button class="sm" onclick="rotateSelected(45)" title="Rotate +45°">↻ 45°</button>
+      <button class="sm" onclick="rotateSelectedTo(0)" title="Reset rotation">Reset</button>
+    </div>
+    <div style="margin-top:6px;padding-top:6px;border-top:1px solid #eee;">
+      <div class="prop-row"><span class="prop-label" style="color:#aaa;font-size:10px;">Number badge</span></div>
+      <button class="sm" style="width:100%;margin-top:2px;" onclick="resetBadge()">Reset badge position</button>
+    </div>`;
+  document.getElementById('rot-input').addEventListener('change', function() {
+    const p2=placed.find(x=>x.id===selectedId); if(!p2) return;
+    p2.rotation=((parseFloat(this.value)||0)%360+360)%360;
+    render(); updateProps();
+  });
+}
+
+/* ─────────────────────────────────────────
+   SEQUENCE
+───────────────────────────────────────── */
+let seqDragIdx = null;
+
+function updateSequence() {
+  document.getElementById('st-obs').textContent = placed.length;
+  const seq = document.getElementById('sequence');
+  if (!placed.length) { seq.innerHTML = '<div style="color:#bbb;font-size:11px;">No obstacles yet</div>'; return; }
+  seq.innerHTML = '';
+  placed.forEach((p, idx) => {
+    const def = OBSTACLES.find(o => o.id === p.type);
+    const row = document.createElement('div');
+    row.className = 'seq-item' + (p.id === selectedId ? ' sel' : '');
+    row.draggable = true; row.dataset.idx = idx;
+    row.innerHTML = `<span class="seq-handle">⠿</span><div class="seq-num" style="background:${def.color}">${p.num}</div><span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${def.label}</span><span class="seq-del" data-id="${p.id}">✕</span>`;
+    row.addEventListener('dragstart', e => { seqDragIdx=idx; row.classList.add('dragging-item'); e.dataTransfer.effectAllowed='move'; });
+    row.addEventListener('dragend', () => { row.classList.remove('dragging-item'); document.querySelectorAll('.seq-item').forEach(r=>r.classList.remove('drag-over')); });
+    row.addEventListener('dragover', e => { e.preventDefault(); document.querySelectorAll('.seq-item').forEach(r=>r.classList.remove('drag-over')); row.classList.add('drag-over'); });
+    row.addEventListener('dragleave', () => row.classList.remove('drag-over'));
+    row.addEventListener('drop', e => {
+      e.preventDefault(); row.classList.remove('drag-over');
+      if (seqDragIdx===null||seqDragIdx===idx) return;
+      const moved = placed.splice(seqDragIdx,1)[0]; placed.splice(idx,0,moved);
+      renumber(); render(); checkViolations(); updateSequence(); updateProps();
+    });
+    row.addEventListener('click', e => {
+      if (e.target.dataset.id) {
+        placed = placed.filter(x => x.id !== e.target.dataset.id);
+        if (selectedId === e.target.dataset.id) selectedId = null;
+        renumber(); render(); checkViolations(); updateSequence(); updateProps();
+      } else if (!e.target.classList.contains('seq-handle')) {
+        selectedId = p.id; render(); updateSequence(); updateProps();
+      }
+    });
+    seq.appendChild(row);
+  });
+}
+
+function renumber() {
+  placed.forEach((p,i) => p.num = i+1);
+  nextNum = placed.length + 1;
+  // Remove control points for segments that no longer exist
+  const validKeys = new Set();
+  for (let i = 0; i < placed.length - 1; i++) validKeys.add(placed[i].id + '_' + placed[i+1].id);
+  Object.keys(pathControls).forEach(k => { if (!validKeys.has(k)) delete pathControls[k]; });
+}
+
+/* ─────────────────────────────────────────
+   CLASSES & CRITERIA MODAL
+───────────────────────────────────────── */
+function openModal() {
+  syncClassObstacles();
+  renderModal();
+  document.getElementById('modal-overlay').classList.remove('hidden');
+}
+function closeModal() {
+  document.getElementById('modal-overlay').classList.add('hidden');
+}
+
+// Ensure every class has entries for all currently placed obstacles
+function syncClassObstacles() {
+  classes.forEach(cls => {
+    placed.forEach(p => {
+      if (!cls.obstacles[p.id]) cls.obstacles[p.id] = { criteria: '', notUsed: false };
+    });
+    // Remove stale (deleted) obstacles
+    Object.keys(cls.obstacles).forEach(id => {
+      if (!placed.find(p => p.id === id)) delete cls.obstacles[id];
+    });
+  });
+}
+
+function addClass() {
+  const idx = classes.length;
+  classes.push({ id: 'cls_' + Date.now(), name: 'Class ' + (idx+1), obstacles: {} });
+  placed.forEach(p => { classes[idx].obstacles[p.id] = { criteria: '', notUsed: false }; });
+  activeClassIdx = idx;
+  renderModal();
+}
+
+function deleteClass(idx) {
+  if (!confirm(`Remove "${classes[idx].name}"?`)) return;
+  classes.splice(idx, 1);
+  activeClassIdx = Math.min(activeClassIdx, classes.length - 1);
+  renderModal();
+}
+
+function renderModal() {
+  const tabBar = document.getElementById('class-tabs-bar');
+  const body = document.getElementById('modal-body');
+  const empty = document.getElementById('modal-empty');
+
+  // Rebuild tabs
+  tabBar.innerHTML = '';
+  classes.forEach((cls, i) => {
+    const tab = document.createElement('div');
+    tab.className = 'class-tab' + (i === activeClassIdx ? ' active' : '');
+    tab.innerHTML = `<span onclick="setActiveClass(${i})">${cls.name||'Unnamed'}</span><span class="class-tab-del" onclick="deleteClass(${i})">✕</span>`;
+    tabBar.appendChild(tab);
+  });
+  const addBtn = document.createElement('button');
+  addBtn.className = 'add-class-btn'; addBtn.textContent = '+ Add class';
+  addBtn.onclick = addClass; tabBar.appendChild(addBtn);
+
+  // Footer counts
+  document.getElementById('class-count').textContent = classes.length;
+  document.getElementById('obs-count-modal').textContent = placed.length;
+
+  if (!classes.length) {
+    body.innerHTML = '';
+    body.appendChild(Object.assign(document.createElement('div'), { className: 'empty-state', innerHTML: 'No classes added yet.<br>Click <strong>+ Add class</strong> to get started.' }));
+    return;
+  }
+
+  body.innerHTML = '';
+  const cls = classes[activeClassIdx];
+  const panel = document.createElement('div');
+  panel.className = 'class-panel';
+
+  // Class name input
+  const nameRow = document.createElement('div');
+  nameRow.className = 'class-name-row';
+  nameRow.innerHTML = `<label style="font-size:12px;color:#888;white-space:nowrap;">Class name:</label><input class="class-name-input" value="${cls.name}" placeholder="e.g. Intermediate" oninput="classes[${activeClassIdx}].name=this.value;renderModal();">`;
+  panel.appendChild(nameRow);
+
+  if (!placed.length) {
+    panel.innerHTML += '<div style="color:#bbb;font-size:12px;padding:12px 0;">No obstacles on the course yet. Place obstacles on the canvas first.</div>';
+  } else {
+    // Criteria table
+    const table = document.createElement('table');
+    table.className = 'criteria-table';
+    table.innerHTML = `<thead><tr><th style="width:32px;">#</th><th style="width:90px;">Obstacle</th><th>Criteria / Instructions</th><th style="width:70px;text-align:center;">Not used</th></tr></thead>`;
+    const tbody = document.createElement('tbody');
+
+    placed.forEach(p => {
+      const def = OBSTACLES.find(o => o.id === p.type);
+      if (!cls.obstacles[p.id]) cls.obstacles[p.id] = { criteria: '', notUsed: false };
+      const entry = cls.obstacles[p.id];
+      const tr = document.createElement('tr');
+      if (entry.notUsed) tr.classList.add('not-used');
+      tr.innerHTML = `
+        <td><div class="obs-badge" style="background:${def.color}">${p.num}</div></td>
+        <td style="font-size:12px;font-weight:500;color:#333;">${def.label}</td>
+        <td><textarea class="criteria-input" rows="2" placeholder="Describe how to complete this obstacle…" ${entry.notUsed?'disabled':''}>${entry.criteria||''}</textarea></td>
+        <td style="text-align:center;"><input type="checkbox" class="not-used-check" ${entry.notUsed?'checked':''}></td>`;
+      // Textarea input
+      tr.querySelector('textarea').addEventListener('input', function() {
+        cls.obstacles[p.id].criteria = this.value;
+      });
+      // Not used checkbox
+      tr.querySelector('.not-used-check').addEventListener('change', function() {
+        cls.obstacles[p.id].notUsed = this.checked;
+        tr.classList.toggle('not-used', this.checked);
+        tr.querySelector('textarea').disabled = this.checked;
+      });
+      tbody.appendChild(tr);
+    });
+
+    table.appendChild(tbody);
+    panel.appendChild(table);
+  }
+
+  body.appendChild(panel);
+}
+
+function setActiveClass(idx) {
+  activeClassIdx = idx;
+  renderModal();
+}
+
+/* ─────────────────────────────────────────
+   PRINT / EXPORT
+───────────────────────────────────────── */
+function doPrint() {
+  closeModal();
+  const inner = document.getElementById('print-inner');
+  inner.innerHTML = '';
+
+  // Header
+  const levelEl = document.getElementById('level-sel');
+  const level = levelEl ? levelEl.value : '';
+  const now = new Date().toLocaleDateString('en-GB', { day:'numeric', month:'long', year:'numeric' });
+  inner.innerHTML += `
+    <div class="print-header">
+      <div class="print-title">Working Equitation Course — ${level}</div>
+      <div class="print-meta">Arena: ${arenaW} × ${arenaH} m &nbsp;·&nbsp; ${placed.length} obstacle(s) &nbsp;·&nbsp; ${now}</div>
+    </div>`;
+
+  // Course map — render to offscreen canvas at higher resolution
+  const scale = 2;
+  const mapCanvas = document.createElement('canvas');
+  const mapW = 700, mapH = Math.round(mapW * (arenaH / arenaW));
+  mapCanvas.width = mapW * scale; mapCanvas.height = mapH * scale;
+  mapCanvas.style.width = mapW + 'px'; mapCanvas.style.height = mapH + 'px';
+  renderPrintMap(mapCanvas, mapW * scale, mapH * scale);
+  const mapDiv = document.createElement('div');
+  mapDiv.className = 'print-map-container';
+  mapDiv.appendChild(mapCanvas);
+  inner.appendChild(mapDiv);
+
+  // Class sections
+  if (!classes.length) {
+    inner.innerHTML += '<p style="color:#aaa;font-size:13px;font-style:italic;">No classes defined. Open "Classes &amp; Criteria" to add classes.</p>';
+  } else {
+    classes.forEach(cls => {
+      const section = document.createElement('div');
+      section.className = 'print-class-section';
+      section.innerHTML = `<div class="print-class-title">${cls.name || 'Unnamed class'}</div>`;
+      const ul = document.createElement('ul');
+      ul.className = 'print-criteria-list';
+      placed.forEach(p => {
+        const def = OBSTACLES.find(o => o.id === p.type);
+        const entry = cls.obstacles[p.id] || { criteria: '', notUsed: false };
+        const li = document.createElement('li');
+        li.className = 'print-criteria-item';
+        li.innerHTML = `
+          <div class="print-obs-num" style="background:${def.color}">${p.num}</div>
+          <div class="print-obs-name">${def.label}</div>
+          <div class="print-criteria-text ${entry.notUsed?'print-not-used':''}">${entry.notUsed ? 'Not used' : (entry.criteria || '<span style="color:#ccc;font-style:italic;">No criteria entered</span>')}</div>`;
+        ul.appendChild(li);
+      });
+      section.appendChild(ul);
+      inner.appendChild(section);
+    });
+  }
+
+  document.getElementById('print-content').classList.add('visible');
+}
+
+function renderPrintMap(targetCanvas, W, H) {
+  const c = targetCanvas.getContext('2d');
+  const margin = 48;
+  const s = Math.min((W - margin*2) / arenaW, (H - margin*2) / arenaH);
+  const ox = (W - arenaW * s) / 2;
+  const oy = (H - arenaH * s) / 2;
+
+  c.fillStyle = '#fff'; c.fillRect(0, 0, W, H);
+  c.fillStyle = '#e8f0e4'; c.fillRect(ox, oy, arenaW*s, arenaH*s);
+
+  // Grid
+  c.strokeStyle = 'rgba(0,0,0,0.08)'; c.lineWidth = 0.5;
+  for (let i=0;i<=arenaW;i++) { c.beginPath(); c.moveTo(ox+i*s,oy); c.lineTo(ox+i*s,oy+arenaH*s); c.stroke(); }
+  for (let j=0;j<=arenaH;j++) { c.beginPath(); c.moveTo(ox,oy+j*s); c.lineTo(ox+arenaW*s,oy+j*s); c.stroke(); }
+  c.strokeStyle = 'rgba(0,0,0,0.18)'; c.lineWidth = 1;
+  for (let i=0;i<=arenaW;i+=5) { c.beginPath(); c.moveTo(ox+i*s,oy); c.lineTo(ox+i*s,oy+arenaH*s); c.stroke(); }
+  for (let j=0;j<=arenaH;j+=5) { c.beginPath(); c.moveTo(ox,oy+j*s); c.lineTo(ox+arenaW*s,oy+j*s); c.stroke(); }
+
+  // Labels
+  c.fillStyle='rgba(0,0,0,0.3)'; c.font=`${Math.max(10,s*0.6)}px monospace`; c.textBaseline='top';
+  for (let i=0;i<=arenaW;i+=5) c.fillText(i+'m', ox+i*s+2, oy+arenaH*s+4);
+  c.textBaseline='middle';
+  for (let j=0;j<=arenaH;j+=5) c.fillText(j+'m', ox-26, oy+j*s);
+
+  // Path
+  if (placed.length > 1) {
+    c.save();
+    const printDash = pathLineType === 'solid' ? [] : pathLineType === 'dotted' ? [2,4] : [6,5];
+    const printLW = pathLineWeight * 1.5;
+    c.strokeStyle='rgba(186,117,23,0.55)'; c.lineWidth=printLW; c.setLineDash(printDash);
+
+    // Collect segment endpoints + control points for reuse in arrowheads
+    const segs = [];
+    c.beginPath();
+    for (let i = 0; i < placed.length - 1; i++) {
+      const a = placed[i], b = placed[i+1];
+      const key = a.id + '_' + b.id;
+      const aPts = getConnectionPoints(a), bPts = getConnectionPoints(b);
+      const ax2 = ox + aPts.exit.x  * s, ay2 = oy + aPts.exit.y  * s;
+      const bx2 = ox + bPts.entry.x * s, by2 = oy + bPts.entry.y * s;
+      let cpx = (ax2+bx2)/2, cpy = (ay2+by2)/2;
+      if (pathControls[key]) { cpx = ox + pathControls[key].wx * s; cpy = oy + pathControls[key].wy * s; }
+      segs.push({ ax: ax2, ay: ay2, bx: bx2, by: by2, cpx, cpy });
+      if (i === 0) c.moveTo(ax2, ay2);
+      c.quadraticCurveTo(cpx, cpy, bx2, by2);
+    }
+    c.stroke(); c.setLineDash([]);
+
+    // Arrowheads — same formula as canvas render, scaled by print line weight
+    const printAs = printLW * 4 * pathArrowSize;
+    c.fillStyle = 'rgba(186,117,23,0.7)';
+    segs.forEach(({ ax: ax2, ay: ay2, bx: bx2, by: by2, cpx, cpy }) => {
+      const mx2 = 0.25*ax2 + 0.5*cpx + 0.25*bx2;
+      const my2 = 0.25*ay2 + 0.5*cpy + 0.25*by2;
+      const tx2 = (cpx-ax2) + (bx2-cpx), ty2 = (cpy-ay2) + (by2-cpy);
+      const angle = Math.atan2(ty2, tx2);
+      c.beginPath();
+      c.moveTo(mx2+Math.cos(angle)*printAs,         my2+Math.sin(angle)*printAs);
+      c.lineTo(mx2+Math.cos(angle+2.5)*printAs*0.7, my2+Math.sin(angle+2.5)*printAs*0.7);
+      c.lineTo(mx2+Math.cos(angle-2.5)*printAs*0.7, my2+Math.sin(angle-2.5)*printAs*0.7);
+      c.closePath(); c.fill();
+    });
+
+    c.restore();
+  }
+
+  // Obstacles
+  placed.forEach((p, idx) => {
+    const def = OBSTACLES.find(o => o.id === p.type);
+    const rot = (p.rotation||0)*Math.PI/180;
+    const cx2 = ox + (p.x + p.w/2)*s, cy2 = oy + (p.y + p.h/2)*s;
+    const pw = p.w*s, ph = p.h*s;
+
+    // Approach direction for badge placement
+    let approachAngle;
+    if (idx === 0) {
+      approachAngle = placed.length > 1
+        ? Math.atan2((oy+(placed[1].y+placed[1].h/2)*s)-cy2, (ox+(placed[1].x+placed[1].w/2)*s)-cx2) + Math.PI
+        : -Math.PI/2;
+    } else {
+      const prev = placed[idx-1];
+      const px2b = ox+(prev.x+prev.w/2)*s, py2b = oy+(prev.y+prev.h/2)*s;
+      approachAngle = Math.atan2(cy2-py2b, cx2-px2b) + Math.PI;
+    }
+    const nr = Math.max(9, Math.min(16, s*0.65));
+    const halfDiag = Math.sqrt(pw*pw + ph*ph) / 2;
+    const bx2 = cx2 + Math.cos(approachAngle)*(halfDiag + nr + 4);
+    const by2 = cy2 + Math.sin(approachAngle)*(halfDiag + nr + 4);
+
+    c.save();
+    c.translate(cx2, cy2); c.rotate(rot);
+    c.fillStyle = def.color+'44'; c.strokeStyle = def.color; c.lineWidth = 1.5;
+    c.fillRect(-pw/2,-ph/2,pw,ph); c.strokeRect(-pw/2,-ph/2,pw,ph);
+    c.font=`${Math.max(9,s*0.5)}px sans-serif`; c.fillStyle='rgba(0,0,0,0.5)'; c.textBaseline='top'; c.textAlign='center';
+    c.fillText(def.label, 0, ph/2+4);
+    c.textAlign='left'; c.textBaseline='alphabetic';
+    c.restore();
+
+    // Badge in screen space on approach side
+    c.fillStyle = '#BA7517'; c.beginPath(); c.arc(bx2, by2, nr, 0, Math.PI*2); c.fill();
+    c.fillStyle='#fff'; c.font=`bold ${Math.max(8,nr)}px monospace`;
+    c.textAlign='center'; c.textBaseline='middle';
+    c.fillText(p.num, bx2, by2);
+    c.textAlign='left'; c.textBaseline='alphabetic';
+  });
+
+  c.strokeStyle='#4a7044'; c.lineWidth=2; c.strokeRect(ox,oy,arenaW*s,arenaH*s);
+}
+
+function closePrint() {
+  document.getElementById('print-content').classList.remove('visible');
+}
+
+/* ─────────────────────────────────────────
+   OBSTACLE DRAG FROM SIDEBAR
+───────────────────────────────────────── */
+function hideHint() {
+  if (!hintVisible) return;
+  hintVisible = false;
+  const h = document.getElementById('hint');
+  h.style.opacity = '0';
+  setTimeout(() => h.style.display='none', 400);
+}
+
+function buildSidebar() {
+  const list = document.getElementById('obs-list');
+  OBSTACLES.forEach(o => {
+    const chip = document.createElement('div');
+    chip.className = 'obs-chip'; chip.draggable = true;
+    chip.innerHTML = `<div class="obs-dot" style="background:${o.color}"></div>${o.label}<span style="margin-left:auto;color:#ccc;font-size:9px">${o.w}×${o.h}m</span>`;
+    chip.addEventListener('dragstart', e => { dragFromSidebar=o.id; e.dataTransfer.effectAllowed='copy'; });
+    list.appendChild(chip);
+  });
+}
+
+area.addEventListener('dragover', e => { e.preventDefault(); e.dataTransfer.dropEffect='copy'; });
+area.addEventListener('drop', e => {
+  e.preventDefault();
+  if (!dragFromSidebar) return;
+  const def = OBSTACLES.find(o => o.id === dragFromSidebar);
+  const rect = area.getBoundingClientRect();
+  let [wx,wy] = screenToWorld(e.clientX-rect.left, e.clientY-rect.top);
+  wx -= def.w/2; wy -= def.h/2;
+  [wx,wy] = snapWorld(wx,wy);
+  wx = Math.max(0, Math.min(arenaW-def.w, wx));
+  wy = Math.max(0, Math.min(arenaH-def.h, wy));
+  const p = { id: Date.now()+'_'+Math.random(), type:def.id, x:wx, y:wy, w:def.w, h:def.h, num:nextNum++, rotation:0, badgeOffX:0, badgeOffY:-(def.h/2+1.5) };
+  placed.push(p); selectedId=p.id; dragFromSidebar=null;
+  hideHint(); render(); checkViolations(); updateSequence(); updateProps();
+});
+
+/* ─────────────────────────────────────────
+   MOUSE INTERACTION
+───────────────────────────────────────── */
+function getObstacleAt(sx, sy) {
+  const s = getBaseScale()*zoom;
+  // Check badges first (they float freely)
+  for (let i=placed.length-1;i>=0;i--) {
+    const p=placed[i];
+    const [scx,scy]=worldToScreen(p.x+p.w/2, p.y+p.h/2);
+    const bx=scx+(p.badgeOffX||0)*s, by=scy+(p.badgeOffY||0)*s;
+    const nr=Math.max(9,Math.min(14,s*0.6));
+    if (Math.sqrt((sx-bx)**2+(sy-by)**2)<nr+4) return { __badge:true, obstacle:p };
+  }
+  // Then check obstacle bodies + rotation handle
+  for (let i=placed.length-1;i>=0;i--) {
+    const p=placed[i];
+    let drawW, drawH;
+    if (viewMode==='side') { drawW=p.w*s; drawH=p.h*s; }
+    else { drawW=p.h*s; drawH=p.w*s; }
+    const [scx,scy]=worldToScreen(p.x+p.w/2, p.y+p.h/2);
+    const rot=(p.rotation||0)*Math.PI/180;
+    const dx=sx-scx, dy=sy-scy;
+    const lx=dx*Math.cos(-rot)-dy*Math.sin(-rot);
+    const ly=dx*Math.sin(-rot)+dy*Math.cos(-rot);
+    if (lx>=-drawW/2&&lx<=drawW/2&&ly>=-drawH/2&&ly<=drawH/2) return p;
+    if (p.id===selectedId) {
+      const nr2=Math.max(9,Math.min(14,s*0.6));
+      const drawH2=viewMode==='side'?p.h*s:p.w*s;
+      const badgeTop=-drawH2/2-nr2*2-3;
+      const hx=0, hy=badgeTop-18;
+      const hlx=dx*Math.cos(-rot)-dy*Math.sin(-rot)-hx;
+      const hly=dx*Math.sin(-rot)+dy*Math.cos(-rot)-hy;
+      if (Math.sqrt(hlx*hlx+hly*hly)<10) return { __rotHandle:true, obstacle:p };
+    }
+  }
+  return null;
+}
+
+let cpDragging = null; // { key, a, b } — the segment being dragged
+
+function getControlPointAt(sx, sy) {
+  if (!showPath || placed.length < 2) return null;
+  for (let i = 0; i < placed.length - 1; i++) {
+    const a = placed[i], b = placed[i+1];
+    const key = a.id + '_' + b.id;
+    const aPts = getConnectionPoints(a), bPts = getConnectionPoints(b);
+    const [ax2, ay2] = worldToScreen(aPts.exit.x,  aPts.exit.y);
+    const [bx2, by2] = worldToScreen(bPts.entry.x, bPts.entry.y);
+    let cpx, cpy;
+    if (pathControls[key]) {
+      [cpx, cpy] = worldToScreen(pathControls[key].wx, pathControls[key].wy);
+    } else {
+      cpx = (ax2+bx2)/2; cpy = (ay2+by2)/2;
+    }
+    if (Math.sqrt((sx-cpx)**2 + (sy-cpy)**2) < 9) return { key, i };
+  }
+  return null;
+}
+
+
+
+let rotDragging = null, rotStart = null;
+
+function resetBadge() {
+  const p=placed.find(x=>x.id===selectedId); if(!p) return;
+  p.badgeOffX=0; p.badgeOffY=-(p.h/2+1.5);
+  render();
+}
+
+let badgeDragging = null, badgeDragOffX = 0, badgeDragOffY = 0;
+
+canvas.addEventListener('mousedown', e => {
+  const r=canvas.getBoundingClientRect(), sx=e.clientX-r.left, sy=e.clientY-r.top;
+
+  // Control point drag takes priority
+  const cpHit = getControlPointAt(sx, sy);
+  if (cpHit) {
+    cpDragging = cpHit;
+    canvas.style.cursor = 'grabbing';
+    return;
+  }
+
+  const hit=getObstacleAt(sx,sy);
+  if (hit && hit.__badge) {
+    const p=hit.obstacle;
+    selectedId=p.id;
+    const s=getBaseScale()*zoom;
+    const [cx,cy]=worldToScreen(p.x+p.w/2, p.y+p.h/2);
+    // offset from badge centre in world units
+    badgeDragging=p;
+    badgeDragOffX=(sx-cx)/s-(p.badgeOffX||0);
+    badgeDragOffY=(sy-cy)/s-(p.badgeOffY||0);
+    canvas.style.cursor='grabbing';
+    render(); updateSequence(); updateProps();
+  } else if (hit && hit.__rotHandle) {
+    const p = hit.obstacle;
+    selectedId = p.id;
+    const [cx,cy]=worldToScreen(p.x+p.w/2, p.y+p.h/2);
+    rotDragging = { obstacle: p, cx, cy };
+    rotStart = Math.atan2(sy-cy, sx-cx);
+    rotStart -= (p.rotation||0)*Math.PI/180;
+    canvas.style.cursor='crosshair';
+    render(); updateProps();
+  } else if (hit) {
+    dragging=hit; selectedId=hit.id;
+    const [wx,wy]=screenToWorld(sx,sy); dragOffX=wx-hit.x; dragOffY=wy-hit.y;
+    canvas.style.cursor='grabbing'; render(); updateSequence(); updateProps();
+  } else {
+    selectedId=null; isPanning=true; panStart={x:e.clientX-panX, y:e.clientY-panY};
+    canvas.style.cursor='grab'; render(); updateSequence(); updateProps();
+  }
+});
+canvas.addEventListener('mousemove', e => {
+  const r=canvas.getBoundingClientRect(), sx=e.clientX-r.left, sy=e.clientY-r.top;
+  const [wx,wy]=screenToWorld(sx,sy);
+  document.getElementById('st-pos').textContent = (wx>=0&&wx<=arenaW&&wy>=0&&wy<=arenaH) ? `${wx.toFixed(1)} m, ${wy.toFixed(1)} m` : '—';
+  if (cpDragging) {
+    pathControls[cpDragging.key] = { wx, wy };
+    render();
+  } else if (badgeDragging) {
+    const s=getBaseScale()*zoom;
+    const [cx,cy]=worldToScreen(badgeDragging.x+badgeDragging.w/2, badgeDragging.y+badgeDragging.h/2);
+    badgeDragging.badgeOffX=(sx-cx)/s-badgeDragOffX;
+    badgeDragging.badgeOffY=(sy-cy)/s-badgeDragOffY;
+    render();
+  } else if (rotDragging) {
+    const angle = Math.atan2(sy-rotDragging.cy, sx-rotDragging.cx) - rotStart;
+    let deg = angle * 180 / Math.PI;
+    if (snapToGrid) deg = Math.round(deg/45)*45;
+    rotDragging.obstacle.rotation = ((deg%360)+360)%360;
+    render(); updateProps();
+  } else if (dragging) {
+    let nx=wx-dragOffX, ny=wy-dragOffY;
+    [nx,ny]=snapWorld(nx,ny);
+    nx=Math.max(0,Math.min(arenaW-dragging.w,nx));
+    ny=Math.max(0,Math.min(arenaH-dragging.h,ny));
+    dragging.x=nx; dragging.y=ny;
+    render(); checkViolations(); updateProps();
+  } else if (isPanning) {
+    panX=e.clientX-panStart.x; panY=e.clientY-panStart.y; render();
+  }
+});
+canvas.addEventListener('mouseup', () => { dragging=null; rotDragging=null; badgeDragging=null; cpDragging=null; isPanning=false; canvas.style.cursor='crosshair'; });
+canvas.addEventListener('mouseleave', () => { dragging=null; rotDragging=null; badgeDragging=null; cpDragging=null; isPanning=false; canvas.style.cursor='crosshair'; });
+canvas.addEventListener('wheel', e => {
+  e.preventDefault();
+  const r=canvas.getBoundingClientRect(), mx=e.clientX-r.left, my=e.clientY-r.top;
+  const oldZoom=zoom;
+  zoom=Math.max(0.2,Math.min(8,zoom*(e.deltaY<0?1.12:0.89)));
+  const ratio=(getBaseScale()*zoom)/(getBaseScale()*oldZoom);
+  panX=mx-(mx-panX)*ratio; panY=my-(my-panY)*ratio;
+  render(); updateZoomLabel();
+},{passive:false});
+
+function doZoom(f) {
+  const cx=canvas.width/2, cy=canvas.height/2, oldZoom=zoom;
+  zoom=Math.max(0.2,Math.min(8,zoom*f));
+  const ratio=(getBaseScale()*zoom)/(getBaseScale()*oldZoom);
+  panX=cx-(cx-panX)*ratio; panY=cy-(cy-panY)*ratio;
+  render(); updateZoomLabel();
+}
+function updateZoomLabel() { document.getElementById('zoom-val').textContent=Math.round(zoom*100)+'%'; }
+
+/* ─────────────────────────────────────────
+   CONTROLS
+───────────────────────────────────────── */
+function setView(mode) {
+  viewMode=mode;
+  document.getElementById('view-side').classList.toggle('active',mode==='side');
+  document.getElementById('view-end').classList.toggle('active',mode==='end');
+  document.getElementById('view-indicator-text').textContent = mode==='side'?'Viewing from sideline':'Viewing from endline';
+  fitArena();
+}
+document.getElementById('view-side').addEventListener('click',()=>setView('side'));
+document.getElementById('view-end').addEventListener('click',()=>setView('end'));
+document.getElementById('zoom-in').addEventListener('click',()=>doZoom(1.2));
+document.getElementById('zoom-out').addEventListener('click',()=>doZoom(0.83));
+document.getElementById('btn-reset-path').addEventListener('click', () => {
+  pathControls = {}; render();
+});
+document.getElementById('btn-fit').addEventListener('click',fitArena);
+document.getElementById('btn-classes').addEventListener('click',openModal);
+document.getElementById('btn-clear').addEventListener('click',()=>{
+  if(!placed.length)return;
+  if(confirm('Clear all obstacles?')) { placed=[]; nextNum=1; selectedId=null; violations.clear(); render(); checkViolations(); updateSequence(); updateProps(); }
+});
+
+function bindToggle(btnId, togId, getter, setter, extra) {
+  const btn=document.getElementById(btnId), tog=document.getElementById(togId);
+  const refresh=()=>{ btn.classList.toggle('active',getter()); tog.className='toggle-btn '+(getter()?'on':'off'); if(extra)extra(); };
+  btn.addEventListener('click',()=>{ setter(!getter()); refresh(); });
+  tog.addEventListener('click',()=>{ setter(!getter()); refresh(); });
+}
+bindToggle('btn-grid','tog-grid',()=>showGrid,v=>{showGrid=v;},render);
+bindToggle('btn-path','tog-path',()=>showPath,v=>{showPath=v;},render);
+document.getElementById('tog-snap').addEventListener('click',function(){ snapToGrid=!snapToGrid; this.className='toggle-btn '+(snapToGrid?'on':'off'); });
+
+// Path style controls
+document.getElementById('path-line-type').addEventListener('change', function() {
+  pathLineType = this.value; render();
+});
+document.getElementById('path-weight').addEventListener('input', function() {
+  pathLineWeight = parseFloat(this.value);
+  document.getElementById('path-weight-val').textContent = this.value;
+  render();
+});
+function setArrowSize(size, activeId) {
+  pathArrowSize = size;
+  ['arrow-sm','arrow-md','arrow-lg'].forEach(id => document.getElementById(id).classList.remove('active'));
+  document.getElementById(activeId).classList.add('active');
+  render();
+}
+document.getElementById('arrow-sm').addEventListener('click', () => setArrowSize(0.6, 'arrow-sm'));
+document.getElementById('arrow-md').addEventListener('click', () => setArrowSize(1,   'arrow-md'));
+document.getElementById('arrow-lg').addEventListener('click', () => setArrowSize(1.6, 'arrow-lg'));
+
+function updateArena() {
+  arenaW=Math.max(10,parseFloat(document.getElementById('inp-w').value)||60);
+  arenaH=Math.max(10,parseFloat(document.getElementById('inp-h').value)||40);
+  document.getElementById('arena-label').textContent=`${arenaW} × ${arenaH} m`;
+  placed=placed.filter(p=>p.x<arenaW&&p.y<arenaH);
+  renumber(); fitArena(); checkViolations(); updateSequence(); updateProps();
+}
+document.getElementById('inp-w').addEventListener('change',updateArena);
+document.getElementById('inp-h').addEventListener('change',updateArena);
+
+/* ─────────────────────────────────────────
+   ROTATION HELPERS
+───────────────────────────────────────── */
+function rotateSelected(deltaDeg) {
+  const p=placed.find(x=>x.id===selectedId); if(!p) return;
+  p.rotation=(((p.rotation||0)+deltaDeg)%360+360)%360;
+  render(); updateProps();
+}
+function rotateSelectedTo(deg) {
+  const p=placed.find(x=>x.id===selectedId); if(!p) return;
+  p.rotation=((deg%360)+360)%360;
+  render(); updateProps();
+}
+
+/* ─────────────────────────────────────────
+   INIT
+───────────────────────────────────────── */
+function resize() { canvas.width=area.clientWidth; canvas.height=area.clientHeight; fitArena(); }
+buildSidebar();
+new ResizeObserver(resize).observe(area);
+window.addEventListener('load',()=>{ resize(); updateSequence(); updateCompliance(); updateProps(); });
+</script>
+</body>
+</html>
