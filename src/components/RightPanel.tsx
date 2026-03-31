@@ -1,8 +1,14 @@
+import type { ReactNode } from 'react';
 import PropertiesPanel from './PropertiesPanel';
 import SequenceList from './SequenceList';
 import CompliancePanel from './CompliancePanel';
 
-function Section({ label, children }) {
+interface SectionProps {
+  label: string;
+  children: ReactNode;
+}
+
+function Section({ label, children }: SectionProps) {
   return (
     <div className="p-2.5 border-b border-gray-100 last:border-b-0">
       <div className="text-[9px] tracking-widest uppercase text-gray-300 font-mono mb-2">

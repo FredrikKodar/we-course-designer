@@ -7,17 +7,17 @@ export default function SequenceList() {
   const selectedId = useStore((s) => s.selectedId);
   const selectObstacle = useStore((s) => s.selectObstacle);
   const deleteObstacle = useStore((s) => s.deleteObstacle);
-  const dragIdx = useRef(null);
+  const dragIdx = useRef<number | null>(null);
 
   if (!placed.length) {
     return <div className="text-gray-300 text-[11px]">No obstacles placed</div>;
   }
 
-  const handleDragStart = (idx) => {
+  const handleDragStart = (idx: number) => {
     dragIdx.current = idx;
   };
 
-  const handleDrop = (targetIdx) => {
+  const handleDrop = (targetIdx: number) => {
     if (dragIdx.current === null || dragIdx.current === targetIdx) return;
     const newPlaced = [...placed];
     const [moved] = newPlaced.splice(dragIdx.current, 1);

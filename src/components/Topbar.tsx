@@ -11,14 +11,14 @@ export default function Topbar() {
   const setShowPath = useStore((s) => s.setShowPath);
   const clearAll = useStore((s) => s.clearAll);
 
-  const btnClass = (active) =>
+  const btnClass = (active: boolean) =>
     `text-xs px-3 py-1.5 border rounded-md cursor-pointer transition-all whitespace-nowrap ${
       active
         ? 'bg-[#f5f5f0] border-[#BA7517] text-[#BA7517] font-medium'
         : 'bg-white border-gray-200 text-gray-500 hover:bg-[#f5f5f0] hover:border-gray-400 hover:text-gray-800'
     }`;
 
-  const viewBtnClass = (active) =>
+  const viewBtnClass = (active: boolean) =>
     `text-[11px] px-2.5 py-1.5 border-r border-gray-200 last:border-r-0 cursor-pointer ${
       active ? 'bg-[#f0f8e8] text-[#3B6D11] font-medium' : 'bg-white text-gray-500 hover:text-gray-800'
     }`;

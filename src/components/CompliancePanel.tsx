@@ -29,7 +29,12 @@ export default function CompliancePanel() {
   );
 }
 
-function ComplianceItem({ ok, text }) {
+interface ComplianceItemProps {
+  ok: boolean;
+  text: string;
+}
+
+function ComplianceItem({ ok, text }: ComplianceItemProps) {
   return (
     <div
       className={`flex items-center gap-1.5 px-1.5 py-1 rounded border text-[10px] ${

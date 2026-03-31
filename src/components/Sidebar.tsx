@@ -1,5 +1,7 @@
+import React from 'react';
 import useStore from '../store/useStore';
 import { OBSTACLES } from '../data/obstacles';
+import type { ObstacleDef } from '../types';
 
 const CATEGORIES = [
   { label: 'Tunnor', ids: ['tunna', 'tva-tunnor', 'tre-tunnor', 'lans-tunna'] },
@@ -9,7 +11,17 @@ const CATEGORIES = [
   { label: 'Lans & ring', ids: ['ring'] },
 ];
 
-function Toggle({ label, value, onChange }) {
+interface ToggleProps {
+  label: string;
+  value: boolean;
+  onChange: (v: boolean) => void;
+}
+
+interface ObstacleChipProps {
+  def: ObstacleDef;
+}
+
+function Toggle({ label, value, onChange }: ToggleProps) {
   return (
     <div className="flex items-center justify-between mb-1.5">
       <span className="text-[11px] text-gray-500">{label}</span>
@@ -29,8 +41,8 @@ function Toggle({ label, value, onChange }) {
   );
 }
 
-function ObstacleChip({ def }) {
-  const handleDragStart = (e) => {
+function ObstacleChip({ def }: ObstacleChipProps) {
+  const handleDragStart = (e: React.DragEvent<HTMLDivElement>) => {
     e.dataTransfer.setData('obstacleType', def.id);
     e.dataTransfer.effectAllowed = 'copy';
   };
@@ -120,7 +132,7 @@ export default function Sidebar() {
           <span className="text-[11px] text-gray-500">Line</span>
           <select
             value={pathLineType}
-            onChange={(e) => setPathStyle(e.target.value, pathLineWeight, pathArrowSize)}
+            onChange={(e) => setPathStyle(e.target.value as any, pathLineWeight, pathArrowSize)}
             className="text-[11px] border border-gray-200 rounded px-1 py-0.5 bg-[#f9f9f7] text-[#1a1a18]"
           >
             <option value="dashed">Dashed</option>

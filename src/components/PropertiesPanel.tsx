@@ -1,3 +1,5 @@
+import React from 'react';
+import type { ReactNode } from 'react';
 import useStore from '../store/useStore';
 import { OBSTACLES } from '../data/obstacles';
 
@@ -15,12 +17,12 @@ export default function PropertiesPanel() {
   const def = OBSTACLES.find((o) => o.id === obstacle.type);
   const rotation = Math.round(obstacle.rotation || 0);
 
-  const handleRotationInput = (e) => {
+  const handleRotationInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const deg = parseFloat(e.target.value) || 0;
     rotateObstacle(obstacle.id, deg);
   };
 
-  const rotate = (delta) => rotateObstacle(obstacle.id, rotation + delta);
+  const rotate = (delta: number) => rotateObstacle(obstacle.id, rotation + delta);
   const resetRotation = () => rotateObstacle(obstacle.id, 0);
 
   return (
@@ -57,7 +59,12 @@ export default function PropertiesPanel() {
   );
 }
 
-function PropRow({ label, value }) {
+interface PropRowProps {
+  label: string;
+  value: ReactNode;
+}
+
+function PropRow({ label, value }: PropRowProps) {
   return (
     <div className="flex items-center justify-between mb-1">
       <span className="text-[10px] text-gray-400">{label}</span>
@@ -68,7 +75,12 @@ function PropRow({ label, value }) {
   );
 }
 
-function RotBtn({ label, onClick }) {
+interface RotBtnProps {
+  label: string;
+  onClick: () => void;
+}
+
+function RotBtn({ label, onClick }: RotBtnProps) {
   return (
     <button
       onClick={onClick}
