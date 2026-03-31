@@ -1,12 +1,18 @@
+import type { PlacedObstacle } from '../types';
 import { MIN_OBSTACLE_SPACING, GROUP_RULES } from '../data/obstacles';
 
-function spacingRule(placed, arenaW, arenaH) {
-  const violations = new Map();
+type ComplianceRule = (
+  placed: PlacedObstacle[],
+  arenaW: number,
+  arenaH: number,
+) => Map<string, string>;
+
+const spacingRule: ComplianceRule = (placed, _arenaW, _arenaH) => {
+  const violations = new Map<string, string>();
   for (let i = 0; i < placed.length; i++) {
     for (let j = i + 1; j < placed.length; j++) {
       const a = placed[i];
       const b = placed[j];
-      // Skip obstacles in the same group
       if (a.groupId && a.groupId === b.groupId) continue;
       const acx = a.x + a.w / 2;
       const acy = a.y + a.h / 2;
@@ -21,28 +27,27 @@ function spacingRule(placed, arenaW, arenaH) {
     }
   }
   return violations;
-}
+};
 
-function boundsRule(placed, arenaW, arenaH) {
-  const violations = new Map();
+const boundsRule: ComplianceRule = (placed, arenaW, arenaH) => {
+  const violations = new Map<string, string>();
   for (const p of placed) {
     if (p.x < 0 || p.y < 0 || p.x + p.w > arenaW || p.y + p.h > arenaH) {
       violations.set(p.id, '⚠ utanför banan');
     }
   }
   return violations;
-}
+};
 
-function groupRule(placed) {
-  const violations = new Map();
-  const groups = new Map();
+const groupRule: ComplianceRule = (placed, _arenaW, _arenaH) => {
+  const violations = new Map<string, string>();
+  const groups = new Map<string, PlacedObstacle[]>();
   for (const p of placed) {
     if (!p.groupId) continue;
     if (!groups.has(p.groupId)) groups.set(p.groupId, []);
-    groups.get(p.groupId).push(p);
+    groups.get(p.groupId)!.push(p);
   }
   for (const [groupId, members] of groups) {
-    // Extract preset type: groupId format is "{presetType}_{timestamp}"
     const lastUnderscore = groupId.lastIndexOf('_');
     if (lastUnderscore === -1) continue;
     const presetType = groupId.substring(0, lastUnderscore);
@@ -66,19 +71,16 @@ function groupRule(placed) {
     }
   }
   return violations;
-}
+};
 
-const rules = [spacingRule, boundsRule, groupRule];
+const rules: ComplianceRule[] = [spacingRule, boundsRule, groupRule];
 
-/**
- * Run all compliance rules against the placed obstacles.
- * @param {Array} placed - PlacedObstacle[]
- * @param {number} arenaW
- * @param {number} arenaH
- * @returns {Map<string, string>} id → violation message
- */
-export function runRules(placed, arenaW, arenaH) {
-  const violations = new Map();
+export function runRules(
+  placed: PlacedObstacle[],
+  arenaW: number,
+  arenaH: number,
+): Map<string, string> {
+  const violations = new Map<string, string>();
   for (const rule of rules) {
     for (const [id, msg] of rule(placed, arenaW, arenaH)) {
       violations.set(id, msg);

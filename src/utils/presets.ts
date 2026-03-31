@@ -1,15 +1,12 @@
+import type { PlacedObstacle } from '../types';
 import { OBSTACLES, expandPreset } from '../data/obstacles';
 
 /**
  * Build PlacedObstacle(s) for a given type at (cx, cy) world centre.
  * For presets, returns N individual pieces with shared groupId.
- * For single obstacles, returns an array of one.
- * @param {string} type - OBSTACLES[].id
- * @param {number} cx - world centre x
- * @param {number} cy - world centre y
- * @returns {Array} PlacedObstacle[] ready to append to store
+ * For singles, returns an array of one.
  */
-export function buildPresetPieces(type, cx, cy) {
+export function buildPresetPieces(type: string, cx: number, cy: number): PlacedObstacle[] {
   const pieces = expandPreset(type, cx, cy);
   const timestamp = Date.now();
 
@@ -22,7 +19,6 @@ export function buildPresetPieces(type, cx, cy) {
     }));
   }
 
-  // Single obstacle
   const def = OBSTACLES.find((o) => o.id === type);
   if (!def) return [];
   return [

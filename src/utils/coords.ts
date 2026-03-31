@@ -1,11 +1,9 @@
+import type { CoordCtx, PlacedObstacle, ObstacleDef, ConnectionPoint } from '../types';
+
 /**
  * Convert world coordinates (meters) to screen coordinates (pixels).
- * @param {number} wx - world x (meters from arena left)
- * @param {number} wy - world y (meters from arena top)
- * @param {object} ctx - { panX, panY, scale, viewMode, arenaH }
- * @returns {[number, number]} [sx, sy] screen pixels
  */
-export function worldToScreen(wx, wy, ctx) {
+export function worldToScreen(wx: number, wy: number, ctx: CoordCtx): [number, number] {
   const { panX, panY, scale, viewMode, arenaH } = ctx;
   if (viewMode === 'end') {
     return [panX + (arenaH - wy) * scale, panY + wx * scale];
@@ -15,12 +13,8 @@ export function worldToScreen(wx, wy, ctx) {
 
 /**
  * Convert screen coordinates (pixels) to world coordinates (meters).
- * @param {number} sx - screen x
- * @param {number} sy - screen y
- * @param {object} ctx - { panX, panY, scale, viewMode, arenaH }
- * @returns {[number, number]} [wx, wy] world meters
  */
-export function screenToWorld(sx, sy, ctx) {
+export function screenToWorld(sx: number, sy: number, ctx: CoordCtx): [number, number] {
   const { panX, panY, scale, viewMode, arenaH } = ctx;
   if (viewMode === 'end') {
     const ru = (sx - panX) / scale;
@@ -32,18 +26,18 @@ export function screenToWorld(sx, sy, ctx) {
 
 /**
  * Get rotation-aware connection points in world coordinates.
- * @param {object} placed - PlacedObstacle { x, y, w, h, rotation }
- * @param {object} def - OBSTACLES entry { entry, exit }
- * @returns {{ entry: {x,y}, exit: {x,y} }}
  */
-export function getConnectionPoints(placed, def) {
+export function getConnectionPoints(
+  placed: Pick<PlacedObstacle, 'x' | 'y' | 'w' | 'h' | 'rotation'>,
+  def: Pick<ObstacleDef, 'entry' | 'exit'>,
+): { entry: ConnectionPoint; exit: ConnectionPoint } {
   const cx = placed.x + placed.w / 2;
   const cy = placed.y + placed.h / 2;
-  const rot = ((placed.rotation || 0) * Math.PI) / 180;
+  const rot = ((placed.rotation ?? 0) * Math.PI) / 180;
   const cosR = Math.cos(rot);
   const sinR = Math.sin(rot);
 
-  function rotate(lx, ly) {
+  function rotate(lx: number, ly: number): ConnectionPoint {
     return {
       x: cx + lx * cosR - ly * sinR,
       y: cy + lx * sinR + ly * cosR,
