@@ -1,9 +1,70 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import type { PlacedObstacle, Visit, RouteSegment, WEClass, ViewMode, PathLineType } from '../types';
 import { runRules } from '../utils/compliance';
 import { buildPresetPieces } from '../utils/presets';
 
-const useStore = create(
+// Subset of state stored in localStorage (must be JSON-serialisable)
+type PersistedState = Pick<
+  StoreState,
+  'placed' | 'arenaW' | 'arenaH' | 'pathLineType' | 'pathLineWeight' | 'pathArrowSize'
+>;
+
+export interface StoreState {
+  // Arena
+  arenaW: number;
+  arenaH: number;
+
+  // Obstacles
+  placed: PlacedObstacle[];
+  selectedId: string | null;
+  violations: Map<string, string>;
+
+  // Display
+  showGrid: boolean;
+  snapToGrid: boolean;
+  showPath: boolean;
+  viewMode: ViewMode;
+
+  // Canvas transform
+  zoom: number;
+  panX: number;
+  panY: number;
+
+  // Path style (stored now, used in Phase 2)
+  pathLineType: PathLineType;
+  pathLineWeight: number;
+  pathArrowSize: number;
+
+  // Routing (stubbed for Phase 2)
+  visits: Visit[];
+  segments: RouteSegment[];
+  classes: WEClass[];
+  activeClassIdx: number;
+  selectedVisitId: string | null;
+
+  // fitArena is set by Canvas after mount so Topbar can call it
+  fitArena?: () => void;
+
+  // Actions
+  setArena: (w: number, h: number) => void;
+  placeObstacle: (type: string, wx: number, wy: number) => void;
+  moveObstacle: (id: string, wx: number, wy: number) => void;
+  rotateObstacle: (id: string, degrees: number) => void;
+  deleteObstacle: (id: string) => void;
+  selectObstacle: (id: string | null) => void;
+  setShowGrid: (v: boolean) => void;
+  setSnapToGrid: (v: boolean) => void;
+  setShowPath: (v: boolean) => void;
+  setViewMode: (v: ViewMode) => void;
+  setZoom: (z: number) => void;
+  setPan: (x: number, y: number) => void;
+  setPathStyle: (lineType: PathLineType, weight: number, arrowSize: number) => void;
+  clearAll: () => void;
+  runCompliance: () => void;
+}
+
+const useStore = create<StoreState>()(
   persist(
     (set, get) => ({
       // Arena
@@ -26,7 +87,7 @@ const useStore = create(
       panX: 0,
       panY: 0,
 
-      // Path style (stored now, used in Phase 2)
+      // Path style
       pathLineType: 'dashed',
       pathLineWeight: 1.8,
       pathArrowSize: 1,
@@ -38,8 +99,7 @@ const useStore = create(
       activeClassIdx: 0,
       selectedVisitId: null,
 
-      // ── Actions ──
-
+      // Actions
       setArena: (w, h) => {
         set({ arenaW: w, arenaH: h });
         get().runCompliance();
@@ -58,7 +118,6 @@ const useStore = create(
         const { snapToGrid: snap, placed } = get();
         const ob = placed.find((p) => p.id === id);
         if (!ob) return;
-        // Snap the centre, then store top-left
         const cx = wx + ob.w / 2;
         const cy = wy + ob.h / 2;
         const snappedCx = snap ? Math.round(cx) : cx;
@@ -66,9 +125,7 @@ const useStore = create(
         const nx = snappedCx - ob.w / 2;
         const ny = snappedCy - ob.h / 2;
         set((s) => ({
-          placed: s.placed.map((p) =>
-            p.id === id ? { ...p, x: nx, y: ny } : p,
-          ),
+          placed: s.placed.map((p) => (p.id === id ? { ...p, x: nx, y: ny } : p)),
         }));
         get().runCompliance();
       },
@@ -76,9 +133,7 @@ const useStore = create(
       rotateObstacle: (id, degrees) => {
         set((s) => ({
           placed: s.placed.map((p) =>
-            p.id === id
-              ? { ...p, rotation: ((degrees % 360) + 360) % 360 }
-              : p,
+            p.id === id ? { ...p, rotation: ((degrees % 360) + 360) % 360 } : p,
           ),
         }));
         get().runCompliance();
@@ -93,7 +148,6 @@ const useStore = create(
       },
 
       selectObstacle: (id) => set({ selectedId: id }),
-
       setShowGrid: (v) => set({ showGrid: v }),
       setSnapToGrid: (v) => set({ snapToGrid: v }),
       setShowPath: (v) => set({ showPath: v }),
@@ -102,18 +156,16 @@ const useStore = create(
       setPan: (x, y) => set({ panX: x, panY: y }),
       setPathStyle: (lineType, weight, arrowSize) =>
         set({ pathLineType: lineType, pathLineWeight: weight, pathArrowSize: arrowSize }),
-
       clearAll: () => set({ placed: [], selectedId: null, violations: new Map() }),
 
       runCompliance: () => {
         const { placed, arenaW, arenaH } = get();
-        const violations = runRules(placed, arenaW, arenaH);
-        set({ violations });
+        set({ violations: runRules(placed, arenaW, arenaH) });
       },
     }),
     {
       name: 'we-course-designer',
-      partialize: (state) => ({
+      partialize: (state): PersistedState => ({
         placed: state.placed,
         arenaW: state.arenaW,
         arenaH: state.arenaH,
