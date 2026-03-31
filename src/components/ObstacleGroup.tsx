@@ -1,13 +1,15 @@
-import { useRef, useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Group, Image as KonvaImage, Rect, Circle, Line, Text } from 'react-konva';
+import Konva from 'konva';
+import type { PlacedObstacle, ObstacleDef, CoordCtx } from '../types';
 import { SCALE } from '../data/obstacles';
 import { worldToScreen, screenToWorld } from '../utils/coords';
 
 // Module-level cache: key → HTMLImageElement
 const imageCache = new Map();
 
-function useSvgImage(obstacleType, svg, viewBox, pixelW, pixelH) {
-  const [image, setImage] = useState(null);
+function useSvgImage(obstacleType: string, svg: string, viewBox: string, pixelW: number, pixelH: number) {
+  const [image, setImage] = useState<HTMLImageElement | null>(null);
   const key = `${obstacleType}|${pixelW}|${pixelH}`;
 
   useEffect(() => {
@@ -41,6 +43,20 @@ function useSvgImage(obstacleType, svg, viewBox, pixelW, pixelH) {
   return image;
 }
 
+interface ObstacleGroupProps {
+  placed: PlacedObstacle;
+  def: ObstacleDef;
+  index: number;
+  scale: number;
+  coordCtx: CoordCtx;
+  isSelected: boolean;
+  snapToGrid: boolean;
+  violation: string | null;
+  onSelect: () => void;
+  onMove: (wx: number, wy: number) => void;
+  onRotate: (degrees: number) => void;
+}
+
 export default function ObstacleGroup({
   placed,
   def,
@@ -53,7 +69,7 @@ export default function ObstacleGroup({
   onSelect,
   onMove,
   onRotate,
-}) {
+}: ObstacleGroupProps) {
   const HANDLE_RADIUS = 7;
 
   // SVG image
@@ -80,7 +96,7 @@ export default function ObstacleGroup({
   const strokeColor = violation ? '#E24B4A' : isSelected ? '#BA7517' : 'rgba(0,0,0,0.3)';
 
   // Handle drag end — convert screen position back to world top-left
-  const handleDragEnd = (e) => {
+  const handleDragEnd = (e: Konva.KonvaEventObject<MouseEvent>) => {
     const node = e.target;
     const newSx = node.x();
     const newSy = node.y();
@@ -92,7 +108,7 @@ export default function ObstacleGroup({
   };
 
   // Rotation handle drag
-  const handleRotateDrag = (e) => {
+  const handleRotateDrag = (e: Konva.KonvaEventObject<MouseEvent>) => {
     const node = e.target;
     const dx = node.x() - sx;
     const dy = node.y() - sy;

@@ -1,22 +1,31 @@
-import { useRef, useState, useEffect, useCallback } from 'react';
+import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { Stage, Layer, Rect, Line, Text } from 'react-konva';
+import Konva from 'konva';
+import type { ViewMode } from '../types';
 import useStore from '../store/useStore';
 import { OBSTACLES } from '../data/obstacles';
-import { worldToScreen, screenToWorld } from '../utils/coords';
+import { screenToWorld } from '../utils/coords';
 import ObstacleGroup from './ObstacleGroup';
 
 const MARGIN = 60;
 
-function getEffectiveArena(arenaW, arenaH, viewMode) {
+function getEffectiveArena(arenaW: number, arenaH: number, viewMode: ViewMode) {
   return viewMode === 'side' ? { w: arenaW, h: arenaH } : { w: arenaH, h: arenaW };
 }
 
-function getBaseScale(stageW, stageH, arenaW, arenaH, viewMode) {
+function getBaseScale(stageW: number, stageH: number, arenaW: number, arenaH: number, viewMode: ViewMode) {
   const ea = getEffectiveArena(arenaW, arenaH, viewMode);
   return Math.min((stageW - MARGIN) / ea.w, (stageH - MARGIN) / ea.h);
 }
 
-function GridLines({ ea, scale, panX, panY }) {
+interface GridProps {
+  ea: { w: number; h: number };
+  scale: number;
+  panX: number;
+  panY: number;
+}
+
+function GridLines({ ea, scale, panX, panY }: GridProps) {
   const lines = [];
 
   // Minor grid (1m)
@@ -49,7 +58,7 @@ function GridLines({ ea, scale, panX, panY }) {
   return <>{lines}</>;
 }
 
-function GridLabels({ ea, scale, panX, panY }) {
+function GridLabels({ ea, scale, panX, panY }: GridProps) {
   const labels = [];
   const fs = Math.max(9, Math.min(11, scale * 0.7));
 
@@ -84,8 +93,11 @@ function GridLabels({ ea, scale, panX, panY }) {
 }
 
 export default function Canvas() {
-  const containerRef = useRef(null);
-  const [stageSize, setStageSize] = useState({ width: 800, height: 600 });
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [stageSize, setStageSize] = useState<{ width: number; height: number }>({
+    width: 800,
+    height: 600,
+  });
 
   const arenaW = useStore((s) => s.arenaW);
   const arenaH = useStore((s) => s.arenaH);
@@ -148,16 +160,22 @@ export default function Canvas() {
   const coordCtx = { panX, panY, scale, viewMode, arenaH };
 
   // Wheel zoom
-  const handleWheel = (e) => {
+  const handleWheel = (e: Konva.KonvaEventObject<WheelEvent>) => {
     e.evt.preventDefault();
     const delta = e.evt.deltaY > 0 ? 0.9 : 1.1;
     setZoom(zoom * delta);
   };
 
   // Pan state
-  const panRef = useRef({ isPanning: false, startX: 0, startY: 0, startPanX: 0, startPanY: 0 });
+  const panRef = useRef<{
+    isPanning: boolean;
+    startX: number;
+    startY: number;
+    startPanX: number;
+    startPanY: number;
+  }>({ isPanning: false, startX: 0, startY: 0, startPanX: 0, startPanY: 0 });
 
-  const handleMouseDown = (e) => {
+  const handleMouseDown = (e: Konva.KonvaEventObject<MouseEvent>) => {
     // Middle mouse or shift+click
     if (e.evt.button === 1 || (e.evt.button === 0 && e.evt.shiftKey)) {
       panRef.current = {
@@ -171,7 +189,7 @@ export default function Canvas() {
     }
   };
 
-  const handleMouseMove = (e) => {
+  const handleMouseMove = (e: Konva.KonvaEventObject<MouseEvent>) => {
     if (!panRef.current.isPanning) return;
     const dx = e.evt.clientX - panRef.current.startX;
     const dy = e.evt.clientY - panRef.current.startY;
@@ -183,22 +201,23 @@ export default function Canvas() {
   };
 
   // Click on empty canvas → deselect
-  const handleStageClick = (e) => {
+  const handleStageClick = (e: Konva.KonvaEventObject<MouseEvent>) => {
     if (e.target === e.target.getStage()) {
       selectObstacle(null);
     }
   };
 
   // Drop from sidebar
-  const handleDragOver = (e) => {
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = 'copy';
   };
 
-  const handleDrop = (e) => {
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     const type = e.dataTransfer.getData('obstacleType');
     if (!type) return;
+    if (!containerRef.current) return;
     const rect = containerRef.current.getBoundingClientRect();
     const sx = e.clientX - rect.left;
     const sy = e.clientY - rect.top;
