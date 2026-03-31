@@ -1,7 +1,7 @@
 import React from 'react';
 import useStore from '../store/useStore';
 import { OBSTACLES } from '../data/obstacles';
-import type { ObstacleDef } from '../types';
+import type { ObstacleDef, PathLineType } from '../types';
 
 const CATEGORIES = [
   { label: 'Tunnor', ids: ['tunna', 'tva-tunnor', 'tre-tunnor', 'lans-tunna'] },
@@ -132,7 +132,7 @@ export default function Sidebar() {
           <span className="text-[11px] text-gray-500">Line</span>
           <select
             value={pathLineType}
-            onChange={(e) => setPathStyle(e.target.value as any, pathLineWeight, pathArrowSize)}
+            onChange={(e) => setPathStyle(e.target.value as PathLineType, pathLineWeight, pathArrowSize)}
             className="text-[11px] border border-gray-200 rounded px-1 py-0.5 bg-[#f9f9f7] text-[#1a1a18]"
           >
             <option value="dashed">Dashed</option>
