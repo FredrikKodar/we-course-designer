@@ -1,3 +1,5 @@
+import type { ObstacleDef, GroupRule, PlacedObstacle } from '../types';
+
 // Ecuestre — Obstacle definitions
 // Each obstacle has:
 //   id, label (Swedish), w, h (meters), entry, exit (local offsets from centre, meters)
@@ -7,7 +9,7 @@
 
 export const SCALE = 20; // px per meter for SVG symbols
 
-export const OBSTACLES = [
+export const OBSTACLES: ObstacleDef[] = [
 
   // ─── TUNNOR ──────────────────────────────────────────────────────────────
 
@@ -308,7 +310,7 @@ export const OBSTACLES = [
 
 // ─── COMPLIANCE RULES ────────────────────────────────────────────────────────
 // Intra-group spacing rules keyed by groupId prefix (preset type)
-export const GROUP_RULES = {
+export const GROUP_RULES: Record<string, GroupRule> = {
   'tva-tunnor': {
     minDist: 3,
     maxDist: 4,
@@ -331,11 +333,15 @@ export const MIN_OBSTACLE_SPACING = 6; // metres, centre-to-centre between diffe
 // ─── PRESETS ─────────────────────────────────────────────────────────────────
 // Drop logic for multi-piece presets.
 // Returns an array of PlacedObstacle fragments (without id/groupId — caller adds those).
-export function expandPreset(type, cx, cy) {
-  const def = OBSTACLES.find(o => o.id === type);
+export function expandPreset(
+  type: string,
+  cx: number,
+  cy: number,
+): Array<Omit<PlacedObstacle, 'id' | 'groupId'>> | null {
+  const def = OBSTACLES.find((o) => o.id === type);
   if (!def?.presetPieces) return null;
-  return def.presetPieces.map(piece => {
-    const pieceDef = OBSTACLES.find(o => o.id === piece.type);
+  return def.presetPieces.map((piece) => {
+    const pieceDef = OBSTACLES.find((o) => o.id === piece.type);
     return {
       type: piece.type,
       x: cx + piece.dx - (pieceDef?.w ?? 0) / 2,
@@ -344,7 +350,7 @@ export function expandPreset(type, cx, cy) {
       h: pieceDef?.h ?? 1,
       rotation: 0,
       badgeOffX: 0,
-      badgeOffY: -(pieceDef?.h / 2 + 1.5),
+      badgeOffY: -((pieceDef?.h ?? 0) / 2 + 1.5),
     };
   });
 }
