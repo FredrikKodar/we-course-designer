@@ -6,7 +6,7 @@ import { SCALE } from '../data/obstacles';
 import { worldToScreen, screenToWorld } from '../utils/coords';
 
 // Module-level cache: key → HTMLImageElement
-const imageCache = new Map();
+const imageCache = new Map<string, HTMLImageElement>();
 
 function useSvgImage(obstacleType: string, svg: string, viewBox: string, pixelW: number, pixelH: number) {
   const [image, setImage] = useState<HTMLImageElement | null>(null);
