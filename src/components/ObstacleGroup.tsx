@@ -14,7 +14,7 @@ function useSvgImage(obstacleType: string, svg: string, viewBox: string, pixelW:
 
   useEffect(() => {
     if (imageCache.has(key)) {
-      setImage(imageCache.get(key));
+      setImage(imageCache.get(key) ?? null);
       return;
     }
 
