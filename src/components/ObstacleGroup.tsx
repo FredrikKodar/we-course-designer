@@ -96,6 +96,7 @@ export default function ObstacleGroup({
 
   // Handle drag end — convert screen position back to world top-left
   const handleDragEnd = (e: Konva.KonvaEventObject<MouseEvent>) => {
+    onHoverChange(false);
     const node = e.target;
     const newSx = node.x();
     const newSy = node.y();
@@ -197,6 +198,7 @@ export default function ObstacleGroup({
             fill="#333"
             stroke="white"
             strokeWidth={1.5}
+            cursor="crosshair"
             onMouseDown={(e) => { e.cancelBubble = true; onDotMouseDown('entry', entryDotX, entryDotY); }}
           />
           {!sameDot && (
@@ -207,6 +209,7 @@ export default function ObstacleGroup({
               fill="#333"
               stroke="white"
               strokeWidth={1.5}
+              cursor="crosshair"
               onMouseDown={(e) => { e.cancelBubble = true; onDotMouseDown('exit', exitDotX, exitDotY); }}
             />
           )}
