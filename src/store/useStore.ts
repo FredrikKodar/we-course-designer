@@ -44,14 +44,12 @@ export interface StoreState {
   activeClassIdx: number;
   selectedVisitId: string | null;
 
-  // fitArena is set by Canvas after mount so Topbar can call it
+  // fitArena and stageRef are set by Canvas after mount via useStore.setState()
   fitArena?: () => void;
-
   stageRef?: Konva.Stage;
 
-  updateObstacleMeta: (id: string, sequenceNum: string, note: string) => void;
-
   // Actions
+  updateObstacleMeta: (id: string, sequenceNum: string, note: string) => void;
   setArena: (w: number, h: number) => void;
   placeObstacle: (type: string, wx: number, wy: number) => void;
   moveObstacle: (id: string, wx: number, wy: number) => void;
