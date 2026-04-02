@@ -119,6 +119,7 @@ export default function Canvas() {
   const placeObstacle = useStore((s) => s.placeObstacle);
   const moveObstacle = useStore((s) => s.moveObstacle);
   const rotateObstacle = useStore((s) => s.rotateObstacle);
+  const addVisit = useStore((s) => s.addVisit);
 
   // ResizeObserver
   useEffect(() => {
@@ -196,6 +197,14 @@ export default function Canvas() {
     startPanY: number;
   }>({ isPanning: false, startX: 0, startY: 0, startPanX: 0, startPanY: 0 });
 
+  const visitDragRef = useRef<{
+    obstacleId: string;
+    entryPoint: 'entry' | 'exit';
+    dotX: number;
+    dotY: number;
+  } | null>(null);
+  const [visitDragTip, setVisitDragTip] = useState<{ x: number; y: number } | null>(null);
+
   const handleMouseDown = (e: Konva.KonvaEventObject<MouseEvent>) => {
     // Middle mouse or shift+click
     if (e.evt.button === 1 || (e.evt.button === 0 && e.evt.shiftKey)) {
@@ -211,14 +220,35 @@ export default function Canvas() {
   };
 
   const handleMouseMove = (e: Konva.KonvaEventObject<MouseEvent>) => {
-    if (!panRef.current.isPanning) return;
-    const dx = e.evt.clientX - panRef.current.startX;
-    const dy = e.evt.clientY - panRef.current.startY;
-    setPan(panRef.current.startPanX + dx, panRef.current.startPanY + dy);
+    if (panRef.current.isPanning) {
+      const dx = e.evt.clientX - panRef.current.startX;
+      const dy = e.evt.clientY - panRef.current.startY;
+      setPan(panRef.current.startPanX + dx, panRef.current.startPanY + dy);
+    }
+    if (visitDragRef.current) {
+      const pos = e.target.getStage()?.getPointerPosition();
+      if (pos) setVisitDragTip({ x: pos.x, y: pos.y });
+    }
   };
 
-  const handleMouseUp = () => {
+  const handleMouseUp = (e: Konva.KonvaEventObject<MouseEvent>) => {
     panRef.current.isPanning = false;
+    const drag = visitDragRef.current;
+    if (drag) {
+      const pos = e.target.getStage()?.getPointerPosition();
+      if (pos) {
+        const dx = pos.x - drag.dotX;
+        const dy = pos.y - drag.dotY;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist > 5) {
+          const approachLength = Math.min(dist / scale, 5);
+          const approachAngle = ((Math.atan2(dx, -dy) * 180) / Math.PI + 360) % 360;
+          addVisit(drag.obstacleId, drag.entryPoint, approachAngle, approachLength);
+        }
+      }
+      visitDragRef.current = null;
+      setVisitDragTip(null);
+    }
   };
 
   // Click on empty canvas → deselect
@@ -306,10 +336,28 @@ export default function Canvas() {
                 onRotate={(deg) => rotateObstacle(p.id, deg)}
                 isHovered={p.id === hoveredId}
                 onHoverChange={(hovered) => setHoveredId(hovered ? p.id : null)}
-                onDotMouseDown={() => {}}
+                onDotMouseDown={(entryPoint, dotX, dotY) => {
+                  visitDragRef.current = { obstacleId: p.id, entryPoint, dotX, dotY };
+                  setVisitDragTip({ x: dotX, y: dotY });
+                }}
               />
             );
           })}
+          {/* Visit creation preview line */}
+          {visitDragTip && visitDragRef.current && (
+            <Line
+              points={[
+                visitDragRef.current.dotX,
+                visitDragRef.current.dotY,
+                visitDragTip.x,
+                visitDragTip.y,
+              ]}
+              stroke="#111"
+              strokeWidth={1.5}
+              dash={[5, 4]}
+              listening={false}
+            />
+          )}
         </Layer>
       </Stage>
     </div>
