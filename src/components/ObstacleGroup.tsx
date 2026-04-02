@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
-import { Group, Image as KonvaImage, Rect, Circle, Line } from 'react-konva';
+import { useState, useEffect, Fragment } from 'react';
+import { Group, Image as KonvaImage, Rect, Circle, Line, Text, Arrow } from 'react-konva';
 import Konva from 'konva';
-import type { PlacedObstacle, ObstacleDef, CoordCtx } from '../types';
+import type { PlacedObstacle, ObstacleDef, CoordCtx, Visit, PathLineType } from '../types';
 import { SCALE } from '../data/obstacles';
 import { worldToScreen, screenToWorld } from '../utils/coords';
 
@@ -57,6 +57,14 @@ interface ObstacleGroupProps {
   isHovered: boolean;
   onHoverChange: (hovered: boolean) => void;
   onDotMouseDown: (entryPoint: 'entry' | 'exit', dotX: number, dotY: number) => void;
+  visits: Visit[];
+  selectedVisitId: string | null;
+  showPath: boolean;
+  pathLineType: PathLineType;
+  pathLineWeight: number;
+  pathArrowSize: number;
+  onSelectVisit: (visitId: string) => void;
+  onUpdateVisit: (id: string, patch: Partial<Pick<Visit, 'num' | 'approachAngle' | 'approachLength' | 'badgeOffX' | 'badgeOffY'>>) => void;
 }
 
 export default function ObstacleGroup({
@@ -73,6 +81,14 @@ export default function ObstacleGroup({
   isHovered,
   onHoverChange,
   onDotMouseDown,
+  visits,
+  selectedVisitId,
+  showPath,
+  pathLineType,
+  pathLineWeight,
+  pathArrowSize,
+  onSelectVisit,
+  onUpdateVisit,
 }: ObstacleGroupProps) {
   const HANDLE_RADIUS = 7;
 
@@ -215,6 +231,112 @@ export default function ObstacleGroup({
           )}
         </>
       )}
+
+      {/* Approach arrows and badges per Visit */}
+      {showPath && visits.map((visit) => {
+        const dot =
+          visit.entryPoint === 'entry'
+            ? { x: entryDotX, y: entryDotY }
+            : { x: exitDotX, y: exitDotY };
+
+        const angleRad = (visit.approachAngle * Math.PI) / 180;
+        const tailX = dot.x + Math.sin(angleRad) * visit.approachLength * scale;
+        const tailY = dot.y - Math.cos(angleRad) * visit.approachLength * scale;
+
+        const isVisitSel = visit.id === selectedVisitId;
+        const stroke = isVisitSel ? '#BA7517' : '#111';
+        const dash =
+          pathLineType === 'dashed' ? [5, 4] :
+          pathLineType === 'dotted' ? [2, 4] :
+          undefined;
+
+        const bx = dot.x + (visit.badgeOffX * Math.cos(rotRad) - visit.badgeOffY * Math.sin(rotRad)) * scale;
+        const by = dot.y + (visit.badgeOffX * Math.sin(rotRad) + visit.badgeOffY * Math.cos(rotRad)) * scale;
+        const bR = Math.max(9, Math.min(14, scale * 0.6));
+
+        return (
+          <Fragment key={visit.id}>
+            {/* Approach arrow — tip at connection dot */}
+            <Arrow
+              points={[tailX, tailY, dot.x, dot.y]}
+              stroke={stroke}
+              fill={stroke}
+              strokeWidth={pathLineWeight}
+              pointerLength={pathArrowSize * 6}
+              pointerWidth={pathArrowSize * 6}
+              dash={dash}
+              onClick={(e) => { e.cancelBubble = true; onSelectVisit(visit.id); }}
+            />
+
+            {/* Tail handle — visible when visit selected */}
+            {isVisitSel && (
+              <Circle
+                x={tailX}
+                y={tailY}
+                radius={5}
+                fill="white"
+                stroke="#333"
+                strokeWidth={1.5}
+                draggable
+                onDragEnd={(e) => {
+                  e.cancelBubble = true;
+                  const node = e.target;
+                  const dx = node.x() - dot.x;
+                  const dy = node.y() - dot.y;
+                  const dist = Math.sqrt(dx * dx + dy * dy);
+                  const newLength = Math.min(dist / scale, 5);
+                  const newAngle = ((Math.atan2(dx, -dy) * 180) / Math.PI + 360) % 360;
+                  onUpdateVisit(visit.id, { approachAngle: newAngle, approachLength: newLength });
+                  node.position({ x: tailX, y: tailY });
+                }}
+              />
+            )}
+
+            {/* Leader line from connection dot to badge */}
+            <Line
+              points={[dot.x, dot.y, bx, by]}
+              stroke="rgba(186,117,23,0.35)"
+              strokeWidth={1}
+              dash={[3, 4]}
+            />
+
+            {/* Number badge */}
+            <Group
+              x={bx}
+              y={by}
+              draggable={isVisitSel}
+              onDragEnd={(e) => {
+                e.cancelBubble = true;
+                const node = e.target;
+                const worldDx = (node.x() - dot.x) / scale;
+                const worldDy = (node.y() - dot.y) / scale;
+                const offX = worldDx * Math.cos(rotRad) + worldDy * Math.sin(rotRad);
+                const offY = -worldDx * Math.sin(rotRad) + worldDy * Math.cos(rotRad);
+                onUpdateVisit(visit.id, { badgeOffX: offX, badgeOffY: offY });
+                node.position({ x: bx, y: by });
+              }}
+            >
+              <Circle radius={bR} fill="#BA7517" />
+              {isVisitSel && (
+                <Circle radius={bR + 4} stroke="rgba(186,117,23,0.5)" strokeWidth={2} />
+              )}
+              <Text
+                x={-bR}
+                y={-bR / 2}
+                width={bR * 2}
+                height={bR}
+                text={visit.num}
+                fontSize={Math.max(8, bR)}
+                fontFamily="monospace"
+                fontStyle="bold"
+                fill="#fff"
+                align="center"
+                verticalAlign="middle"
+              />
+            </Group>
+          </Fragment>
+        );
+      })}
 
       {/* Rotation handle (visible when selected) */}
       {isSelected && (

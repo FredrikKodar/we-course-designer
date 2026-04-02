@@ -120,6 +120,14 @@ export default function Canvas() {
   const moveObstacle = useStore((s) => s.moveObstacle);
   const rotateObstacle = useStore((s) => s.rotateObstacle);
   const addVisit = useStore((s) => s.addVisit);
+  const visits = useStore((s) => s.visits);
+  const selectedVisitId = useStore((s) => s.selectedVisitId);
+  const showPath = useStore((s) => s.showPath);
+  const updateVisit = useStore((s) => s.updateVisit);
+  const setSelectedVisitId = useStore((s) => s.setSelectedVisitId);
+  const pathLineType = useStore((s) => s.pathLineType);
+  const pathLineWeight = useStore((s) => s.pathLineWeight);
+  const pathArrowSize = useStore((s) => s.pathArrowSize);
 
   // ResizeObserver
   useEffect(() => {
@@ -340,6 +348,14 @@ export default function Canvas() {
                   visitDragRef.current = { obstacleId: p.id, entryPoint, dotX, dotY };
                   setVisitDragTip({ x: dotX, y: dotY });
                 }}
+                visits={visits.filter((v) => v.obstacleId === p.id)}
+                selectedVisitId={selectedVisitId}
+                showPath={showPath}
+                pathLineType={pathLineType}
+                pathLineWeight={pathLineWeight}
+                pathArrowSize={pathArrowSize}
+                onSelectVisit={(visitId) => { setSelectedVisitId(visitId); selectObstacle(p.id); }}
+                onUpdateVisit={(id, patch) => updateVisit(id, patch)}
               />
             );
           })}
