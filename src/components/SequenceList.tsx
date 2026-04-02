@@ -34,7 +34,10 @@ export default function SequenceList() {
     const [moved] = reordered.splice(dragIdx.current, 1);
     reordered.splice(targetIdx, 0, moved);
     reordered.forEach((v, i) => {
-      if (v.num !== String(i + 1)) updateVisit(v.id, { num: String(i + 1) });
+      const isPlainInt = /^\d+$/.test(v.num);
+      if (isPlainInt && v.num !== String(i + 1)) {
+        updateVisit(v.id, { num: String(i + 1) });
+      }
     });
     dragIdx.current = null;
   };

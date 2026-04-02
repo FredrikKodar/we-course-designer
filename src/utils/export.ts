@@ -34,14 +34,27 @@ function arenaScreenBounds(
 }
 
 function buildObstacleRows(placed: PlacedObstacle[]): string {
-  return placed
-    .map((p) => {
-      const def = OBSTACLES.find((o) => o.id === p.type);
-      const label = def?.label ?? p.type;
-      const note = p.note ? ` ${p.note}` : '';
-      return `<div style="margin-bottom:4px;font-size:10px;line-height:1.4;">– <strong>${label}</strong>${note}</div>`;
-    })
-    .join('');
+  const { visits } = useStore.getState();
+  const rows: string[] = [];
+
+  for (const p of placed) {
+    const def = OBSTACLES.find((o) => o.id === p.type);
+    const label = def?.label ?? p.type;
+    const note = p.note ? ` ${p.note}` : '';
+    const obstacleVisits = visits
+      .filter((v) => v.obstacleId === p.id)
+      .sort((a, b) => a.num.localeCompare(b.num, undefined, { numeric: true, sensitivity: 'base' }));
+
+    if (obstacleVisits.length === 0) {
+      rows.push(`<div style="margin-bottom:4px;font-size:10px;line-height:1.4;">– <strong>${label}</strong>${note}</div>`);
+    } else {
+      for (const v of obstacleVisits) {
+        rows.push(`<div style="margin-bottom:4px;font-size:10px;line-height:1.4;"><strong>${v.num}.</strong> <strong>${label}</strong>${note}</div>`);
+      }
+    }
+  }
+
+  return rows.join('');
 }
 
 function buildPrintHtml(dataUrl: string, obstacleRows: string): string {
