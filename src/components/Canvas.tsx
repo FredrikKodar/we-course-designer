@@ -32,26 +32,26 @@ function GridLines({ ea, scale, panX, panY }: GridProps) {
   for (let i = 0; i <= ea.w; i++) {
     const x = panX + i * scale;
     lines.push(
-      <Line key={`vm${i}`} points={[x, panY, x, panY + ea.h * scale]} stroke="rgba(0,0,0,0.06)" strokeWidth={0.5} />,
+      <Line key={`vm${i}`} points={[x, panY, x, panY + ea.h * scale]} stroke="rgba(0,0,0,0.12)" strokeWidth={0.5} />,
     );
   }
   for (let j = 0; j <= ea.h; j++) {
     const y = panY + j * scale;
     lines.push(
-      <Line key={`hm${j}`} points={[panX, y, panX + ea.w * scale, y]} stroke="rgba(0,0,0,0.06)" strokeWidth={0.5} />,
+      <Line key={`hm${j}`} points={[panX, y, panX + ea.w * scale, y]} stroke="rgba(0,0,0,0.12)" strokeWidth={0.5} />,
     );
   }
   // Major grid (5m)
   for (let i = 0; i <= ea.w; i += 5) {
     const x = panX + i * scale;
     lines.push(
-      <Line key={`vM${i}`} points={[x, panY, x, panY + ea.h * scale]} stroke="rgba(0,0,0,0.15)" strokeWidth={0.8} />,
+      <Line key={`vM${i}`} points={[x, panY, x, panY + ea.h * scale]} stroke="rgba(0,0,0,0.35)" strokeWidth={0.8} />,
     );
   }
   for (let j = 0; j <= ea.h; j += 5) {
     const y = panY + j * scale;
     lines.push(
-      <Line key={`hM${j}`} points={[panX, y, panX + ea.w * scale, y]} stroke="rgba(0,0,0,0.15)" strokeWidth={0.8} />,
+      <Line key={`hM${j}`} points={[panX, y, panX + ea.w * scale, y]} stroke="rgba(0,0,0,0.35)" strokeWidth={0.8} />,
     );
   }
 
@@ -94,6 +94,7 @@ function GridLabels({ ea, scale, panX, panY }: GridProps) {
 
 export default function Canvas() {
   const containerRef = useRef<HTMLDivElement>(null);
+  const stageRef = useRef<Konva.Stage>(null);
   const [stageSize, setStageSize] = useState<{ width: number; height: number }>({
     width: 800,
     height: 600,
@@ -150,6 +151,13 @@ export default function Canvas() {
   useEffect(() => {
     useStore.setState({ fitArena });
   }, [fitArena]);
+
+  // Expose stageRef on store
+  useEffect(() => {
+    if (stageRef.current) {
+      useStore.setState({ stageRef: stageRef.current });
+    }
+  }, []);
 
   // Auto-fit on first render and when arena dimensions change
   useEffect(() => {
@@ -233,6 +241,7 @@ export default function Canvas() {
       onDrop={handleDrop}
     >
       <Stage
+        ref={stageRef}
         width={stageSize.width}
         height={stageSize.height}
         onWheel={handleWheel}
@@ -248,7 +257,7 @@ export default function Canvas() {
             y={panY}
             width={ea.w * scale}
             height={ea.h * scale}
-            fill="#b4c4aa"
+            fill="white"
           />
 
           {/* Grid */}
@@ -261,7 +270,7 @@ export default function Canvas() {
             y={panY}
             width={ea.w * scale}
             height={ea.h * scale}
-            stroke="#4a7044"
+            stroke="#111"
             strokeWidth={2}
           />
 
