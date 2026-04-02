@@ -178,6 +178,8 @@ export default function Canvas() {
   // Delete key handler for selected visit
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      const tag = (e.target as HTMLElement).tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA') return;
       if (e.key === 'Delete' || e.key === 'Backspace') {
         const { selectedVisitId: svId } = useStore.getState();
         if (svId) {
