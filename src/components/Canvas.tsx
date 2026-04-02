@@ -277,11 +277,9 @@ export default function Canvas() {
   };
 
   // Click on empty canvas → deselect
-  const handleStageClick = (e: Konva.KonvaEventObject<MouseEvent>) => {
-    if (e.target === e.target.getStage()) {
-      selectObstacle(null);
-      setSelectedVisitId(null);
-    }
+  const handleStageClick = () => {
+    selectObstacle(null);
+    setSelectedVisitId(null);
   };
 
   // Drop from sidebar
