@@ -50,6 +50,7 @@ export interface StoreState {
 
   // Actions
   updateObstacleMeta: (id: string, sequenceNum: string, note: string) => void;
+  updateBadgeOffset: (id: string, offX: number, offY: number) => void;
   setArena: (w: number, h: number) => void;
   placeObstacle: (type: string, wx: number, wy: number) => void;
   moveObstacle: (id: string, wx: number, wy: number) => void;
@@ -165,6 +166,14 @@ const useStore = create<StoreState>()(
         set((s) => ({
           placed: s.placed.map((p) =>
             p.id === id ? { ...p, sequenceNum, note } : p,
+          ),
+        }));
+      },
+
+      updateBadgeOffset: (id, offX, offY) => {
+        set((s) => ({
+          placed: s.placed.map((p) =>
+            p.id === id ? { ...p, badgeOffX: offX, badgeOffY: offY } : p,
           ),
         }));
       },
