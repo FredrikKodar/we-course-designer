@@ -55,7 +55,7 @@ function buildObstacleRows(placed: PlacedObstacle[]): string {
     .join('');
 }
 
-function buildPrintHtml(dataUrl: string, obstacleRows: string, arenaW: number, arenaH: number): string {
+function buildPrintHtml(dataUrl: string, obstacleRows: string): string {
   return `<!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -111,12 +111,6 @@ function buildPrintHtml(dataUrl: string, obstacleRows: string, arenaW: number, a
     border-bottom: 1px solid #eee;
     padding-bottom: 2px;
   }
-  .footer {
-    font-size: 9px;
-    color: #666;
-    border-top: 1px solid #ccc;
-    padding-top: 5px;
-  }
 </style>
 </head>
 <body>
@@ -131,7 +125,6 @@ function buildPrintHtml(dataUrl: string, obstacleRows: string, arenaW: number, a
       <h3>Hinder</h3>
       ${obstacleRows}
     </div>
-    <div class="footer">${arenaW} × ${arenaH} m</div>
   </div>
   <div class="right">
     <img class="map" src="${dataUrl}" alt="Course map">
@@ -160,7 +153,7 @@ export function printCourse(): void {
   );
   const dataUrl = stageRef.toDataURL({ pixelRatio: 3, ...bounds });
   const obstacleRows = buildObstacleRows(placed);
-  const html = buildPrintHtml(dataUrl, obstacleRows, arenaW, arenaH);
+  const html = buildPrintHtml(dataUrl, obstacleRows);
 
   const w = window.open('', '_blank');
   if (!w) {
