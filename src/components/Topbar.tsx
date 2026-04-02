@@ -1,4 +1,5 @@
 import useStore from '../store/useStore';
+import { printCourse } from '../utils/export';
 
 export default function Topbar() {
   const arenaW = useStore((s) => s.arenaW);
@@ -59,6 +60,9 @@ export default function Topbar() {
         </button>
         <button className={btnClass(false)} onClick={() => useStore.getState().fitArena?.()}>
           Fit
+        </button>
+        <button className={btnClass(false)} onClick={printCourse}>
+          Print
         </button>
         <button
           className="text-xs px-3 py-1.5 border border-gray-200 rounded-md bg-white text-gray-500 hover:border-red-400 hover:text-red-500 cursor-pointer transition-all"
