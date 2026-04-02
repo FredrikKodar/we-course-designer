@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Group, Image as KonvaImage, Rect, Circle, Line, Text } from 'react-konva';
+import { Group, Image as KonvaImage, Rect, Circle, Line } from 'react-konva';
 import Konva from 'konva';
 import type { PlacedObstacle, ObstacleDef, CoordCtx } from '../types';
 import { SCALE } from '../data/obstacles';
@@ -46,7 +46,6 @@ function useSvgImage(obstacleType: string, svg: string, viewBox: string, pixelW:
 interface ObstacleGroupProps {
   placed: PlacedObstacle;
   def: ObstacleDef;
-  index: number;
   scale: number;
   coordCtx: CoordCtx;
   isSelected: boolean;
@@ -55,13 +54,11 @@ interface ObstacleGroupProps {
   onSelect: () => void;
   onMove: (wx: number, wy: number) => void;
   onRotate: (degrees: number) => void;
-  onUpdateBadgeOffset: (offX: number, offY: number) => void;
 }
 
 export default function ObstacleGroup({
   placed,
   def,
-  index,
   scale,
   coordCtx,
   isSelected,
@@ -70,7 +67,6 @@ export default function ObstacleGroup({
   onSelect,
   onMove,
   onRotate,
-  onUpdateBadgeOffset,
 }: ObstacleGroupProps) {
   const HANDLE_RADIUS = 7;
 
@@ -86,16 +82,8 @@ export default function ObstacleGroup({
   const drawW = placed.w * scale;
   const drawH = placed.h * scale;
 
-  // Number badge — offset is in obstacle-local space, rotated with the obstacle
-  const rotRadEarly = ((placed.rotation || 0) * Math.PI) / 180;
-  const localOffX = (placed.badgeOffX || 0);
-  const localOffY = (placed.badgeOffY || 0);
-  const badgeSx = sx + (localOffX * Math.cos(rotRadEarly) - localOffY * Math.sin(rotRadEarly)) * scale;
-  const badgeSy = sy + (localOffX * Math.sin(rotRadEarly) + localOffY * Math.cos(rotRadEarly)) * scale;
-  const badgeR = Math.max(9, Math.min(14, scale * 0.6));
-
   // Rotation handle position (above obstacle, in local coords before rotation)
-  const handleDist = drawH / 2 + badgeR * 2 + 18;
+  const handleDist = drawH / 2 + 18;
 
   // Obstacle stroke colour
   const strokeColor = violation ? '#E24B4A' : isSelected ? '#BA7517' : 'rgba(0,0,0,0.3)';
@@ -183,50 +171,6 @@ export default function ObstacleGroup({
             dash={[4, 3]}
           />
         )}
-      </Group>
-
-      {/* Leader line from centre to badge */}
-      <Line
-        points={[sx, sy, badgeSx, badgeSy]}
-        stroke="rgba(186,117,23,0.35)"
-        strokeWidth={1}
-        dash={[3, 4]}
-      />
-
-      {/* Number badge — draggable when selected */}
-      <Group
-        x={badgeSx}
-        y={badgeSy}
-        draggable={isSelected}
-        onDragEnd={(e) => {
-          e.cancelBubble = true;
-          const node = e.target;
-          // Convert screen displacement to obstacle-local world coords (unrotate by obstacle angle)
-          const worldDx = (node.x() - sx) / scale;
-          const worldDy = (node.y() - sy) / scale;
-          const offX = worldDx * Math.cos(rotRadEarly) + worldDy * Math.sin(rotRadEarly);
-          const offY = -worldDx * Math.sin(rotRadEarly) + worldDy * Math.cos(rotRadEarly);
-          onUpdateBadgeOffset(offX, offY);
-          node.position({ x: badgeSx, y: badgeSy });
-        }}
-      >
-        <Circle radius={badgeR} fill={violation ? '#E24B4A' : '#BA7517'} />
-        {isSelected && (
-          <Circle radius={badgeR + 4} stroke="rgba(186,117,23,0.5)" strokeWidth={2} />
-        )}
-        <Text
-          x={-badgeR}
-          y={-badgeR / 2}
-          width={badgeR * 2}
-          height={badgeR}
-          text={placed.sequenceNum || String(index + 1)}
-          fontSize={Math.max(8, badgeR)}
-          fontFamily="monospace"
-          fontStyle="bold"
-          fill="#fff"
-          align="center"
-          verticalAlign="middle"
-        />
       </Group>
 
       {/* Rotation handle (visible when selected) */}

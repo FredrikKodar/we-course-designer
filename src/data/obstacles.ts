@@ -344,14 +344,11 @@ export function expandPreset(
     const pieceDef = OBSTACLES.find((o) => o.id === piece.type);
     return {
       type: piece.type,
-      x: cx + piece.dx - (pieceDef?.w ?? 0) / 2,
-      y: cy + piece.dy - (pieceDef?.h ?? 0) / 2,
+      x: cx + piece.dx - (pieceDef?.w ?? 1) / 2,
+      y: cy + piece.dy - (pieceDef?.h ?? 1) / 2,
       w: pieceDef?.w ?? 1,
       h: pieceDef?.h ?? 1,
       rotation: 0,
-      badgeOffX: 0,
-      badgeOffY: -((pieceDef?.h ?? 0) / 2 + 1.5),
-      sequenceNum: '',
       note: '',
     };
   });

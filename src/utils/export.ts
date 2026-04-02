@@ -33,24 +33,13 @@ function arenaScreenBounds(
   };
 }
 
-function naturalCompare(a: string, b: string): number {
-  return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
-}
-
 function buildObstacleRows(placed: PlacedObstacle[]): string {
-  const numbered = placed
-    .filter((p) => !!p.sequenceNum)
-    .sort((a, b) => naturalCompare(a.sequenceNum, b.sequenceNum));
-  const unnumbered = placed.filter((p) => !p.sequenceNum);
-  const sorted = [...numbered, ...unnumbered];
-
-  return sorted
+  return placed
     .map((p) => {
       const def = OBSTACLES.find((o) => o.id === p.type);
       const label = def?.label ?? p.type;
-      const num = p.sequenceNum ? `${p.sequenceNum}.` : '–';
       const note = p.note ? ` ${p.note}` : '';
-      return `<div style="margin-bottom:4px;font-size:10px;line-height:1.4;">${num} <strong>${label}</strong>${note}</div>`;
+      return `<div style="margin-bottom:4px;font-size:10px;line-height:1.4;">– <strong>${label}</strong>${note}</div>`;
     })
     .join('');
 }

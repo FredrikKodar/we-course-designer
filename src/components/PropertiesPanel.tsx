@@ -58,25 +58,13 @@ export default function PropertiesPanel() {
       </div>
 
       <div className="mt-2 border-t border-gray-100 pt-2 flex flex-col gap-1.5">
-        <div className="flex items-center justify-between">
-          <span className="text-[10px] text-gray-400">Seq #</span>
-          <input
-            type="text"
-            value={obstacle.sequenceNum}
-            onChange={(e) =>
-              updateObstacleMeta(obstacle.id, e.target.value, obstacle.note)
-            }
-            placeholder="1, 2a…"
-            className="w-[60px] text-[11px] font-mono border border-gray-200 rounded px-1 py-0.5 bg-[#f9f9f7] text-right focus:outline-none focus:border-[#BA7517]"
-          />
-        </div>
         <div className="flex items-center justify-between gap-2">
           <span className="text-[10px] text-gray-400 shrink-0">Note</span>
           <input
             type="text"
             value={obstacle.note}
             onChange={(e) =>
-              updateObstacleMeta(obstacle.id, obstacle.sequenceNum, e.target.value)
+              updateObstacleMeta(obstacle.id, e.target.value)
             }
             placeholder="Description…"
             className="flex-1 min-w-0 text-[11px] border border-gray-200 rounded px-1 py-0.5 bg-[#f9f9f7] focus:outline-none focus:border-[#BA7517]"

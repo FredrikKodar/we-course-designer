@@ -117,7 +117,6 @@ export default function Canvas() {
   const placeObstacle = useStore((s) => s.placeObstacle);
   const moveObstacle = useStore((s) => s.moveObstacle);
   const rotateObstacle = useStore((s) => s.rotateObstacle);
-  const updateBadgeOffset = useStore((s) => s.updateBadgeOffset);
 
   // ResizeObserver
   useEffect(() => {
@@ -287,7 +286,7 @@ export default function Canvas() {
           />
 
           {/* Obstacles */}
-          {placed.map((p, idx) => {
+          {placed.map((p) => {
             const def = OBSTACLES.find((o) => o.id === p.type);
             if (!def) return null;
             return (
@@ -295,7 +294,6 @@ export default function Canvas() {
                 key={p.id}
                 placed={p}
                 def={def}
-                index={idx}
                 scale={scale}
                 coordCtx={coordCtx}
                 isSelected={p.id === selectedId}
@@ -304,7 +302,6 @@ export default function Canvas() {
                 onSelect={() => selectObstacle(p.id)}
                 onMove={(wx, wy) => moveObstacle(p.id, wx, wy)}
                 onRotate={(deg) => rotateObstacle(p.id, deg)}
-                onUpdateBadgeOffset={(offX, offY) => updateBadgeOffset(p.id, offX, offY)}
               />
             );
           })}

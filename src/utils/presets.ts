@@ -1,11 +1,6 @@
 import type { PlacedObstacle } from '../types';
 import { OBSTACLES, expandPreset } from '../data/obstacles';
 
-/**
- * Build PlacedObstacle(s) for a given type at (cx, cy) world centre.
- * For presets, returns N individual pieces with shared groupId.
- * For singles, returns an array of one.
- */
 export function buildPresetPieces(type: string, cx: number, cy: number): PlacedObstacle[] {
   const pieces = expandPreset(type, cx, cy);
   const timestamp = Date.now();
@@ -16,7 +11,6 @@ export function buildPresetPieces(type: string, cx: number, cy: number): PlacedO
       ...piece,
       id: `${timestamp}_${Math.random().toString(36).slice(2, 8)}_${i}`,
       groupId,
-      sequenceNum: '',
       note: '',
     }));
   }
@@ -33,9 +27,6 @@ export function buildPresetPieces(type: string, cx: number, cy: number): PlacedO
       h: def.h,
       rotation: 0,
       groupId: null,
-      badgeOffX: 0,
-      badgeOffY: -(def.h / 2 + 1.5),
-      sequenceNum: '',
       note: '',
     },
   ];
