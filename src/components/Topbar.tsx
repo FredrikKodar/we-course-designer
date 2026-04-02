@@ -61,7 +61,7 @@ export default function Topbar() {
         <button className={btnClass(false)} onClick={() => useStore.getState().fitArena?.()}>
           Fit
         </button>
-        <button className={btnClass(false)} onClick={() => { useStore.getState().selectObstacle(null); requestAnimationFrame(() => requestAnimationFrame(printCourse)); }}>
+        <button className={btnClass(false)} onClick={() => { useStore.getState().selectObstacle(null); useStore.getState().setSelectedVisitId(null); requestAnimationFrame(() => requestAnimationFrame(printCourse)); }}>
           Print
         </button>
         <button
