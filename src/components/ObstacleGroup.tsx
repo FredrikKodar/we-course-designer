@@ -55,6 +55,7 @@ interface ObstacleGroupProps {
   onSelect: () => void;
   onMove: (wx: number, wy: number) => void;
   onRotate: (degrees: number) => void;
+  onUpdateBadgeOffset: (offX: number, offY: number) => void;
 }
 
 export default function ObstacleGroup({
@@ -69,6 +70,7 @@ export default function ObstacleGroup({
   onSelect,
   onMove,
   onRotate,
+  onUpdateBadgeOffset,
 }: ObstacleGroupProps) {
   const HANDLE_RADIUS = 7;
 
@@ -188,35 +190,35 @@ export default function ObstacleGroup({
         dash={[3, 4]}
       />
 
-      {/* Number badge */}
-      <Circle
+      {/* Number badge — draggable when selected */}
+      <Group
         x={badgeSx}
         y={badgeSy}
-        radius={badgeR}
-        fill={violation ? '#E24B4A' : '#BA7517'}
-      />
-      {isSelected && (
-        <Circle
-          x={badgeSx}
-          y={badgeSy}
-          radius={badgeR + 4}
-          stroke="rgba(186,117,23,0.5)"
-          strokeWidth={2}
+        draggable={isSelected}
+        onDragEnd={(e) => {
+          const node = e.target;
+          onUpdateBadgeOffset((node.x() - sx) / scale, (node.y() - sy) / scale);
+          node.position({ x: badgeSx, y: badgeSy });
+        }}
+      >
+        <Circle radius={badgeR} fill={violation ? '#E24B4A' : '#BA7517'} />
+        {isSelected && (
+          <Circle radius={badgeR + 4} stroke="rgba(186,117,23,0.5)" strokeWidth={2} />
+        )}
+        <Text
+          x={-badgeR}
+          y={-badgeR / 2}
+          width={badgeR * 2}
+          height={badgeR}
+          text={placed.sequenceNum || String(index + 1)}
+          fontSize={Math.max(8, badgeR)}
+          fontFamily="monospace"
+          fontStyle="bold"
+          fill="#fff"
+          align="center"
+          verticalAlign="middle"
         />
-      )}
-      <Text
-        x={badgeSx - badgeR}
-        y={badgeSy - badgeR / 2}
-        width={badgeR * 2}
-        height={badgeR}
-        text={placed.sequenceNum || String(index + 1)}
-        fontSize={Math.max(8, badgeR)}
-        fontFamily="monospace"
-        fontStyle="bold"
-        fill="#fff"
-        align="center"
-        verticalAlign="middle"
-      />
+      </Group>
 
       {/* Rotation handle (visible when selected) */}
       {isSelected && (
