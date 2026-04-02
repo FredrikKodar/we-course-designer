@@ -66,7 +66,7 @@ export default function Topbar() {
         </button>
         <button
           className="text-xs px-3 py-1.5 border border-gray-200 rounded-md bg-white text-gray-500 hover:border-red-400 hover:text-red-500 cursor-pointer transition-all"
-          onClick={clearAll}
+          onClick={() => { if (window.confirm('Rensa alla hinder?')) clearAll(); }}
         >
           Clear
         </button>
