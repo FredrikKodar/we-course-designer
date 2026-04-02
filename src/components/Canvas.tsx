@@ -171,7 +171,18 @@ export default function Canvas() {
   const handleWheel = (e: Konva.KonvaEventObject<WheelEvent>) => {
     e.evt.preventDefault();
     const delta = e.evt.deltaY > 0 ? 0.9 : 1.1;
-    setZoom(zoom * delta);
+    // Clamp here so pan math uses the actual resulting zoom, not an unclamped value
+    const newZoom = Math.min(4, Math.max(0.25, zoom * delta));
+    const pointer = e.target.getStage()?.getPointerPosition();
+    if (!pointer) {
+      setZoom(newZoom);
+      return;
+    }
+    // Keep the world point under the pointer fixed after zoom
+    const newPanX = pointer.x - (pointer.x - panX) * (newZoom / zoom);
+    const newPanY = pointer.y - (pointer.y - panY) * (newZoom / zoom);
+    setZoom(newZoom);
+    setPan(newPanX, newPanY);
   };
 
   // Pan state
