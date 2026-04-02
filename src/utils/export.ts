@@ -1,6 +1,29 @@
 import type { PlacedObstacle } from '../types';
+import type { ViewMode } from '../types';
 import { OBSTACLES } from '../data/obstacles';
 import useStore from '../store/useStore';
+
+const CANVAS_MARGIN = 60; // matches Canvas.tsx MARGIN constant
+
+function arenaScreenBounds(
+  stageW: number,
+  stageH: number,
+  arenaW: number,
+  arenaH: number,
+  viewMode: ViewMode,
+  panX: number,
+  panY: number,
+  zoom: number,
+): { x: number; y: number; width: number; height: number } {
+  const effectiveW = viewMode === 'side' ? arenaW : arenaH;
+  const effectiveH = viewMode === 'side' ? arenaH : arenaW;
+  const baseScale = Math.min(
+    (stageW - CANVAS_MARGIN) / effectiveW,
+    (stageH - CANVAS_MARGIN) / effectiveH,
+  );
+  const scale = baseScale * zoom;
+  return { x: panX, y: panY, width: effectiveW * scale, height: effectiveH * scale };
+}
 
 function naturalCompare(a: string, b: string): number {
   return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
@@ -35,7 +58,7 @@ function buildPrintHtml(dataUrl: string, obstacleRows: string, arenaW: number, a
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
     display: flex;
-    height: 100vh;
+    height: 277mm;
     font-family: Arial, sans-serif;
     font-size: 11px;
     color: #111;
@@ -109,13 +132,24 @@ function buildPrintHtml(dataUrl: string, obstacleRows: string, arenaW: number, a
 }
 
 export function printCourse(): void {
-  const { stageRef, placed, arenaW, arenaH } = useStore.getState();
+  const { stageRef, placed, arenaW, arenaH, panX, panY, zoom, viewMode } = useStore.getState();
   if (!stageRef) {
     console.warn('printCourse: stageRef not set');
     return;
   }
 
-  const dataUrl = stageRef.toDataURL({ pixelRatio: 3 });
+  // Capture the arena rectangle exactly, regardless of current pan/zoom
+  const bounds = arenaScreenBounds(
+    stageRef.width(),
+    stageRef.height(),
+    arenaW,
+    arenaH,
+    viewMode,
+    panX,
+    panY,
+    zoom,
+  );
+  const dataUrl = stageRef.toDataURL({ pixelRatio: 3, ...bounds });
   const obstacleRows = buildObstacleRows(placed);
   const html = buildPrintHtml(dataUrl, obstacleRows, arenaW, arenaH);
 
