@@ -209,7 +209,7 @@ export default function ObstacleGroup({
         y={badgeSy - badgeR / 2}
         width={badgeR * 2}
         height={badgeR}
-        text={String(index + 1)}
+        text={placed.sequenceNum || String(index + 1)}
         fontSize={Math.max(8, badgeR)}
         fontFamily="monospace"
         fontStyle="bold"
