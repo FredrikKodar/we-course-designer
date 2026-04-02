@@ -351,6 +351,8 @@ export function expandPreset(
       rotation: 0,
       badgeOffX: 0,
       badgeOffY: -((pieceDef?.h ?? 0) / 2 + 1.5),
+      sequenceNum: '',
+      note: '',
     };
   });
 }

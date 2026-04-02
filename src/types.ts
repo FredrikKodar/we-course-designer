@@ -48,6 +48,8 @@ export interface PlacedObstacle {
   groupId: string | null;
   badgeOffX: number;
   badgeOffY: number;
+  sequenceNum: string;
+  note: string;
 }
 
 export interface Visit {

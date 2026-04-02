@@ -16,6 +16,8 @@ export function buildPresetPieces(type: string, cx: number, cy: number): PlacedO
       ...piece,
       id: `${timestamp}_${Math.random().toString(36).slice(2, 8)}_${i}`,
       groupId,
+      sequenceNum: '',
+      note: '',
     }));
   }
 
@@ -33,6 +35,8 @@ export function buildPresetPieces(type: string, cx: number, cy: number): PlacedO
       groupId: null,
       badgeOffX: 0,
       badgeOffY: -(def.h / 2 + 1.5),
+      sequenceNum: '',
+      note: '',
     },
   ];
 }

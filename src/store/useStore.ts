@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import type Konva from 'konva';
 import type { PlacedObstacle, Visit, RouteSegment, WEClass, ViewMode, PathLineType } from '../types';
 import { runRules } from '../utils/compliance';
 import { buildPresetPieces } from '../utils/presets';
@@ -45,6 +46,10 @@ export interface StoreState {
 
   // fitArena is set by Canvas after mount so Topbar can call it
   fitArena?: () => void;
+
+  stageRef?: Konva.Stage;
+
+  updateObstacleMeta: (id: string, sequenceNum: string, note: string) => void;
 
   // Actions
   setArena: (w: number, h: number) => void;
@@ -157,6 +162,14 @@ const useStore = create<StoreState>()(
       setPathStyle: (lineType, weight, arrowSize) =>
         set({ pathLineType: lineType, pathLineWeight: weight, pathArrowSize: arrowSize }),
       clearAll: () => set({ placed: [], selectedId: null, violations: new Map() }),
+
+      updateObstacleMeta: (id, sequenceNum, note) => {
+        set((s) => ({
+          placed: s.placed.map((p) =>
+            p.id === id ? { ...p, sequenceNum, note } : p,
+          ),
+        }));
+      },
 
       runCompliance: () => {
         const { placed, arenaW, arenaH } = get();
