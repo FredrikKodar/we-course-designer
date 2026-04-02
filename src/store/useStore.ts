@@ -11,7 +11,7 @@ export const MAX_ZOOM = 4;
 // Subset of state stored in localStorage (must be JSON-serialisable)
 type PersistedState = Pick<
   StoreState,
-  'placed' | 'arenaW' | 'arenaH' | 'pathLineType' | 'pathLineWeight' | 'pathArrowSize'
+  'placed' | 'arenaW' | 'arenaH' | 'pathLineType' | 'pathLineWeight' | 'pathArrowSize' | 'visits'
 >;
 
 export interface StoreState {
@@ -52,8 +52,7 @@ export interface StoreState {
   stageRef?: Konva.Stage;
 
   // Actions
-  updateObstacleMeta: (id: string, sequenceNum: string, note: string) => void;
-  updateBadgeOffset: (id: string, offX: number, offY: number) => void;
+  updateObstacleMeta: (id: string, note: string) => void;
   setArena: (w: number, h: number) => void;
   placeObstacle: (type: string, wx: number, wy: number) => void;
   moveObstacle: (id: string, wx: number, wy: number) => void;
@@ -69,6 +68,10 @@ export interface StoreState {
   setPathStyle: (lineType: PathLineType, weight: number, arrowSize: number) => void;
   clearAll: () => void;
   runCompliance: () => void;
+  addVisit: (obstacleId: string, entryPoint: 'entry' | 'exit', approachAngle: number, approachLength: number) => void;
+  updateVisit: (id: string, patch: Partial<Pick<Visit, 'num' | 'approachAngle' | 'approachLength' | 'badgeOffX' | 'badgeOffY'>>) => void;
+  deleteVisit: (id: string) => void;
+  setSelectedVisitId: (id: string | null) => void;
 }
 
 const useStore = create<StoreState>()(
@@ -147,10 +150,15 @@ const useStore = create<StoreState>()(
       },
 
       deleteObstacle: (id) => {
-        set((s) => ({
-          placed: s.placed.filter((p) => p.id !== id),
-          selectedId: s.selectedId === id ? null : s.selectedId,
-        }));
+        set((s) => {
+          const removedVisitIds = new Set(s.visits.filter((v) => v.obstacleId === id).map((v) => v.id));
+          return {
+            placed: s.placed.filter((p) => p.id !== id),
+            visits: s.visits.filter((v) => v.obstacleId !== id),
+            selectedId: s.selectedId === id ? null : s.selectedId,
+            selectedVisitId: removedVisitIds.has(s.selectedVisitId ?? '') ? null : s.selectedVisitId,
+          };
+        });
         get().runCompliance();
       },
 
@@ -163,23 +171,56 @@ const useStore = create<StoreState>()(
       setPan: (x, y) => set({ panX: x, panY: y }),
       setPathStyle: (lineType, weight, arrowSize) =>
         set({ pathLineType: lineType, pathLineWeight: weight, pathArrowSize: arrowSize }),
-      clearAll: () => set({ placed: [], selectedId: null, violations: new Map() }),
+      clearAll: () => set({ placed: [], visits: [], selectedId: null, selectedVisitId: null, violations: new Map() }),
 
-      updateObstacleMeta: (id, sequenceNum, note) => {
+      updateObstacleMeta: (id, note) => {
         set((s) => ({
-          placed: s.placed.map((p) =>
-            p.id === id ? { ...p, sequenceNum, note } : p,
-          ),
+          placed: s.placed.map((p) => (p.id === id ? { ...p, note } : p)),
         }));
       },
 
-      updateBadgeOffset: (id, offX, offY) => {
+      addVisit: (obstacleId, entryPoint, approachAngle, approachLength) => {
+        const { visits } = get();
+        const existing = visits.find((v) => v.obstacleId === obstacleId && v.entryPoint === entryPoint);
+        if (existing) {
+          set((s) => ({
+            visits: s.visits.map((v) =>
+              v.id === existing.id ? { ...v, approachAngle, approachLength } : v,
+            ),
+          }));
+          return;
+        }
+        const maxNum = visits.reduce((max, v) => {
+          const n = parseInt(v.num, 10);
+          return isNaN(n) ? max : Math.max(max, n);
+        }, 0);
+        const newVisit: Visit = {
+          id: crypto.randomUUID(),
+          obstacleId,
+          entryPoint,
+          num: String(maxNum + 1),
+          approachAngle,
+          approachLength,
+          badgeOffX: 0,
+          badgeOffY: -1.5,
+        };
+        set((s) => ({ visits: [...s.visits, newVisit] }));
+      },
+
+      updateVisit: (id, patch) => {
         set((s) => ({
-          placed: s.placed.map((p) =>
-            p.id === id ? { ...p, badgeOffX: offX, badgeOffY: offY } : p,
-          ),
+          visits: s.visits.map((v) => (v.id === id ? { ...v, ...patch } : v)),
         }));
       },
+
+      deleteVisit: (id) => {
+        set((s) => ({
+          visits: s.visits.filter((v) => v.id !== id),
+          selectedVisitId: s.selectedVisitId === id ? null : s.selectedVisitId,
+        }));
+      },
+
+      setSelectedVisitId: (id) => set({ selectedVisitId: id }),
 
       runCompliance: () => {
         const { placed, arenaW, arenaH } = get();
@@ -195,6 +236,7 @@ const useStore = create<StoreState>()(
         pathLineType: state.pathLineType,
         pathLineWeight: state.pathLineWeight,
         pathArrowSize: state.pathArrowSize,
+        visits: state.visits,
       }),
       onRehydrateStorage: () => (state) => {
         if (state) state.runCompliance();

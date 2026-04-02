@@ -46,17 +46,19 @@ export interface PlacedObstacle {
   h: number;
   rotation: number;
   groupId: string | null;
-  badgeOffX: number;
-  badgeOffY: number;
-  sequenceNum: string;
   note: string;
+  // sequenceNum, badgeOffX, badgeOffY removed — moved to Visit
 }
 
 export interface Visit {
   id: string;
   obstacleId: string;
-  num: number;
+  num: string;               // "1", "2a", "11" — string to support letter suffixes
   entryPoint: 'entry' | 'exit';
+  approachAngle: number;     // degrees, 0 = north (up), clockwise
+  approachLength: number;    // world meters, 0–5
+  badgeOffX: number;         // badge offset from connection dot, obstacle-local world meters
+  badgeOffY: number;
 }
 
 export interface RouteSegment {
