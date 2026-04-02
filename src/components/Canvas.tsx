@@ -100,6 +100,8 @@ export default function Canvas() {
     height: 600,
   });
 
+  const [hoveredId, setHoveredId] = useState<string | null>(null);
+
   const arenaW = useStore((s) => s.arenaW);
   const arenaH = useStore((s) => s.arenaH);
   const viewMode = useStore((s) => s.viewMode);
@@ -302,6 +304,9 @@ export default function Canvas() {
                 onSelect={() => selectObstacle(p.id)}
                 onMove={(wx, wy) => moveObstacle(p.id, wx, wy)}
                 onRotate={(deg) => rotateObstacle(p.id, deg)}
+                isHovered={p.id === hoveredId}
+                onHoverChange={(hovered) => setHoveredId(hovered ? p.id : null)}
+                onDotMouseDown={() => {}}
               />
             );
           })}

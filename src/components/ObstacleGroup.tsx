@@ -54,6 +54,9 @@ interface ObstacleGroupProps {
   onSelect: () => void;
   onMove: (wx: number, wy: number) => void;
   onRotate: (degrees: number) => void;
+  isHovered: boolean;
+  onHoverChange: (hovered: boolean) => void;
+  onDotMouseDown: (entryPoint: 'entry' | 'exit', dotX: number, dotY: number) => void;
 }
 
 export default function ObstacleGroup({
@@ -67,6 +70,9 @@ export default function ObstacleGroup({
   onSelect,
   onMove,
   onRotate,
+  isHovered,
+  onHoverChange,
+  onDotMouseDown,
 }: ObstacleGroupProps) {
   const HANDLE_RADIUS = 7;
 
@@ -121,6 +127,12 @@ export default function ObstacleGroup({
   };
 
   const rotRad = ((placed.rotation || 0) * Math.PI) / 180;
+  const entryDotX = sx + (def.entry.x * Math.cos(rotRad) - def.entry.y * Math.sin(rotRad)) * scale;
+  const entryDotY = sy + (def.entry.x * Math.sin(rotRad) + def.entry.y * Math.cos(rotRad)) * scale;
+  const exitDotX  = sx + (def.exit.x  * Math.cos(rotRad) - def.exit.y  * Math.sin(rotRad)) * scale;
+  const exitDotY  = sy + (def.exit.x  * Math.sin(rotRad) + def.exit.y  * Math.cos(rotRad)) * scale;
+  // Some obstacles (fålla, ring) have entry === exit at the same position
+  const sameDot = Math.abs(entryDotX - exitDotX) < 1 && Math.abs(entryDotY - exitDotY) < 1;
   const handleX = sx + Math.sin(rotRad) * handleDist;
   const handleY = sy - Math.cos(rotRad) * handleDist;
 
@@ -136,6 +148,8 @@ export default function ObstacleGroup({
           e.cancelBubble = true;
           onSelect();
         }}
+        onMouseEnter={() => onHoverChange(true)}
+        onMouseLeave={() => onHoverChange(false)}
         rotation={placed.rotation || 0}
       >
         {/* SVG image, centred */}
@@ -172,6 +186,32 @@ export default function ObstacleGroup({
           />
         )}
       </Group>
+
+      {/* Connection dots — visible on hover */}
+      {isHovered && (
+        <>
+          <Circle
+            x={entryDotX}
+            y={entryDotY}
+            radius={5}
+            fill="#333"
+            stroke="white"
+            strokeWidth={1.5}
+            onMouseDown={(e) => { e.cancelBubble = true; onDotMouseDown('entry', entryDotX, entryDotY); }}
+          />
+          {!sameDot && (
+            <Circle
+              x={exitDotX}
+              y={exitDotY}
+              radius={5}
+              fill="#333"
+              stroke="white"
+              strokeWidth={1.5}
+              onMouseDown={(e) => { e.cancelBubble = true; onDotMouseDown('exit', exitDotX, exitDotY); }}
+            />
+          )}
+        </>
+      )}
 
       {/* Rotation handle (visible when selected) */}
       {isSelected && (
