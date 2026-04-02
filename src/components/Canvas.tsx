@@ -355,7 +355,7 @@ export default function Canvas() {
                 pathLineWeight={pathLineWeight}
                 pathArrowSize={pathArrowSize}
                 onSelectVisit={(visitId) => { setSelectedVisitId(visitId); selectObstacle(p.id); }}
-                onUpdateVisit={(id, patch) => updateVisit(id, patch)}
+                onUpdateVisit={updateVisit}
               />
             );
           })}

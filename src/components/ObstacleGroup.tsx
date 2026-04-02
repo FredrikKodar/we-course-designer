@@ -305,6 +305,7 @@ export default function ObstacleGroup({
               x={bx}
               y={by}
               draggable={isVisitSel}
+              onClick={(e) => { e.cancelBubble = true; onSelectVisit(visit.id); }}
               onDragEnd={(e) => {
                 e.cancelBubble = true;
                 const node = e.target;
