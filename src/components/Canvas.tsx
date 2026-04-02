@@ -175,6 +175,21 @@ export default function Canvas() {
     fitArena();
   }, [fitArena]);
 
+  // Delete key handler for selected visit
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Delete' || e.key === 'Backspace') {
+        const { selectedVisitId: svId } = useStore.getState();
+        if (svId) {
+          useStore.getState().deleteVisit(svId);
+          e.preventDefault();
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   // Coordinate context for worldToScreen/screenToWorld
   const coordCtx = { panX, panY, scale, viewMode, arenaH };
 
@@ -263,6 +278,7 @@ export default function Canvas() {
   const handleStageClick = (e: Konva.KonvaEventObject<MouseEvent>) => {
     if (e.target === e.target.getStage()) {
       selectObstacle(null);
+      setSelectedVisitId(null);
     }
   };
 
