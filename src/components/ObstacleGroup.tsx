@@ -196,6 +196,7 @@ export default function ObstacleGroup({
         y={badgeSy}
         draggable={isSelected}
         onDragEnd={(e) => {
+          e.cancelBubble = true;
           const node = e.target;
           onUpdateBadgeOffset((node.x() - sx) / scale, (node.y() - sy) / scale);
           node.position({ x: badgeSx, y: badgeSy });
