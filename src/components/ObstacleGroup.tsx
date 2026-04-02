@@ -86,9 +86,12 @@ export default function ObstacleGroup({
   const drawW = placed.w * scale;
   const drawH = placed.h * scale;
 
-  // Number badge
-  const badgeSx = sx + (placed.badgeOffX || 0) * scale;
-  const badgeSy = sy + (placed.badgeOffY || 0) * scale;
+  // Number badge — offset is in obstacle-local space, rotated with the obstacle
+  const rotRadEarly = ((placed.rotation || 0) * Math.PI) / 180;
+  const localOffX = (placed.badgeOffX || 0);
+  const localOffY = (placed.badgeOffY || 0);
+  const badgeSx = sx + (localOffX * Math.cos(rotRadEarly) - localOffY * Math.sin(rotRadEarly)) * scale;
+  const badgeSy = sy + (localOffX * Math.sin(rotRadEarly) + localOffY * Math.cos(rotRadEarly)) * scale;
   const badgeR = Math.max(9, Math.min(14, scale * 0.6));
 
   // Rotation handle position (above obstacle, in local coords before rotation)
@@ -198,7 +201,12 @@ export default function ObstacleGroup({
         onDragEnd={(e) => {
           e.cancelBubble = true;
           const node = e.target;
-          onUpdateBadgeOffset((node.x() - sx) / scale, (node.y() - sy) / scale);
+          // Convert screen displacement to obstacle-local world coords (unrotate by obstacle angle)
+          const worldDx = (node.x() - sx) / scale;
+          const worldDy = (node.y() - sy) / scale;
+          const offX = worldDx * Math.cos(rotRadEarly) + worldDy * Math.sin(rotRadEarly);
+          const offY = -worldDx * Math.sin(rotRadEarly) + worldDy * Math.cos(rotRadEarly);
+          onUpdateBadgeOffset(offX, offY);
           node.position({ x: badgeSx, y: badgeSy });
         }}
       >
