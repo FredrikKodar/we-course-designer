@@ -65,30 +65,43 @@ function buildPrintHtml(dataUrl: string, obstacleRows: string, arenaW: number, a
   @page { size: A4 portrait; margin: 10mm; }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
-    display: block;
+    display: flex;
     width: 190mm;
+    height: 277mm;
     font-family: Arial, sans-serif;
     font-size: 11px;
     color: #111;
+    gap: 6mm;
   }
-  .top {
+  .left {
+    width: 52mm;
+    flex-shrink: 0;
     display: flex;
-    gap: 12mm;
-    padding-bottom: 4mm;
-    margin-bottom: 4mm;
-    border-bottom: 1px solid #ccc;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .right {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: flex-start;
+  }
+  .map {
+    width: 100%;
+    height: auto;
   }
   .header-block {
-    flex-shrink: 0;
     font-size: 10px;
     line-height: 1.8;
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 6px;
   }
   .header-block strong {
     font-size: 12px;
     display: block;
     margin-bottom: 2px;
   }
-  .obstacle-list { flex: 1; }
+  .obstacle-list { flex: 1; overflow: hidden; }
   .obstacle-list h3 {
     font-size: 9px;
     text-transform: uppercase;
@@ -98,20 +111,16 @@ function buildPrintHtml(dataUrl: string, obstacleRows: string, arenaW: number, a
     border-bottom: 1px solid #eee;
     padding-bottom: 2px;
   }
-  .map {
-    display: block;
-    width: 190mm;
-    height: auto;
-  }
   .footer {
     font-size: 9px;
     color: #666;
-    margin-top: 3mm;
+    border-top: 1px solid #ccc;
+    padding-top: 5px;
   }
 </style>
 </head>
 <body>
-  <div class="top">
+  <div class="left">
     <div class="header-block">
       <strong>Tävlingsplats</strong>
       Klass<br>
@@ -122,9 +131,11 @@ function buildPrintHtml(dataUrl: string, obstacleRows: string, arenaW: number, a
       <h3>Hinder</h3>
       ${obstacleRows}
     </div>
+    <div class="footer">${arenaW} × ${arenaH} m</div>
   </div>
-  <img class="map" src="${dataUrl}" alt="Course map">
-  <div class="footer">${arenaW} × ${arenaH} m</div>
+  <div class="right">
+    <img class="map" src="${dataUrl}" alt="Course map">
+  </div>
 </body>
 </html>`;
 }
