@@ -32,26 +32,26 @@ function GridLines({ ea, scale, panX, panY }: GridProps) {
   for (let i = 0; i <= ea.w; i++) {
     const x = panX + i * scale;
     lines.push(
-      <Line key={`vm${i}`} points={[x, panY, x, panY + ea.h * scale]} stroke="rgba(0,0,0,0.12)" strokeWidth={0.5} />,
+      <Line key={`vm${i}`} points={[x, panY, x, panY + ea.h * scale]} stroke="rgba(0,0,0,0.22)" strokeWidth={0.5} />,
     );
   }
   for (let j = 0; j <= ea.h; j++) {
     const y = panY + j * scale;
     lines.push(
-      <Line key={`hm${j}`} points={[panX, y, panX + ea.w * scale, y]} stroke="rgba(0,0,0,0.12)" strokeWidth={0.5} />,
+      <Line key={`hm${j}`} points={[panX, y, panX + ea.w * scale, y]} stroke="rgba(0,0,0,0.22)" strokeWidth={0.5} />,
     );
   }
   // Major grid (5m)
   for (let i = 0; i <= ea.w; i += 5) {
     const x = panX + i * scale;
     lines.push(
-      <Line key={`vM${i}`} points={[x, panY, x, panY + ea.h * scale]} stroke="rgba(0,0,0,0.35)" strokeWidth={0.8} />,
+      <Line key={`vM${i}`} points={[x, panY, x, panY + ea.h * scale]} stroke="rgba(0,0,0,0.55)" strokeWidth={0.8} />,
     );
   }
   for (let j = 0; j <= ea.h; j += 5) {
     const y = panY + j * scale;
     lines.push(
-      <Line key={`hM${j}`} points={[panX, y, panX + ea.w * scale, y]} stroke="rgba(0,0,0,0.35)" strokeWidth={0.8} />,
+      <Line key={`hM${j}`} points={[panX, y, panX + ea.w * scale, y]} stroke="rgba(0,0,0,0.55)" strokeWidth={0.8} />,
     );
   }
 

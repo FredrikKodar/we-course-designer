@@ -4,6 +4,9 @@ import { OBSTACLES } from '../data/obstacles';
 import useStore from '../store/useStore';
 
 const CANVAS_MARGIN = 60; // matches Canvas.tsx MARGIN constant
+// Extra padding around the arena in the snapshot so grid labels are included.
+// Labels sit ~28px to the left and ~15px below the arena border.
+const SNAPSHOT_PADDING = 38;
 
 function arenaScreenBounds(
   stageW: number,
@@ -22,7 +25,12 @@ function arenaScreenBounds(
     (stageH - CANVAS_MARGIN) / effectiveH,
   );
   const scale = baseScale * zoom;
-  return { x: panX, y: panY, width: effectiveW * scale, height: effectiveH * scale };
+  return {
+    x: panX - SNAPSHOT_PADDING,
+    y: panY - SNAPSHOT_PADDING,
+    width: effectiveW * scale + 2 * SNAPSHOT_PADDING,
+    height: effectiveH * scale + 2 * SNAPSHOT_PADDING,
+  };
 }
 
 function naturalCompare(a: string, b: string): number {
@@ -57,61 +65,53 @@ function buildPrintHtml(dataUrl: string, obstacleRows: string, arenaW: number, a
   @page { size: A4 portrait; margin: 10mm; }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
-    display: flex;
-    height: 277mm;
+    display: block;
+    width: 190mm;
     font-family: Arial, sans-serif;
     font-size: 11px;
     color: #111;
-    gap: 12px;
   }
-  .left {
-    width: 28%;
-    flex-shrink: 0;
+  .top {
     display: flex;
-    flex-direction: column;
-    gap: 14px;
-  }
-  .right {
-    flex: 1;
-    min-width: 0;
-  }
-  .right img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    object-position: top left;
+    gap: 12mm;
+    padding-bottom: 4mm;
+    margin-bottom: 4mm;
+    border-bottom: 1px solid #ccc;
   }
   .header-block {
+    flex-shrink: 0;
     font-size: 10px;
     line-height: 1.8;
-    border-bottom: 1px solid #ccc;
-    padding-bottom: 8px;
   }
   .header-block strong {
     font-size: 12px;
     display: block;
     margin-bottom: 2px;
   }
-  .obstacle-list { flex: 1; overflow: hidden; }
+  .obstacle-list { flex: 1; }
   .obstacle-list h3 {
     font-size: 9px;
     text-transform: uppercase;
     letter-spacing: 0.06em;
     color: #555;
-    margin-bottom: 6px;
+    margin-bottom: 4px;
     border-bottom: 1px solid #eee;
-    padding-bottom: 3px;
+    padding-bottom: 2px;
+  }
+  .map {
+    display: block;
+    width: 190mm;
+    height: auto;
   }
   .footer {
     font-size: 9px;
     color: #666;
-    border-top: 1px solid #ccc;
-    padding-top: 6px;
+    margin-top: 3mm;
   }
 </style>
 </head>
 <body>
-  <div class="left">
+  <div class="top">
     <div class="header-block">
       <strong>Tävlingsplats</strong>
       Klass<br>
@@ -122,11 +122,9 @@ function buildPrintHtml(dataUrl: string, obstacleRows: string, arenaW: number, a
       <h3>Hinder</h3>
       ${obstacleRows}
     </div>
-    <div class="footer">${arenaW} × ${arenaH} m</div>
   </div>
-  <div class="right">
-    <img src="${dataUrl}" alt="Course map">
-  </div>
+  <img class="map" src="${dataUrl}" alt="Course map">
+  <div class="footer">${arenaW} × ${arenaH} m</div>
 </body>
 </html>`;
 }
