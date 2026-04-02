@@ -8,9 +8,9 @@ function naturalCompare(a: string, b: string): number {
 
 function buildObstacleRows(placed: PlacedObstacle[]): string {
   const numbered = placed
-    .filter((p) => p.sequenceNum !== '')
+    .filter((p) => !!p.sequenceNum)
     .sort((a, b) => naturalCompare(a.sequenceNum, b.sequenceNum));
-  const unnumbered = placed.filter((p) => p.sequenceNum === '');
+  const unnumbered = placed.filter((p) => !p.sequenceNum);
   const sorted = [...numbered, ...unnumbered];
 
   return sorted
