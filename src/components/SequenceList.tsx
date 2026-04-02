@@ -76,6 +76,7 @@ export default function SequenceList() {
                   setEditingId(null);
                 }}
                 onKeyDown={(e) => {
+                  if (e.key === 'Escape') { setEditingId(null); return; }
                   if (e.key === 'Enter') {
                     updateVisit(visit.id, { num: editValue.trim() || visit.num });
                     setEditingId(null);
