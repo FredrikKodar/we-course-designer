@@ -5,6 +5,9 @@ import type { PlacedObstacle, Visit, RouteSegment, WEClass, ViewMode, PathLineTy
 import { runRules } from '../utils/compliance';
 import { buildPresetPieces } from '../utils/presets';
 
+export const MIN_ZOOM = 0.25;
+export const MAX_ZOOM = 4;
+
 // Subset of state stored in localStorage (must be JSON-serialisable)
 type PersistedState = Pick<
   StoreState,
@@ -156,7 +159,7 @@ const useStore = create<StoreState>()(
       setSnapToGrid: (v) => set({ snapToGrid: v }),
       setShowPath: (v) => set({ showPath: v }),
       setViewMode: (v) => set({ viewMode: v }),
-      setZoom: (z) => set({ zoom: Math.min(4, Math.max(0.25, z)) }),
+      setZoom: (z) => set({ zoom: Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, z)) }),
       setPan: (x, y) => set({ panX: x, panY: y }),
       setPathStyle: (lineType, weight, arrowSize) =>
         set({ pathLineType: lineType, pathLineWeight: weight, pathArrowSize: arrowSize }),

@@ -2,7 +2,7 @@ import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { Stage, Layer, Rect, Line, Text } from 'react-konva';
 import Konva from 'konva';
 import type { ViewMode } from '../types';
-import useStore from '../store/useStore';
+import useStore, { MIN_ZOOM, MAX_ZOOM } from '../store/useStore';
 import { OBSTACLES } from '../data/obstacles';
 import { screenToWorld } from '../utils/coords';
 import ObstacleGroup from './ObstacleGroup';
@@ -173,7 +173,7 @@ export default function Canvas() {
     e.evt.preventDefault();
     const delta = e.evt.deltaY > 0 ? 0.9 : 1.1;
     // Clamp here so pan math uses the actual resulting zoom, not an unclamped value
-    const newZoom = Math.min(4, Math.max(0.25, zoom * delta));
+    const newZoom = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, zoom * delta));
     const pointer = e.target.getStage()?.getPointerPosition();
     if (!pointer) {
       setZoom(newZoom);
