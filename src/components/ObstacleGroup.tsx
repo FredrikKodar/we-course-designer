@@ -204,32 +204,34 @@ export default function ObstacleGroup({
         )}
       </Group>
 
-      {/* Connection dots — visible on hover */}
-      {isHovered && (
-        <>
-          <Circle
-            x={entryDotX}
-            y={entryDotY}
-            radius={5}
-            fill="#333"
-            stroke="white"
-            strokeWidth={1.5}
-            cursor="crosshair"
-            onMouseDown={(e) => { e.cancelBubble = true; onDotMouseDown('entry', entryDotX, entryDotY); }}
-          />
-          {!sameDot && (
-            <Circle
-              x={exitDotX}
-              y={exitDotY}
-              radius={5}
-              fill="#333"
-              stroke="white"
-              strokeWidth={1.5}
-              cursor="crosshair"
-              onMouseDown={(e) => { e.cancelBubble = true; onDotMouseDown('exit', exitDotX, exitDotY); }}
-            />
-          )}
-        </>
+      {/* Connection dots — always rendered; visible on hover or when selected */}
+      <Circle
+        x={entryDotX}
+        y={entryDotY}
+        radius={5}
+        fill="#333"
+        stroke="white"
+        strokeWidth={1.5}
+        opacity={isHovered || isSelected ? 1 : 0}
+        cursor="crosshair"
+        onMouseEnter={() => onHoverChange(true)}
+        onMouseLeave={() => onHoverChange(false)}
+        onMouseDown={(e) => { e.cancelBubble = true; onDotMouseDown('entry', entryDotX, entryDotY); }}
+      />
+      {!sameDot && (
+        <Circle
+          x={exitDotX}
+          y={exitDotY}
+          radius={5}
+          fill="#333"
+          stroke="white"
+          strokeWidth={1.5}
+          opacity={isHovered || isSelected ? 1 : 0}
+          cursor="crosshair"
+          onMouseEnter={() => onHoverChange(true)}
+          onMouseLeave={() => onHoverChange(false)}
+          onMouseDown={(e) => { e.cancelBubble = true; onDotMouseDown('exit', exitDotX, exitDotY); }}
+        />
       )}
 
       {/* Approach arrows and badges per Visit */}
