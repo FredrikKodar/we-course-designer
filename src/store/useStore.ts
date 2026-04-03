@@ -90,7 +90,7 @@ const useStore = create<StoreState>()(
       showGrid: true,
       snapToGrid: true,
       showPath: true,
-      viewMode: 'side',
+      viewMode: 'end',
 
       // Canvas transform
       zoom: 1,

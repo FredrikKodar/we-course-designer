@@ -89,7 +89,7 @@ export default function Sidebar() {
         </div>
         <div className="flex flex-col gap-1.5">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] text-gray-500">Width</span>
+            <span className="text-[11px] text-gray-500">Length</span>
             <input
               type="number"
               min="10"
@@ -100,7 +100,7 @@ export default function Sidebar() {
             />
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-[11px] text-gray-500">Length</span>
+            <span className="text-[11px] text-gray-500">Width</span>
             <input
               type="number"
               min="10"
