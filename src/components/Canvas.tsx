@@ -71,7 +71,7 @@ function GridLabels({ ea, scale, panX, panY }: GridProps) {
         text={`${i}m`}
         fontSize={fs}
         fontFamily="monospace"
-        fill="rgba(0,0,0,0.28)"
+        fill="rgba(0,0,0,0.65)"
       />,
     );
   }
@@ -84,7 +84,7 @@ function GridLabels({ ea, scale, panX, panY }: GridProps) {
         text={`${j}m`}
         fontSize={fs}
         fontFamily="monospace"
-        fill="rgba(0,0,0,0.28)"
+        fill="rgba(0,0,0,0.65)"
       />,
     );
   }
