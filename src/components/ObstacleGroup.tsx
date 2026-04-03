@@ -107,8 +107,6 @@ export default function ObstacleGroup({
   // Rotation handle position (above obstacle, in local coords before rotation)
   const handleDist = drawH / 2 + 18;
 
-  // Obstacle stroke colour
-  const strokeColor = violation ? '#E24B4A' : isSelected ? '#BA7517' : 'rgba(0,0,0,0.3)';
 
   // Handle drag end — convert screen position back to world top-left
   const handleDragEnd = (e: Konva.KonvaEventObject<MouseEvent>) => {
@@ -180,25 +178,15 @@ export default function ObstacleGroup({
           />
         )}
 
-        {/* Obstacle bounding rect */}
-        <Rect
-          x={-drawW / 2}
-          y={-drawH / 2}
-          width={drawW}
-          height={drawH}
-          stroke={strokeColor}
-          strokeWidth={isSelected ? 2.5 : 1}
-        />
-
-        {/* Selection outline */}
-        {isSelected && (
+        {/* Selection / violation outline */}
+        {(isSelected || violation) && (
           <Rect
             x={-drawW / 2 - 5}
             y={-drawH / 2 - 5}
             width={drawW + 10}
             height={drawH + 10}
-            stroke="rgba(186,117,23,0.4)"
-            strokeWidth={1}
+            stroke={violation ? 'rgba(226,75,74,0.6)' : 'rgba(186,117,23,0.5)'}
+            strokeWidth={isSelected ? 1.5 : 1}
             dash={[4, 3]}
           />
         )}
@@ -319,7 +307,7 @@ export default function ObstacleGroup({
                 node.position({ x: bx, y: by });
               }}
             >
-              <Circle radius={bR} fill={violation ? '#E24B4A' : '#BA7517'} />
+              <Circle radius={bR} fill={violation ? '#E24B4A' : '#BA7517'} stroke="#111" strokeWidth={1.5} />
               {isVisitSel && (
                 <Circle radius={bR + 4} stroke="rgba(186,117,23,0.5)" strokeWidth={2} />
               )}
@@ -332,7 +320,7 @@ export default function ObstacleGroup({
                 fontSize={Math.max(8, bR)}
                 fontFamily="monospace"
                 fontStyle="bold"
-                fill="#fff"
+                fill="#111"
                 align="center"
                 verticalAlign="middle"
               />
