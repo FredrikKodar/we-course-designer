@@ -134,17 +134,47 @@ const useStore = create<StoreState>()(
         const snappedCy = snap ? Math.round(cy) : cy;
         const nx = snappedCx - ob.w / 2;
         const ny = snappedCy - ob.h / 2;
+        const dx = nx - ob.x;
+        const dy = ny - ob.y;
         set((s) => ({
-          placed: s.placed.map((p) => (p.id === id ? { ...p, x: nx, y: ny } : p)),
+          placed: s.placed.map((p) => {
+            if (p.id === id) return { ...p, x: nx, y: ny };
+            if (ob.groupId && p.groupId === ob.groupId) return { ...p, x: p.x + dx, y: p.y + dy };
+            return p;
+          }),
         }));
         get().runCompliance();
       },
 
       rotateObstacle: (id, degrees) => {
+        const { placed } = get();
+        const ob = placed.find((p) => p.id === id);
+        if (!ob) return;
+        const newRot = ((degrees % 360) + 360) % 360;
+        if (!ob.groupId) {
+          set((s) => ({
+            placed: s.placed.map((p) => (p.id === id ? { ...p, rotation: newRot } : p)),
+          }));
+          get().runCompliance();
+          return;
+        }
+        // Rotate all group members around the group centroid
+        const group = placed.filter((p) => p.groupId === ob.groupId);
+        const groupCx = group.reduce((sum, p) => sum + p.x + p.w / 2, 0) / group.length;
+        const groupCy = group.reduce((sum, p) => sum + p.y + p.h / 2, 0) / group.length;
+        const deltaRad = ((newRot - ob.rotation) * Math.PI) / 180;
+        const cos = Math.cos(deltaRad);
+        const sin = Math.sin(deltaRad);
         set((s) => ({
-          placed: s.placed.map((p) =>
-            p.id === id ? { ...p, rotation: ((degrees % 360) + 360) % 360 } : p,
-          ),
+          placed: s.placed.map((p) => {
+            if (!p.groupId || p.groupId !== ob.groupId) return p;
+            const pcx = p.x + p.w / 2 - groupCx;
+            const pcy = p.y + p.h / 2 - groupCy;
+            const newCx = groupCx + pcx * cos - pcy * sin;
+            const newCy = groupCy + pcx * sin + pcy * cos;
+            const newPieceRot = (((p.rotation + (newRot - ob.rotation)) % 360) + 360) % 360;
+            return { ...p, x: newCx - p.w / 2, y: newCy - p.h / 2, rotation: newPieceRot };
+          }),
         }));
         get().runCompliance();
       },
