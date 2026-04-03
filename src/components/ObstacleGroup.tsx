@@ -307,7 +307,7 @@ export default function ObstacleGroup({
                 node.position({ x: bx, y: by });
               }}
             >
-              <Circle radius={bR} fill={violation ? '#E24B4A' : '#BA7517'} stroke="#111" strokeWidth={1.5} />
+              <Circle radius={bR} fill={violation ? '#fde8e8' : '#f5f5f0'} stroke={violation ? '#E24B4A' : '#111'} strokeWidth={1.5} />
               {isVisitSel && (
                 <Circle radius={bR + 4} stroke="rgba(186,117,23,0.5)" strokeWidth={2} />
               )}
