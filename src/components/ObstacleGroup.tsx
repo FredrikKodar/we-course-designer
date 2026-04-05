@@ -347,7 +347,7 @@ export default function ObstacleGroup({
             <Circle radius={HANDLE_RADIUS} fill="#1a1a18" cursor="grab" />
             <Text
               text="↻"
-              fontSize={11}
+              fontSize={14}
               fill="white"
               width={HANDLE_RADIUS * 2}
               height={HANDLE_RADIUS * 2}
