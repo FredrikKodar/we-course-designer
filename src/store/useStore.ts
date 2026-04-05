@@ -83,8 +83,7 @@ export interface StoreState {
 const useStore = create<StoreState>()(
   persist(
     (set, get) => {
-      // snapshot() is called by mutating actions (wired in Task 2)
-      // @ts-ignore — will be used in Task 2
+      // snapshot() is called by mutating actions to capture undo history before each mutation
       const snapshot = () => {
         const { past, placed, visits } = get();
         return {
@@ -141,7 +140,7 @@ const useStore = create<StoreState>()(
         const cx = snap ? Math.round(wx) : wx;
         const cy = snap ? Math.round(wy) : wy;
         const pieces = buildPresetPieces(type, cx, cy);
-        set((s) => ({ placed: [...s.placed, ...pieces] }));
+        set((s) => ({ ...snapshot(), placed: [...s.placed, ...pieces] }));
         get().runCompliance();
       },
 
@@ -155,17 +154,13 @@ const useStore = create<StoreState>()(
         const snappedCy = snap ? Math.round(cy) : cy;
         const nx = snappedCx - ob.w / 2;
         const ny = snappedCy - ob.h / 2;
-        set((s) => ({
-          placed: s.placed.map((p) => (p.id === id ? { ...p, x: nx, y: ny } : p)),
-        }));
+        set((s) => ({ ...snapshot(), placed: s.placed.map((p) => (p.id === id ? { ...p, x: nx, y: ny } : p)) }));
         get().runCompliance();
       },
 
       rotateObstacle: (id, degrees) => {
         const newRot = ((degrees % 360) + 360) % 360;
-        set((s) => ({
-          placed: s.placed.map((p) => (p.id === id ? { ...p, rotation: newRot } : p)),
-        }));
+        set((s) => ({ ...snapshot(), placed: s.placed.map((p) => (p.id === id ? { ...p, rotation: newRot } : p)) }));
         get().runCompliance();
       },
 
@@ -173,6 +168,7 @@ const useStore = create<StoreState>()(
         set((s) => {
           const removedVisitIds = new Set(s.visits.filter((v) => v.obstacleId === id).map((v) => v.id));
           return {
+            ...snapshot(),
             placed: s.placed.filter((p) => p.id !== id),
             visits: s.visits.filter((v) => v.obstacleId !== id),
             selectedId: s.selectedId === id ? null : s.selectedId,
@@ -191,7 +187,16 @@ const useStore = create<StoreState>()(
       setPan: (x, y) => set({ panX: x, panY: y }),
       setPathStyle: (lineType, weight, arrowSize) =>
         set({ pathLineType: lineType, pathLineWeight: weight, pathArrowSize: arrowSize }),
-      clearAll: () => set({ placed: [], visits: [], selectedId: null, selectedVisitId: null, violations: new Map() }),
+      clearAll: () => {
+        set((_s) => ({
+          ...snapshot(),
+          placed: [],
+          visits: [],
+          selectedId: null,
+          selectedVisitId: null,
+          violations: new Map(),
+        }));
+      },
 
       updateObstacleMeta: (id, note) => {
         set((s) => ({
@@ -204,6 +209,7 @@ const useStore = create<StoreState>()(
         const existing = visits.find((v) => v.obstacleId === obstacleId && v.entryPoint === entryPoint);
         if (existing) {
           set((s) => ({
+            ...snapshot(),
             visits: s.visits.map((v) =>
               v.id === existing.id ? { ...v, approachAngle, approachLength } : v,
             ),
@@ -224,17 +230,19 @@ const useStore = create<StoreState>()(
           badgeOffX: 0,
           badgeOffY: -1.5,
         };
-        set((s) => ({ visits: [...s.visits, newVisit] }));
+        set((s) => ({ ...snapshot(), visits: [...s.visits, newVisit] }));
       },
 
       updateVisit: (id, patch) => {
         set((s) => ({
+          ...snapshot(),
           visits: s.visits.map((v) => (v.id === id ? { ...v, ...patch } : v)),
         }));
       },
 
       deleteVisit: (id) => {
         set((s) => ({
+          ...snapshot(),
           visits: s.visits.filter((v) => v.id !== id),
           selectedVisitId: s.selectedVisitId === id ? null : s.selectedVisitId,
         }));
