@@ -235,10 +235,9 @@ export const OBSTACLES: ObstacleDef[] = [
     exit:  { x: 0, y:  4 },
     viewBox: '-90 -90 180 180',
     svg: `
-      <circle cx="0" cy="0" r="76" fill="none" stroke="#1a1a18" stroke-width="2.5"
-              stroke-dasharray="270 30" stroke-dashoffset="-15"/>
-      <circle cx="0" cy="0" r="40" fill="none" stroke="#1a1a18" stroke-width="1.5"/>
-      <circle cx="0" cy="0" r="6"  fill="#1a1a18"/>
+      <circle cx="0" cy="0" r="80" fill="none" stroke="#1a1a18" stroke-width="2.5"
+              stroke-dasharray="330 90"/>
+      <circle cx="0" cy="0" r="50" fill="none" stroke="#1a1a18" stroke-width="1.5"/>
     `,
   },
 
