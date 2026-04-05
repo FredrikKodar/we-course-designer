@@ -361,9 +361,8 @@ export default function ObstacleGroup({
           y={badgeY}
           onClick={(e) => { e.cancelBubble = true; onDelete(); }}
           onTap={(e) => { e.cancelBubble = true; onDelete(); }}
-          cursor="pointer"
         >
-          <Circle radius={BADGE_R} fill="#1a1a18" />
+          <Circle radius={BADGE_R} fill="#1a1a18" cursor="pointer" />
           <Text
             text="×"
             fontSize={13}
