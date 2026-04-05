@@ -9,6 +9,10 @@ export default function Topbar() {
   const setShowGrid = useStore((s) => s.setShowGrid);
   const setShowPath = useStore((s) => s.setShowPath);
   const clearAll = useStore((s) => s.clearAll);
+  const undo = useStore((s) => s.undo);
+  const redo = useStore((s) => s.redo);
+  const canUndo = useStore((s) => s.past.length > 0);
+  const canRedo = useStore((s) => s.future.length > 0);
 
   const btnClass = (active: boolean) =>
     `text-xs px-3 py-1.5 border rounded-md cursor-pointer transition-all whitespace-nowrap ${
@@ -27,6 +31,23 @@ export default function Topbar() {
       </div>
 
       <div className="ml-auto flex items-center gap-1.5">
+        <button
+          className={`text-xs px-3 py-1.5 border rounded-md transition-all whitespace-nowrap ${canUndo ? 'bg-white border-gray-200 text-gray-500 hover:bg-[#f5f5f0] hover:border-gray-400 hover:text-gray-800 cursor-pointer' : 'bg-white border-gray-100 text-gray-300 cursor-default'}`}
+          onClick={undo}
+          disabled={!canUndo}
+          title="Undo (Ctrl+Z)"
+        >
+          ↩ Undo
+        </button>
+        <button
+          className={`text-xs px-3 py-1.5 border rounded-md transition-all whitespace-nowrap ${canRedo ? 'bg-white border-gray-200 text-gray-500 hover:bg-[#f5f5f0] hover:border-gray-400 hover:text-gray-800 cursor-pointer' : 'bg-white border-gray-100 text-gray-300 cursor-default'}`}
+          onClick={redo}
+          disabled={!canRedo}
+          title="Redo (Ctrl+Y)"
+        >
+          ↪ Redo
+        </button>
+        <div className="w-px h-4 bg-gray-200 mx-0.5" />
         <button className={btnClass(showGrid)} onClick={() => setShowGrid(!showGrid)}>
           Grid
         </button>
