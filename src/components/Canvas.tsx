@@ -175,15 +175,34 @@ export default function Canvas() {
     fitArena();
   }, [fitArena]);
 
-  // Delete key handler for selected visit
+  // Keyboard shortcuts: undo, redo, delete visit/obstacle
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const tag = (e.target as HTMLElement).tagName;
       if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+
+      if (e.key === 'z' && (e.ctrlKey || e.metaKey) && !e.shiftKey) {
+        e.preventDefault();
+        useStore.getState().undo();
+        return;
+      }
+
+      if (
+        (e.key === 'y' && (e.ctrlKey || e.metaKey)) ||
+        (e.key === 'z' && (e.ctrlKey || e.metaKey) && e.shiftKey)
+      ) {
+        e.preventDefault();
+        useStore.getState().redo();
+        return;
+      }
+
       if (e.key === 'Delete' || e.key === 'Backspace') {
-        const { selectedVisitId: svId } = useStore.getState();
+        const { selectedVisitId: svId, selectedId: obId } = useStore.getState();
         if (svId) {
           useStore.getState().deleteVisit(svId);
+          e.preventDefault();
+        } else if (obId) {
+          useStore.getState().deleteObstacle(obId);
           e.preventDefault();
         }
       }
