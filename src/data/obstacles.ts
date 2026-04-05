@@ -39,22 +39,16 @@ export const OBSTACLES: ObstacleDef[] = [
   {
     id: 'tre-tunnor',
     label: 'Tre tunnor',
-    w: 3.5, h: 3,
-    entry: { x: 0,    y: -1.5 },
-    exit:  { x: 0,    y:  1.5 },
-    viewBox: '-45 -40 90 80',
+    w: 3.8, h: 3.4,
+    entry: { x: 0, y: 1.3 },
+    exit: { x: 0, y: 1.3 },
+    viewBox: '-38 -43 76 68',
     svg: `
-      <circle cx="0"   cy="-26" r="8" fill="#1a1a18"/>
-      <circle cx="-26" cy="20"  r="8" fill="#1a1a18"/>
-      <circle cx="26"  cy="20"  r="8" fill="#1a1a18"/>
+      <circle cx="0"   cy="-35" r="8" fill="#1a1a18"/>
+      <circle cx="-30" cy="17"  r="8" fill="#1a1a18"/>
+      <circle cx="30"  cy="17"  r="8" fill="#1a1a18"/>
     `,
-    preset: 'tre-tunnor',
-    presetPieces: [
-      { type: 'tunna', dx:  0,    dy: -1.5 },
-      { type: 'tunna', dx: -1.5,  dy:  1.2 },
-      { type: 'tunna', dx:  1.5,  dy:  1.2 },
-    ],
-  },
+    },
 
   {
     id: 'lans-tunna',
