@@ -47,6 +47,12 @@ export interface StoreState {
   activeClassIdx: number;
   selectedVisitId: string | null;
 
+  // Undo/redo (session-only, not persisted)
+  past: Array<{ placed: PlacedObstacle[]; visits: Visit[] }>;
+  future: Array<{ placed: PlacedObstacle[]; visits: Visit[] }>;
+  undo: () => void;
+  redo: () => void;
+
   // fitArena and stageRef are set by Canvas after mount via useStore.setState()
   fitArena?: () => void;
   stageRef?: Konva.Stage;
@@ -76,7 +82,18 @@ export interface StoreState {
 
 const useStore = create<StoreState>()(
   persist(
-    (set, get) => ({
+    (set, get) => {
+      // snapshot() is called by mutating actions (wired in Task 2)
+      // @ts-ignore — will be used in Task 2
+      const snapshot = () => {
+        const { past, placed, visits } = get();
+        return {
+          past: [...past, { placed, visits }].slice(-50) as Array<{ placed: PlacedObstacle[]; visits: Visit[] }>,
+          future: [] as Array<{ placed: PlacedObstacle[]; visits: Visit[] }>,
+        };
+      };
+
+      return {
       // Arena
       arenaW: 60,
       arenaH: 40,
@@ -108,6 +125,10 @@ const useStore = create<StoreState>()(
       classes: [],
       activeClassIdx: 0,
       selectedVisitId: null,
+
+      // Undo/redo
+      past: [],
+      future: [],
 
       // Actions
       setArena: (w, h) => {
@@ -221,11 +242,42 @@ const useStore = create<StoreState>()(
 
       setSelectedVisitId: (id) => set({ selectedVisitId: id }),
 
+      undo: () => {
+        const { past, placed, visits, future } = get();
+        if (past.length === 0) return;
+        const prev = past[past.length - 1];
+        set({
+          past: past.slice(0, -1),
+          future: [{ placed, visits }, ...future],
+          placed: prev.placed,
+          visits: prev.visits,
+          selectedId: null,
+          selectedVisitId: null,
+        });
+        get().runCompliance();
+      },
+
+      redo: () => {
+        const { past, placed, visits, future } = get();
+        if (future.length === 0) return;
+        const next = future[0];
+        set({
+          past: [...past, { placed, visits }],
+          future: future.slice(1),
+          placed: next.placed,
+          visits: next.visits,
+          selectedId: null,
+          selectedVisitId: null,
+        });
+        get().runCompliance();
+      },
+
       runCompliance: () => {
         const { placed, arenaW, arenaH } = get();
         set({ violations: runRules(placed, arenaW, arenaH) });
       },
-    }),
+    };
+  },
     {
       name: 'we-course-designer',
       partialize: (state): PersistedState => ({
