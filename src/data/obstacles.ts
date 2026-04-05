@@ -26,20 +26,15 @@ export const OBSTACLES: ObstacleDef[] = [
   {
     id: 'tva-tunnor',
     label: 'Två tunnor',
-    w: 6, h: 0.8,
-    entry: { x: -3, y: 0 },
-    exit:  { x:  3, y: 0 },
-    viewBox: '-70 -16 140 32',
+    w: 3.8, h: 0.8,
+    entry: { x: 0, y: 0 },
+    exit:  { x: 0, y: 0 },
+    viewBox: '-38 -8 76 16',
     svg: `
       <circle cx="-30" cy="0" r="8" fill="#1a1a18"/>
       <circle cx="30"  cy="0" r="8" fill="#1a1a18"/>
     `,
-    preset: 'tva-tunnor',
-    presetPieces: [
-      { type: 'tunna', dx: -1.5, dy: 0 },
-      { type: 'tunna', dx:  1.5, dy: 0 },
-    ],
-  },
+    },
 
   {
     id: 'tre-tunnor',
