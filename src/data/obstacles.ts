@@ -96,30 +96,29 @@ export const OBSTACLES: ObstacleDef[] = [
   {
     id: 'parallellslalom',
     label: 'Parallellslalom',
-    w: 18, h: 6,
-    entry: { x: -9, y: 0 },
-    exit:  { x:  9, y: 0 },
-    viewBox: '-185 -70 370 140',
+    w: 21, h: 10,
+    entry: { x: -10.5, y: -4.5 },
+    exit: { x: 10.5, y: -4.5 },
+    viewBox: '-210 -100 420 200',
     svg: `
-      <circle cx="-120" cy="-30" r="6" fill="#1a1a18"/>
-      <circle cx="-40"  cy="-30" r="6" fill="#1a1a18"/>
-      <circle cx="40"   cy="-30" r="6" fill="#1a1a18"/>
-      <circle cx="120"  cy="-30" r="6" fill="#1a1a18"/>
-      <circle cx="-80"  cy="30"  r="6" fill="#1a1a18"/>
-      <circle cx="0"    cy="30"  r="6" fill="#1a1a18"/>
-      <circle cx="80"   cy="30"  r="6" fill="#1a1a18"/>
+      <circle cx="-180" cy="-60" r="3" fill="#1a1a18"/>
+      <circle cx="-60"  cy="-60" r="3" fill="#1a1a18"/>
+      <circle cx="60"   cy="-60" r="3" fill="#1a1a18"/>
+      <circle cx="180"  cy="-60" r="3" fill="#1a1a18"/>
+      <circle cx="-120" cy="60"  r="3" fill="#1a1a18"/>
+      <circle cx="0"    cy="60"  r="3" fill="#1a1a18"/>
+      <circle cx="120"  cy="60"  r="3" fill="#1a1a18"/>
+      <path d="M -200,-90 L -180,-90
+      C -180,-90 -145,-90 -150,-60 L -150,60 
+      C -150,90 -95,100 -90,60 L -90,-60 
+      C -90,-90 -35,-100 -30,-60 L -30,60 
+      C -30,90 25,100 30,60 L 30,-60 
+      C 30,-90 85,-100 90,-60 L 90,60 
+      C 90,90 145,100 150,60 L 150,-60 
+      C 150,-90 170,-90 180,-90  L 200,-90"
+            fill="none" stroke="#1a1a18" stroke-width="1" stroke-dasharray="8 6" stroke-linecap="round"/>
     `,
-    preset: 'parallellslalom',
-    presetPieces: [
-      { type: 'tunna', dx: -6, dy: -3 },
-      { type: 'tunna', dx: -2, dy: -3 },
-      { type: 'tunna', dx:  2, dy: -3 },
-      { type: 'tunna', dx:  6, dy: -3 },
-      { type: 'tunna', dx: -4, dy:  3 },
-      { type: 'tunna', dx:  0, dy:  3 },
-      { type: 'tunna', dx:  4, dy:  3 },
-    ],
-  },
+    },
 
   {
     id: 'ryggning',
