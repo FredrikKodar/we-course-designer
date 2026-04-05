@@ -144,28 +144,28 @@ export const OBSTACLES: ObstacleDef[] = [
   {
     id: 'grind',
     label: 'Grind',
-    w: 3.5, h: 0.3,
+    w: 3, h: 0.5,
     entry: { x: 0, y: -1 },
     exit:  { x: 0, y:  1 },
-    viewBox: '-44 -12 88 24',
+    viewBox: '-60 -10 120 20',
     svg: `
       <rect x="-40" y="-5" width="72" height="10" rx="2" fill="#1a1a18"/>
-      <circle cx="-40" cy="0" r="9" fill="#1a1a18"/>
-      <circle cx="32"  cy="0" r="9" fill="white" stroke="#1a1a18" stroke-width="2.5"/>
+      <circle cx="-40" cy="0" r="8" fill="#1a1a18"/>
+      <circle cx="40"  cy="0" r="8" fill="white" stroke="#1a1a18" stroke-width="2.5"/>
     `,
   },
 
   {
     id: 'sidvarts',
     label: 'Sidvärts med bom',
-    w: 4, h: 0.3,
-    entry: { x: 0, y: -1 },
-    exit:  { x: 0, y:  1 },
-    viewBox: '-50 -10 100 20',
+    w: 4, h: 0.5,
+    entry: { x: -2, y: 0 },
+    exit:  { x: 2, y:  0 },
+    viewBox: '-50 -12.5 100 25',
     svg: `
-      <rect x="-44" y="-5" width="88" height="10" rx="2" fill="#1a1a18"/>
-      <line x1="-44" y1="-5" x2="-44" y2="5" stroke="white" stroke-width="3" stroke-dasharray="3 2"/>
-      <line x1="44"  y1="-5" x2="44"  y2="5" stroke="white" stroke-width="3" stroke-dasharray="3 2"/>
+      <rect x="-50" y="-5" width="100" height="10" rx="2" fill="#1a1a18"/>
+      <line x1="-44" y1="-5" x2="-44" y2="5" stroke="white" stroke-width="5" stroke-dasharray="3 2"/>
+      <line x1="44"  y1="-5" x2="44"  y2="5" stroke="white" stroke-width="5" stroke-dasharray="3 2"/>
     `,
   },
 
@@ -191,18 +191,18 @@ export const OBSTACLES: ObstacleDef[] = [
   {
     id: 'trabro',
     label: 'Träbro',
-    w: 4, h: 1.5,
+    w: 5, h: 2,
     entry: { x: -2, y: 0 },
     exit:  { x:  2, y: 0 },
     viewBox: '-50 -20 100 40',
     svg: `
-      <rect x="-44" y="-14" width="88" height="28" rx="2" fill="none" stroke="#1a1a18" stroke-width="2.5"/>
+      <rect x="-40" y="-14" width="80" height="28" rx="2" fill="none" stroke="#1a1a18" stroke-width="2.5"/>
       <line x1="-30" y1="-14" x2="-16" y2="14" stroke="#1a1a18" stroke-width="1" stroke-dasharray="3 2"/>
       <line x1="-14" y1="-14" x2="0"   y2="14" stroke="#1a1a18" stroke-width="1" stroke-dasharray="3 2"/>
       <line x1="2"   y1="-14" x2="16"  y2="14" stroke="#1a1a18" stroke-width="1" stroke-dasharray="3 2"/>
       <line x1="18"  y1="-14" x2="32"  y2="14" stroke="#1a1a18" stroke-width="1" stroke-dasharray="3 2"/>
-      <polygon points="-44,-14 -36,-22 -36,-14" fill="#1a1a18"/>
-      <polygon points="44,-14 36,-22 36,-14"    fill="#1a1a18"/>
+      <polygon points="-40,-14 -32,-22 -32,-14" fill="#1a1a18"/>
+      <polygon points="40,-14 32,-22 32,-14"    fill="#1a1a18"/>
     `,
   },
 
@@ -232,7 +232,7 @@ export const OBSTACLES: ObstacleDef[] = [
     label: 'Fålla',
     w: 8, h: 8,
     entry: { x: 0, y: -4 },
-    exit:  { x: 0, y:  4 },
+    exit:  { x: 0, y:  -4 },
     viewBox: '-90 -90 180 180',
     svg: `
       <circle cx="0" cy="0" r="80" fill="none" stroke="#1a1a18" stroke-width="2.5"
