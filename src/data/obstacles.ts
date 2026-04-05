@@ -69,16 +69,16 @@ export const OBSTACLES: ObstacleDef[] = [
   {
     id: 'enkelslalom',
     label: 'Enkelslalom',
-    w: 8, h: 0.8,
-    entry: { x: -4, y: 0 },
-    exit:  { x:  4, y: 0 },
-    viewBox: '-90 -16 180 32',
+    w: 26, h: 1,
+    entry: { x: -13, y: 0 },
+    exit:  { x: 13, y: 0 },
+    viewBox: '-260 -10 520 20',
     svg: `
-      <circle cx="-64" cy="0" r="6" fill="#1a1a18"/>
-      <circle cx="-32" cy="0" r="6" fill="#1a1a18"/>
-      <circle cx="0"   cy="0" r="6" fill="#1a1a18"/>
-      <circle cx="32"  cy="0" r="6" fill="#1a1a18"/>
-      <circle cx="64"  cy="0" r="6" fill="#1a1a18"/>
+      <circle cx="-240" cy="0" r="3" fill="#1a1a18"/>
+      <circle cx="-120" cy="0" r="3" fill="#1a1a18"/>
+      <circle cx="0"   cy="0" r="3" fill="#1a1a18"/>
+      <circle cx="120"  cy="0" r="3" fill="#1a1a18"/>
+      <circle cx="240"  cy="0" r="3" fill="#1a1a18"/>
     `,
   },
 
