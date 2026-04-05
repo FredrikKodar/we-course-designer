@@ -92,7 +92,7 @@ export default function ObstacleGroup({
   onUpdateVisit,
   onDelete,
 }: ObstacleGroupProps) {
-  const HANDLE_RADIUS = 7;
+  const HANDLE_RADIUS = 9;
 
   // SVG image — always use def dimensions so stale localStorage w/h never distort rendering
   const pixelW = def.w * SCALE;
@@ -343,14 +343,21 @@ export default function ObstacleGroup({
             strokeWidth={1}
             dash={[3, 3]}
           />
-          <Circle
-            x={handleX}
-            y={handleY}
-            radius={HANDLE_RADIUS}
-            fill="#BA7517"
-            draggable
-            onDragMove={handleRotateDrag}
-          />
+          <Group x={handleX} y={handleY} draggable onDragMove={handleRotateDrag}>
+            <Circle radius={HANDLE_RADIUS} fill="#1a1a18" cursor="grab" />
+            <Text
+              text="↻"
+              fontSize={11}
+              fill="white"
+              width={HANDLE_RADIUS * 2}
+              height={HANDLE_RADIUS * 2}
+              x={-HANDLE_RADIUS}
+              y={-HANDLE_RADIUS}
+              align="center"
+              verticalAlign="middle"
+              listening={false}
+            />
+          </Group>
         </>
       )}
 
