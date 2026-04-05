@@ -129,19 +129,13 @@ export const OBSTACLES: ObstacleDef[] = [
   {
     id: 'korridor',
     label: 'Klocka i korridor',
-    w: 1.5, h: 5,
+    w: 2, h: 5,
     entry: { x: 0, y: -2.5 },
-    exit:  { x: 0, y:  2.5 },
+    exit: { x: 0, y: -2.5 },
     viewBox: '-24 -60 48 120',
     svg: `
-      <circle cx="-14" cy="-40" r="6" fill="#1a1a18"/>
-      <circle cx="14"  cy="-40" r="6" fill="#1a1a18"/>
-      <circle cx="-14" cy="0"   r="6" fill="#1a1a18"/>
-      <circle cx="14"  cy="0"   r="6" fill="#1a1a18"/>
-      <circle cx="-14" cy="40"  r="6" fill="#1a1a18"/>
-      <circle cx="14"  cy="40"  r="6" fill="#1a1a18"/>
-      <text x="0" y="40" text-anchor="middle" dominant-baseline="central"
-            font-size="12" font-family="monospace" font-weight="bold" fill="#1a1a18">X</text>
+      <rect x='-18' y="-48" width="3" height="96" rx="2" fill="#1a1a18"/>
+      <rect x='18' y="-48" width="3" height="96" rx="2" fill="#1a1a18"/>
     `,
   },
 
