@@ -92,21 +92,19 @@ export default function ObstacleGroup({
 }: ObstacleGroupProps) {
   const HANDLE_RADIUS = 7;
 
-  // SVG image
-  const pixelW = placed.w * SCALE;
-  const pixelH = placed.h * SCALE;
+  // SVG image — always use def dimensions so stale localStorage w/h never distort rendering
+  const pixelW = def.w * SCALE;
+  const pixelH = def.h * SCALE;
   const image = useSvgImage(placed.type, def.svg, def.viewBox, pixelW, pixelH);
 
   // Screen position of obstacle centre
   const [sx, sy] = worldToScreen(placed.x + placed.w / 2, placed.y + placed.h / 2, coordCtx);
 
   // Scaled dimensions on screen
-  const drawW = placed.w * scale;
-  const drawH = placed.h * scale;
+  const drawW = def.w * scale;
+  const drawH = def.h * scale;
 
-  // Rotation handle position (above obstacle, in local coords before rotation)
   const handleDist = drawH / 2 + 18;
-
 
   // Handle drag end — convert screen position back to world top-left
   const handleDragEnd = (e: Konva.KonvaEventObject<MouseEvent>) => {
