@@ -10,12 +10,6 @@ export interface ConnectionPoint {
   y: number;
 }
 
-export interface PresetPiece {
-  type: string;
-  dx: number;
-  dy: number;
-}
-
 export interface ObstacleDef {
   id: string;
   label: string;
@@ -25,14 +19,6 @@ export interface ObstacleDef {
   viewBox: string;
   entry: ConnectionPoint;
   exit: ConnectionPoint;
-  preset?: string;
-  presetPieces?: PresetPiece[];
-}
-
-export interface GroupRule {
-  minDist: number;
-  maxDist: number;
-  message: (d: number) => string;
 }
 
 // ── App state data model ───────────────────────────────────────────────────
@@ -45,9 +31,7 @@ export interface PlacedObstacle {
   w: number;
   h: number;
   rotation: number;
-  groupId: string | null;
   note: string;
-  // sequenceNum, badgeOffX, badgeOffY removed — moved to Visit
 }
 
 export interface Visit {
