@@ -128,6 +128,7 @@ export default function Canvas() {
   const pathLineType = useStore((s) => s.pathLineType);
   const pathLineWeight = useStore((s) => s.pathLineWeight);
   const pathArrowSize = useStore((s) => s.pathArrowSize);
+  const deleteObstacle = useStore((s) => s.deleteObstacle);
 
   // ResizeObserver
   useEffect(() => {
@@ -394,6 +395,7 @@ export default function Canvas() {
                   setSelectedVisitId(visitId); selectObstacle(p.id);
                 }}
                 onUpdateVisit={updateVisit}
+                onDelete={() => deleteObstacle(p.id)}
               />
             );
           })}

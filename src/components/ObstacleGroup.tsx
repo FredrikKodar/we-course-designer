@@ -65,6 +65,7 @@ interface ObstacleGroupProps {
   pathArrowSize: number;
   onSelectVisit: (visitId: string) => void;
   onUpdateVisit: (id: string, patch: Partial<Pick<Visit, 'num' | 'approachAngle' | 'approachLength' | 'badgeOffX' | 'badgeOffY'>>) => void;
+  onDelete: () => void;
 }
 
 export default function ObstacleGroup({
@@ -89,6 +90,7 @@ export default function ObstacleGroup({
   pathArrowSize,
   onSelectVisit,
   onUpdateVisit,
+  onDelete,
 }: ObstacleGroupProps) {
   const HANDLE_RADIUS = 7;
 
@@ -148,6 +150,11 @@ export default function ObstacleGroup({
   const sameDot = Math.abs(entryDotX - exitDotX) < 1 && Math.abs(entryDotY - exitDotY) < 1;
   const handleX = sx + Math.sin(rotRad) * handleDist;
   const handleY = sy - Math.cos(rotRad) * handleDist;
+  const BADGE_R = 9;
+  const badgeLocalX = drawW / 2 + 5;
+  const badgeLocalY = -drawH / 2 - 5;
+  const badgeX = sx + badgeLocalX * Math.cos(rotRad) - badgeLocalY * Math.sin(rotRad);
+  const badgeY = sy + badgeLocalX * Math.sin(rotRad) + badgeLocalY * Math.cos(rotRad);
 
   return (
     <>
@@ -345,6 +352,32 @@ export default function ObstacleGroup({
             onDragMove={handleRotateDrag}
           />
         </>
+      )}
+
+      {/* Delete badge — top-right corner of selection rect */}
+      {isSelected && (
+        <Group
+          x={badgeX}
+          y={badgeY}
+          onClick={(e) => { e.cancelBubble = true; onDelete(); }}
+          onTap={(e) => { e.cancelBubble = true; onDelete(); }}
+          cursor="pointer"
+        >
+          <Circle radius={BADGE_R} fill="#1a1a18" />
+          <Text
+            text="×"
+            fontSize={13}
+            fontStyle="bold"
+            fill="white"
+            width={BADGE_R * 2}
+            height={BADGE_R * 2}
+            x={-BADGE_R}
+            y={-BADGE_R}
+            align="center"
+            verticalAlign="middle"
+            listening={false}
+          />
+        </Group>
       )}
     </>
   );
