@@ -112,21 +112,17 @@ export const OBSTACLES: ObstacleDef[] = [
   {
     id: 'ryggning',
     label: 'Ryggning i mönster',
-    w: 8, h: 1.5,
+    w: 8, h: 2,
     entry: { x: -4, y: 0 },
-    exit:  { x:  4, y: 0 },
-    viewBox: '-90 -24 180 48',
+    exit: { x: -4, y: 0 },
+    viewBox: '-80 -20 160 40',
     svg: `
-      <circle cx="-60" cy="-14" r="6" fill="#1a1a18"/>
-      <circle cx="0"   cy="-14" r="6" fill="#1a1a18"/>
-      <circle cx="60"  cy="-14" r="6" fill="#1a1a18"/>
-      <circle cx="-60" cy="14"  r="6" fill="#1a1a18"/>
-      <circle cx="0"   cy="14"  r="6" fill="#1a1a18"/>
-      <circle cx="60"  cy="14"  r="6" fill="#1a1a18"/>
-      <text x="-30" y="0" text-anchor="middle" dominant-baseline="central"
-            font-size="14" font-family="monospace" font-weight="bold" fill="#1a1a18">X</text>
-      <text x="30"  y="0" text-anchor="middle" dominant-baseline="central"
-            font-size="14" font-family="monospace" font-weight="bold" fill="#1a1a18">X</text>
+      <circle cx="-60" cy="-15" r="3" fill="#1a1a18"/>
+      <circle cx="0"   cy="-15" r="3" fill="#1a1a18"/>
+      <circle cx="60"  cy="-15" r="3" fill="#1a1a18"/>
+      <circle cx="-60" cy="15"  r="3" fill="#1a1a18"/>
+      <circle cx="0"   cy="15"  r="3" fill="#1a1a18"/>
+      <circle cx="60"  cy="15"  r="3" fill="#1a1a18"/>
     `,
   },
 
