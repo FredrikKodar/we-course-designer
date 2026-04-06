@@ -1,12 +1,18 @@
-import type { PlacedObstacle } from '../types';
+import type { PlacedObstacle, Visit, WEClass, Discipline } from '../types';
 import type { ViewMode } from '../types';
 import { OBSTACLES } from '../data/obstacles';
 import useStore from '../store/useStore';
 
-const CANVAS_MARGIN = 60; // matches Canvas.tsx MARGIN constant
-// Extra padding around the arena in the snapshot so grid labels are included.
-// Labels sit ~28px to the left and ~15px below the arena border.
+const CANVAS_MARGIN = 60;
 const SNAPSHOT_PADDING = 38;
+
+function esc(s: string): string {
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
 
 function arenaScreenBounds(
   stageW: number,
@@ -33,31 +39,70 @@ function arenaScreenBounds(
   };
 }
 
-function buildObstacleRows(placed: PlacedObstacle[]): string {
-  const { visits } = useStore.getState();
-  const rows: string[] = [];
+function sortedVisitRows(
+  placed: PlacedObstacle[],
+  visits: Visit[],
+): Array<{ visit: Visit; label: string; obstacleId: string }> {
+  return [...visits]
+    .sort((a, b) => a.num.localeCompare(b.num, undefined, { numeric: true, sensitivity: 'base' }))
+    .map((v) => {
+      const p = placed.find((pl) => pl.id === v.obstacleId);
+      const def = p ? OBSTACLES.find((o) => o.id === p.type) : null;
+      return { visit: v, label: def?.label ?? p?.type ?? '?', obstacleId: v.obstacleId };
+    });
+}
 
+function buildFallbackRows(placed: PlacedObstacle[], visits: Visit[]): string {
+  const rows: string[] = [];
   for (const p of placed) {
     const def = OBSTACLES.find((o) => o.id === p.type);
     const label = def?.label ?? p.type;
-    const note = p.note ? ` ${p.note}` : '';
     const obstacleVisits = visits
       .filter((v) => v.obstacleId === p.id)
       .sort((a, b) => a.num.localeCompare(b.num, undefined, { numeric: true, sensitivity: 'base' }));
 
     if (obstacleVisits.length === 0) {
-      rows.push(`<div style="margin-bottom:4px;font-size:10px;line-height:1.4;">– <strong>${label}</strong>${note}</div>`);
+      rows.push(`<div style="margin-bottom:4px;font-size:10px;line-height:1.4;">– <strong>${esc(label)}</strong></div>`);
     } else {
       for (const v of obstacleVisits) {
-        rows.push(`<div style="margin-bottom:4px;font-size:10px;line-height:1.4;"><strong>${v.num}.</strong> <strong>${label}</strong>${note}</div>`);
+        rows.push(`<div style="margin-bottom:4px;font-size:10px;line-height:1.4;"><strong>${esc(v.num)}.</strong> <strong>${esc(label)}</strong></div>`);
       }
     }
   }
-
   return rows.join('');
 }
 
-function buildPrintHtml(dataUrl: string, obstacleRows: string): string {
+function buildDisciplineSection(
+  title: string,
+  cls: WEClass,
+  discipline: Discipline,
+  placed: PlacedObstacle[],
+  visits: Visit[],
+): string {
+  const rows = sortedVisitRows(placed, visits);
+  const items = rows
+    .map(({ visit, label, obstacleId }) => {
+      const entry = cls[discipline][obstacleId];
+      const inUse = entry?.inUse ?? true;
+      const note = entry?.note ?? '';
+      const noteHtml = inUse
+        ? note ? `<span style="color:#333;"> ${esc(note)}</span>` : ''
+        : `<span style="color:#aaa;font-style:italic;"> INGÅR EJ</span>`;
+      return `<div style="margin-bottom:3px;font-size:10px;line-height:1.4;"><strong>${esc(visit.num)}.</strong> <strong>${esc(label)}</strong>${noteHtml}</div>`;
+    })
+    .join('');
+
+  return `
+    <div style="margin-bottom:10px;">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:#555;margin-bottom:4px;padding-bottom:2px;border-bottom:1px solid #eee;">
+        ${esc(title)}
+      </div>
+      ${items || '<div style="font-size:10px;color:#aaa;">Inga hinder i sekvensen.</div>'}
+    </div>
+  `;
+}
+
+function buildPrintHtml(dataUrl: string, leftContent: string): string {
   return `<!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -88,45 +133,20 @@ function buildPrintHtml(dataUrl: string, obstacleRows: string): string {
     display: flex;
     align-items: flex-start;
   }
-  .map {
-    width: 100%;
-    height: auto;
-  }
+  .map { width: 100%; height: auto; }
   .header-block {
     font-size: 10px;
     line-height: 1.8;
     border-bottom: 1px solid #ccc;
     padding-bottom: 6px;
   }
-  .header-block strong {
-    font-size: 12px;
-    display: block;
-    margin-bottom: 2px;
-  }
+  .header-block strong { font-size: 12px; display: block; margin-bottom: 2px; }
   .obstacle-list { flex: 1; overflow: hidden; }
-  .obstacle-list h3 {
-    font-size: 9px;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: #555;
-    margin-bottom: 4px;
-    border-bottom: 1px solid #eee;
-    padding-bottom: 2px;
-  }
 </style>
 </head>
 <body>
   <div class="left">
-    <div class="header-block">
-      <strong>Tävlingsplats</strong>
-      Klass<br>
-      Datum<br>
-      Domare
-    </div>
-    <div class="obstacle-list">
-      <h3>Hinder</h3>
-      ${obstacleRows}
-    </div>
+    ${leftContent}
   </div>
   <div class="right">
     <img class="map" src="${dataUrl}" alt="Course map">
@@ -135,14 +155,14 @@ function buildPrintHtml(dataUrl: string, obstacleRows: string): string {
 </html>`;
 }
 
-export function printCourse(): void {
-  const { stageRef, placed, arenaW, arenaH, panX, panY, zoom, viewMode } = useStore.getState();
+export function printCourse(classId?: string): void {
+  const { stageRef, placed, arenaW, arenaH, panX, panY, zoom, viewMode, visits, classes, eventMeta } =
+    useStore.getState();
   if (!stageRef) {
     console.warn('printCourse: stageRef not set');
     return;
   }
 
-  // Capture the arena rectangle exactly, regardless of current pan/zoom
   const bounds = arenaScreenBounds(
     stageRef.width(),
     stageRef.height(),
@@ -154,8 +174,36 @@ export function printCourse(): void {
     zoom,
   );
   const dataUrl = stageRef.toDataURL({ pixelRatio: 3, ...bounds });
-  const obstacleRows = buildObstacleRows(placed);
-  const html = buildPrintHtml(dataUrl, obstacleRows);
+
+  const cls = classId ? classes.find((c) => c.id === classId) : undefined;
+
+  let leftContent: string;
+
+  if (cls) {
+    const header = `
+      <div class="header-block">
+        <strong>${esc(cls.name)}</strong>
+        ${eventMeta.venue ? `${esc(eventMeta.venue)}<br>` : ''}
+        ${eventMeta.date ? `${esc(eventMeta.date)}<br>` : ''}
+        ${eventMeta.judge ? `Domare: ${esc(eventMeta.judge)}<br>` : ''}
+        ${eventMeta.courseBuilder ? `Banbyggare: ${esc(eventMeta.courseBuilder)}` : ''}
+      </div>`;
+    const teknikSection = buildDisciplineSection('Teknik', cls, 'teknik', placed, visits);
+    const speedSection = buildDisciplineSection('Speed', cls, 'speed', placed, visits);
+    leftContent = `${header}<div class="obstacle-list">${teknikSection}${speedSection}</div>`;
+  } else {
+    const header = `
+      <div class="header-block">
+        <strong>${esc(eventMeta.venue) || 'Tävlingsplats'}</strong>
+        ${eventMeta.date ? `${esc(eventMeta.date)}<br>` : ''}
+        ${eventMeta.judge ? `Domare: ${esc(eventMeta.judge)}<br>` : ''}
+        ${eventMeta.courseBuilder ? `Banbyggare: ${esc(eventMeta.courseBuilder)}` : ''}
+      </div>`;
+    const obstacleRows = buildFallbackRows(placed, visits);
+    leftContent = `${header}<div class="obstacle-list"><h3 style="font-size:9px;text-transform:uppercase;letter-spacing:0.06em;color:#555;margin-bottom:4px;border-bottom:1px solid #eee;padding-bottom:2px;">Hinder</h3>${obstacleRows}</div>`;
+  }
+
+  const html = buildPrintHtml(dataUrl, leftContent);
 
   const w = window.open('', '_blank');
   if (!w) {
