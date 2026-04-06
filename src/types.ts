@@ -2,6 +2,7 @@
 
 export type ViewMode = 'side' | 'end';
 export type PathLineType = 'solid' | 'dashed' | 'dotted';
+export type Discipline = 'teknik' | 'speed';
 
 // ── Obstacle data model ────────────────────────────────────────────────────
 
@@ -31,7 +32,6 @@ export interface PlacedObstacle {
   w: number;
   h: number;
   rotation: number;
-  note: string;
 }
 
 export interface Visit {
@@ -52,10 +52,23 @@ export interface RouteSegment {
   controlPoint: { wx: number; wy: number } | null;
 }
 
+export interface ObstacleClassEntry {
+  inUse: boolean;
+  note: string;
+}
+
 export interface WEClass {
   id: string;
   name: string;
-  obstacles: Record<string, { criteria: string; notUsed: boolean }>;
+  teknik: Record<string, ObstacleClassEntry>;  // keyed by PlacedObstacle.id
+  speed: Record<string, ObstacleClassEntry>;   // keyed by PlacedObstacle.id
+}
+
+export interface EventMeta {
+  venue: string;
+  judge: string;
+  courseBuilder: string;
+  date: string;              // ISO date string e.g. "2026-04-06"
 }
 
 // ── Canvas coordinate context ──────────────────────────────────────────────
