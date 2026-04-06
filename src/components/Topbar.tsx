@@ -1,3 +1,4 @@
+import { useRef, useState, useEffect } from 'react';
 import useStore from '../store/useStore';
 import { printCourse } from '../utils/export';
 
@@ -13,6 +14,29 @@ export default function Topbar() {
   const redo = useStore((s) => s.redo);
   const canUndo = useStore((s) => s.past.length > 0);
   const canRedo = useStore((s) => s.future.length > 0);
+  const classes = useStore((s) => s.classes);
+
+  const [printOpen, setPrintOpen] = useState(false);
+  const printRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    if (!printOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (printRef.current && !printRef.current.contains(e.target as Node)) {
+        setPrintOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [printOpen]);
+
+  const triggerPrint = (classId?: string) => {
+    setPrintOpen(false);
+    useStore.getState().selectObstacle(null);
+    useStore.getState().setSelectedVisitId(null);
+    requestAnimationFrame(() => requestAnimationFrame(() => printCourse(classId)));
+  };
 
   const btnClass = (active: boolean) =>
     `text-xs px-3 py-1.5 border rounded-md cursor-pointer transition-all whitespace-nowrap ${
@@ -57,9 +81,41 @@ export default function Topbar() {
         <button className={btnClass(false)} onClick={() => useStore.getState().fitArena?.()}>
           Fit
         </button>
-        <button className={btnClass(false)} onClick={() => { useStore.getState().selectObstacle(null); useStore.getState().setSelectedVisitId(null); requestAnimationFrame(() => requestAnimationFrame(printCourse)); }}>
-          Print
-        </button>
+
+        {/* Print dropdown */}
+        <div className="relative" ref={printRef}>
+          <button
+            className={btnClass(false)}
+            onClick={() => setPrintOpen((v) => !v)}
+          >
+            Print ▾
+          </button>
+          {printOpen && (
+            <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded shadow-md z-50 min-w-[120px]">
+              {classes.length === 0 ? (
+                <button
+                  type="button"
+                  onClick={() => triggerPrint(undefined)}
+                  className="w-full text-left text-[11px] px-3 py-1.5 hover:bg-[#f5f5f0] text-gray-600 cursor-pointer bg-transparent border-none"
+                >
+                  Print (no class)
+                </button>
+              ) : (
+                classes.map((cls) => (
+                  <button
+                    key={cls.id}
+                    type="button"
+                    onClick={() => triggerPrint(cls.id)}
+                    className="w-full text-left text-[11px] px-3 py-1.5 hover:bg-[#f5f5f0] text-gray-600 cursor-pointer bg-transparent border-none"
+                  >
+                    {cls.name || 'Unnamed'}
+                  </button>
+                ))
+              )}
+            </div>
+          )}
+        </div>
+
         <button
           className="text-xs px-3 py-1.5 border border-gray-200 rounded-md bg-white text-gray-500 hover:border-red-400 hover:text-red-500 cursor-pointer transition-all"
           onClick={() => { if (window.confirm('Rensa alla hinder?')) clearAll(); }}
