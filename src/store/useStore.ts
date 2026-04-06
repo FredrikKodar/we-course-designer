@@ -1,13 +1,14 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type Konva from 'konva';
-import type { PlacedObstacle, Visit, RouteSegment, WEClass, EventMeta, Discipline, ViewMode, PathLineType } from '../types';
+import type { PlacedObstacle, Visit, RouteSegment, WEClass, EventMeta, Discipline, ViewMode, PathLineType, ObstacleClassEntry } from '../types';
 import { runRules } from '../utils/compliance';
 import { buildPresetPieces } from '../utils/presets';
 
 export const MIN_ZOOM = 0.25;
 export const MAX_ZOOM = 4;
 
+// Subset of state stored in localStorage (must be JSON-serialisable)
 type PersistedState = Pick<
   StoreState,
   'placed' | 'arenaW' | 'arenaH' | 'pathLineType' | 'pathLineWeight' | 'pathArrowSize' | 'visits' | 'classes' | 'eventMeta'
@@ -249,6 +250,7 @@ const useStore = create<StoreState>()(
             selectedVisitId: null,
             violations: new Map(),
           }));
+          syncClassObstacles();
         },
 
         runCompliance: () => {
@@ -308,7 +310,7 @@ const useStore = create<StoreState>()(
 
         addClass: (name, copyFromIdx) => {
           const { placed, classes } = get();
-          const makeRecord = (): Record<string, { inUse: boolean; note: string }> =>
+          const makeRecord = (): Record<string, ObstacleClassEntry> =>
             Object.fromEntries(placed.map((p) => [p.id, { inUse: true, note: '' }]));
 
           let teknik = makeRecord();
@@ -395,6 +397,7 @@ const useStore = create<StoreState>()(
             selectedVisitId: null,
           });
           get().runCompliance();
+          syncClassObstacles();
         },
 
         redo: () => {
@@ -410,6 +413,7 @@ const useStore = create<StoreState>()(
             selectedVisitId: null,
           });
           get().runCompliance();
+          syncClassObstacles();
         },
       };
     },
