@@ -14,7 +14,6 @@ export function buildPresetPieces(type: string, cx: number, cy: number): PlacedO
       w: def.w,
       h: def.h,
       rotation: 0,
-      note: '',
     },
   ];
 }

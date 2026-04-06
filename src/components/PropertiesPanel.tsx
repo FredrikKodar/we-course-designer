@@ -7,7 +7,6 @@ export default function PropertiesPanel() {
   const selectedId = useStore((s) => s.selectedId);
   const placed = useStore((s) => s.placed);
   const rotateObstacle = useStore((s) => s.rotateObstacle);
-  const updateObstacleMeta = useStore((s) => s.updateObstacleMeta);
 
   const obstacle = placed.find((p) => p.id === selectedId);
 
@@ -55,21 +54,6 @@ export default function PropertiesPanel() {
         <RotBtn label="↻ 90°" onClick={() => rotate(90)} />
         <RotBtn label="↻ 45°" onClick={() => rotate(45)} />
         <RotBtn label="Reset" onClick={resetRotation} />
-      </div>
-
-      <div className="mt-2 border-t border-gray-100 pt-2 flex flex-col gap-1.5">
-        <div className="flex items-center justify-between gap-2">
-          <span className="text-[10px] text-gray-400 shrink-0">Note</span>
-          <input
-            type="text"
-            value={obstacle.note}
-            onChange={(e) =>
-              updateObstacleMeta(obstacle.id, e.target.value)
-            }
-            placeholder="Description…"
-            className="flex-1 min-w-0 text-[11px] border border-gray-200 rounded px-1 py-0.5 bg-[#f9f9f7] focus:outline-none focus:border-[#BA7517]"
-          />
-        </div>
       </div>
     </div>
   );
