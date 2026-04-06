@@ -84,7 +84,7 @@ export default function Sidebar() {
     <div className="w-[162px] border-r border-gray-200 flex flex-col shrink-0 bg-white overflow-y-auto">
       {/* Arena inputs */}
       <div className="p-2.5 border-b border-gray-100">
-        <div className="text-[9px] tracking-widest uppercase text-gray-300 font-mono mb-2">
+        <div className="text-[9px] tracking-widest uppercase text-gray-500 font-mono mb-2">
           Arena (meters)
         </div>
         <div className="flex flex-col gap-1.5">
@@ -115,7 +115,7 @@ export default function Sidebar() {
 
       {/* Display toggles */}
       <div className="p-2.5 border-b border-gray-100">
-        <div className="text-[9px] tracking-widest uppercase text-gray-300 font-mono mb-2">
+        <div className="text-[9px] tracking-widest uppercase text-gray-500 font-mono mb-2">
           Display
         </div>
         <Toggle label="Grid" value={showGrid} onChange={setShowGrid} />
@@ -125,7 +125,7 @@ export default function Sidebar() {
 
       {/* Path style */}
       <div className="p-2.5 border-b border-gray-100">
-        <div className="text-[9px] tracking-widest uppercase text-gray-300 font-mono mb-2">
+        <div className="text-[9px] tracking-widest uppercase text-gray-500 font-mono mb-2">
           Path style
         </div>
         <div className="flex items-center justify-between mb-1.5">
@@ -152,7 +152,7 @@ export default function Sidebar() {
               onChange={(e) => setPathStyle(pathLineType, Number(e.target.value), pathArrowSize)}
               className="w-[60px]"
             />
-            <span className="text-[10px] font-mono text-gray-400 min-w-[22px]">
+            <span className="text-[10px] font-mono text-gray-600 min-w-[22px]">
               {pathLineWeight}
             </span>
           </div>
@@ -183,13 +183,13 @@ export default function Sidebar() {
 
       {/* Obstacle chips */}
       <div className="p-2.5">
-        <div className="text-[9px] tracking-widest uppercase text-gray-300 font-mono mb-2">
+        <div className="text-[9px] tracking-widest uppercase text-gray-500 font-mono mb-2">
           Obstacles — drag to arena
         </div>
         <div className="flex flex-col gap-2">
           {CATEGORIES.map((cat) => (
             <div key={cat.label}>
-              <div className="text-[9px] text-gray-300 font-mono mb-1">{cat.label}</div>
+              <div className="text-[9px] text-gray-500 font-mono mb-1">{cat.label}</div>
               <div className="flex flex-col gap-0.5">
                 {cat.ids.map((id) => {
                   const def = OBSTACLES.find((o) => o.id === id);

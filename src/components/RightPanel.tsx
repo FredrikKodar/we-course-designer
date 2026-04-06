@@ -16,7 +16,7 @@ interface SectionProps {
 function Section({ label, children }: SectionProps) {
   return (
     <div className="p-2.5 border-b border-gray-100 last:border-b-0">
-      <div className="text-[9px] tracking-widest uppercase text-gray-300 font-mono mb-2">
+      <div className="text-[9px] tracking-widest uppercase text-gray-500 font-mono mb-2">
         {label}
       </div>
       {children}
