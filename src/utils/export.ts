@@ -183,8 +183,8 @@ export function printCourse(classId?: string): void {
     const header = `
       <div class="header-block">
         <strong>${esc(cls.name)}</strong>
-        ${eventMeta.venue ? `${esc(eventMeta.venue)}<br>` : ''}
-        ${eventMeta.date ? `${esc(eventMeta.date)}<br>` : ''}
+        Tävlingsplats: ${esc(eventMeta.venue) || '—'}<br>
+        Datum: ${esc(eventMeta.date) || '—'}<br>
         ${eventMeta.judge ? `Domare: ${esc(eventMeta.judge)}<br>` : ''}
         ${eventMeta.courseBuilder ? `Banbyggare: ${esc(eventMeta.courseBuilder)}` : ''}
       </div>`;
