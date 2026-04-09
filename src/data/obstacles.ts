@@ -386,6 +386,19 @@ export const OBSTACLES: ObstacleDef[] = [
     `,
   },
 
+  {
+    id: 'flytta-mugg',
+    label: 'Flytta mugg',
+    w: 2, h: 0.5,
+    entry: { x: 0, y: -0.5 },
+    exit:  { x: 0, y:  0.5 },
+    viewBox: '-60 -10 120 20',
+    svg: `
+      <circle cx="-40" cy="0" r="8" fill="#1a1a18"/>
+      <circle cx="40"  cy="0" r="8" fill="#1a1a18"/>
+    `,
+  },
+
   // ─── STRUKTURER ──────────────────────────────────────────────────────────
 
   {
