@@ -4,9 +4,9 @@ import { OBSTACLES } from '../data/obstacles';
 import type { ObstacleDef, PathLineType } from '../types';
 
 const CATEGORIES = [
-  { label: 'Tunnor',      ids: ['tunna', 'tva-tunnor', 'tre-tunnor', 'lans-tunna'] },
+  { label: 'Tunnor',      ids: ['tunna', 'tva-tunnor', 'tre-tunnor', 'lans-ur-tunna', 'lans-i-tunna'] },
   { label: 'Slalom',      ids: ['enkelslalom', 'enkelslalom-7m', 'enkelslalom-8m', 'parallellslalom', 'parallellslalom-4x3-7m', 'parallellslalom-4x3-8m', 'parallellslalom-3x2-6m', 'parallellslalom-3x2-7m', 'parallellslalom-3x2-8m', 'ryggning', 'korridor'] },
-  { label: 'Barriärer',   ids: ['grind', 'sidvarts', 'lydnad'] },
+  { label: 'Barriärer',   ids: ['grind', 'sidvarts', 'lydnad', 'flytta-mugg'] },
   { label: 'Strukturer',  ids: ['trabro', 'vatten', 'falla-6m', 'falla', 'falla-10m', 'bord', 'hopp'] },
   { label: 'Lans & ring', ids: ['ring'] },
 ];

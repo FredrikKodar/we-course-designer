@@ -16,6 +16,7 @@ export interface ObstacleDef {
   label: string;
   variantGroup?: string;   // accordion header in sidebar; omit for single-variant obstacles
   variantLabel?: string;   // chip label inside accordion; omit for single-variant obstacles
+  defaultRotation?: number; // initial rotation when dropped on arena (degrees, default 0)
   w: number;
   h: number;
   svg: string;
