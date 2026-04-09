@@ -14,6 +14,8 @@ export interface ConnectionPoint {
 export interface ObstacleDef {
   id: string;
   label: string;
+  variantGroup?: string;   // accordion header in sidebar; omit for single-variant obstacles
+  variantLabel?: string;   // chip label inside accordion; omit for single-variant obstacles
   w: number;
   h: number;
   svg: string;
