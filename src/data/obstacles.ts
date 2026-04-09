@@ -51,8 +51,26 @@ export const OBSTACLES: ObstacleDef[] = [
     },
 
   {
-    id: 'lans-tunna',
-    label: 'Lans ur/i tunna',
+    id: 'lans-ur-tunna',
+    label: 'Lans ur tunna',
+    variantGroup: 'Lans tunna',
+    variantLabel: 'Lans ur tunna',
+    w: 0.8, h: 3,
+    entry: { x: 0, y:  0.4 },
+    exit:  { x: 0, y:  0.4 },
+    viewBox: '-16 -50 32 80',
+    svg: `
+      <circle cx="0" cy="16" r="8" fill="#1a1a18"/>
+      <line x1="0" y1="8" x2="0" y2="-42" stroke="#1a1a18" stroke-width="3" stroke-linecap="round"/>
+      <line x1="-8" y1="-24" x2="8" y2="-24" stroke="#1a1a18" stroke-width="2"/>
+    `,
+  },
+
+  {
+    id: 'lans-i-tunna',
+    label: 'Lans i tunna',
+    variantGroup: 'Lans tunna',
+    variantLabel: 'Lans i tunna',
     w: 0.8, h: 3,
     entry: { x: 0, y:  0.4 },
     exit:  { x: 0, y:  0.4 },
