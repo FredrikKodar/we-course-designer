@@ -1,11 +1,22 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { Stage, Layer, Rect, Line, Text } from 'react-konva';
 import Konva from 'konva';
-import type { ViewMode } from '../types';
+import type { ViewMode, PlacedObstacle, ObstacleDef } from '../types';
 import useStore, { MIN_ZOOM, MAX_ZOOM } from '../store/useStore';
 import { OBSTACLES } from '../data/obstacles';
 import { screenToWorld } from '../utils/coords';
 import ObstacleGroup from './ObstacleGroup';
+
+function pointInObstacle(wx: number, wy: number, p: PlacedObstacle, def: ObstacleDef): boolean {
+  const cx = p.x + def.w / 2;
+  const cy = p.y + def.h / 2;
+  const dx = wx - cx;
+  const dy = wy - cy;
+  const rotRad = -((p.rotation || 0) * Math.PI) / 180;
+  const localX = dx * Math.cos(rotRad) - dy * Math.sin(rotRad);
+  const localY = dx * Math.sin(rotRad) + dy * Math.cos(rotRad);
+  return Math.abs(localX) <= def.w / 2 && Math.abs(localY) <= def.h / 2;
+}
 
 const MARGIN = 60;
 
@@ -234,6 +245,8 @@ export default function Canvas() {
   };
 
   // Pan state
+  const cycleRef = useRef<{ wx: number; wy: number; ids: string[]; index: number } | null>(null);
+
   const panRef = useRef<{
     isPanning: boolean;
     startX: number;
@@ -296,8 +309,47 @@ export default function Canvas() {
     }
   };
 
+  // Obstacle click with cycling: repeated clicks at same spot cycle through all overlapping obstacles
+  const handleObstacleClickAtPos = useCallback((screenX: number, screenY: number) => {
+    const [wx, wy] = screenToWorld(screenX, screenY, coordCtx);
+
+    // All obstacles at this world point, sorted topmost-first (last in array = top z-order)
+    const hits = placed
+      .map((p, i) => ({ p, i }))
+      .filter(({ p }) => {
+        const def = OBSTACLES.find((o) => o.id === p.type);
+        return def ? pointInObstacle(wx, wy, p, def) : false;
+      })
+      .reverse()
+      .map(({ p }) => p.id);
+
+    if (hits.length === 0) {
+      cycleRef.current = null;
+      selectObstacle(null);
+      setSelectedVisitId(null);
+      return;
+    }
+
+    const TOLERANCE = 1.5; // world meters — same area means cycle
+    const prev = cycleRef.current;
+    let nextIndex: number;
+    if (prev && Math.abs(prev.wx - wx) < TOLERANCE && Math.abs(prev.wy - wy) < TOLERANCE) {
+      // Same area — advance cycle
+      nextIndex = (prev.index + 1) % hits.length;
+    } else {
+      // New area — start from the currently selected obstacle if it's here (it's visually on top),
+      // otherwise from the placement-topmost one
+      const selIdx = hits.indexOf(selectedId ?? '');
+      nextIndex = selIdx >= 0 ? selIdx : 0;
+    }
+
+    cycleRef.current = { wx, wy, ids: hits, index: nextIndex };
+    selectObstacle(hits[nextIndex]);
+  }, [coordCtx, placed, selectedId, selectObstacle, setSelectedVisitId]);
+
   // Click on empty canvas → deselect
   const handleStageClick = () => {
+    cycleRef.current = null;
     selectObstacle(null);
     setSelectedVisitId(null);
   };
@@ -361,8 +413,8 @@ export default function Canvas() {
             strokeWidth={2}
           />
 
-          {/* Obstacles */}
-          {placed.map((p) => {
+          {/* Obstacles — selected obstacle rendered last so it is topmost and draggable */}
+          {[...placed].sort((a, b) => (a.id === selectedId ? 1 : b.id === selectedId ? -1 : 0)).map((p) => {
             const def = OBSTACLES.find((o) => o.id === p.type);
             if (!def) return null;
             return (
@@ -375,7 +427,7 @@ export default function Canvas() {
                 isSelected={p.id === selectedId}
                 snapToGrid={snapToGrid}
                 violation={violations.get(p.id) || null}
-                onSelect={() => selectObstacle(p.id)}
+                onClickAtPos={handleObstacleClickAtPos}
                 onMove={(wx, wy) => moveObstacle(p.id, wx, wy)}
                 onRotate={(deg) => rotateObstacle(p.id, deg)}
                 isHovered={p.id === hoveredId}

@@ -51,7 +51,7 @@ interface ObstacleGroupProps {
   isSelected: boolean;
   snapToGrid: boolean;
   violation: string | null;
-  onSelect: () => void;
+  onClickAtPos: (sx: number, sy: number) => void;
   onMove: (wx: number, wy: number) => void;
   onRotate: (degrees: number) => void;
   isHovered: boolean;
@@ -76,7 +76,7 @@ export default function ObstacleGroup({
   isSelected,
   snapToGrid,
   violation,
-  onSelect,
+  onClickAtPos,
   onMove,
   onRotate,
   isHovered,
@@ -166,7 +166,8 @@ export default function ObstacleGroup({
         onDragEnd={handleDragEnd}
         onClick={(e) => {
           e.cancelBubble = true;
-          onSelect();
+          const pos = e.target.getStage()?.getPointerPosition();
+          if (pos) onClickAtPos(pos.x, pos.y);
         }}
         onMouseEnter={() => onHoverChange(true)}
         onMouseLeave={() => onHoverChange(false)}
