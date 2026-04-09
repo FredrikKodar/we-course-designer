@@ -1,13 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import useStore from '../store/useStore';
 import { OBSTACLES } from '../data/obstacles';
 import type { ObstacleDef, PathLineType } from '../types';
 
 const CATEGORIES = [
-  { label: 'Tunnor', ids: ['tunna', 'tva-tunnor', 'tre-tunnor', 'lans-tunna'] },
-  { label: 'Slalom', ids: ['enkelslalom', 'parallellslalom', 'ryggning', 'korridor'] },
-  { label: 'Barriärer', ids: ['grind', 'sidvarts', 'lydnad'] },
-  { label: 'Strukturer', ids: ['trabro', 'vatten', 'falla', 'bord', 'hopp'] },
+  { label: 'Tunnor',      ids: ['tunna', 'tva-tunnor', 'tre-tunnor', 'lans-tunna'] },
+  { label: 'Slalom',      ids: ['enkelslalom', 'enkelslalom-7m', 'enkelslalom-8m', 'parallellslalom', 'parallellslalom-4x3-7m', 'parallellslalom-4x3-8m', 'parallellslalom-3x2-6m', 'parallellslalom-3x2-7m', 'parallellslalom-3x2-8m', 'ryggning', 'korridor'] },
+  { label: 'Barriärer',   ids: ['grind', 'sidvarts', 'lydnad'] },
+  { label: 'Strukturer',  ids: ['trabro', 'vatten', 'falla-6m', 'falla', 'falla-10m', 'bord', 'hopp'] },
   { label: 'Lans & ring', ids: ['ring'] },
 ];
 
@@ -19,6 +19,12 @@ interface ToggleProps {
 
 interface ObstacleChipProps {
   def: ObstacleDef;
+  showVariantLabel?: boolean;
+}
+
+interface AccordionGroupProps {
+  groupLabel: string;
+  defs: ObstacleDef[];
 }
 
 function Toggle({ label, value, onChange }: ToggleProps) {
@@ -41,11 +47,13 @@ function Toggle({ label, value, onChange }: ToggleProps) {
   );
 }
 
-function ObstacleChip({ def }: ObstacleChipProps) {
+function ObstacleChip({ def, showVariantLabel }: ObstacleChipProps) {
   const handleDragStart = (e: React.DragEvent<HTMLDivElement>) => {
     e.dataTransfer.setData('obstacleType', def.id);
     e.dataTransfer.effectAllowed = 'copy';
   };
+
+  const displayLabel = showVariantLabel && def.variantLabel ? def.variantLabel : def.label;
 
   return (
     <div
@@ -60,7 +68,29 @@ function ObstacleChip({ def }: ObstacleChipProps) {
         className="shrink-0"
         dangerouslySetInnerHTML={{ __html: def.svg }}
       />
-      <span className="truncate">{def.label}</span>
+      <span className="truncate">{displayLabel}</span>
+    </div>
+  );
+}
+
+function AccordionGroup({ groupLabel, defs }: AccordionGroupProps) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div>
+      <button
+        onClick={() => setOpen((o) => !o)}
+        className="w-full flex items-center justify-between px-2 py-1 rounded-md text-[11px] text-gray-500 hover:text-[#1a1a18] hover:bg-[#f5f5f0] cursor-pointer select-none"
+      >
+        <span>{groupLabel}</span>
+        <span className="text-[9px]">{open ? '▾' : '▸'}</span>
+      </button>
+      {open && (
+        <div className="flex flex-col gap-0.5 pl-2 mt-0.5">
+          {defs.map((def) => (
+            <ObstacleChip key={def.id} def={def} showVariantLabel />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -187,17 +217,44 @@ export default function Sidebar() {
           Obstacles — drag to arena
         </div>
         <div className="flex flex-col gap-2">
-          {CATEGORIES.map((cat) => (
-            <div key={cat.label}>
-              <div className="text-[9px] text-gray-600 font-mono mb-1">{cat.label}</div>
-              <div className="flex flex-col gap-0.5">
-                {cat.ids.map((id) => {
-                  const def = OBSTACLES.find((o) => o.id === id);
-                  return def ? <ObstacleChip key={id} def={def} /> : null;
-                })}
+          {CATEGORIES.map((cat) => {
+            const defs = cat.ids
+              .map((id) => OBSTACLES.find((o) => o.id === id))
+              .filter((d): d is ObstacleDef => !!d);
+
+            // Group consecutive same-variantGroup entries into accordions
+            const items: Array<
+              | { type: 'chip'; def: ObstacleDef }
+              | { type: 'accordion'; group: string; defs: ObstacleDef[] }
+            > = [];
+            for (const def of defs) {
+              if (def.variantGroup) {
+                const last = items[items.length - 1];
+                if (last?.type === 'accordion' && last.group === def.variantGroup) {
+                  last.defs.push(def);
+                } else {
+                  items.push({ type: 'accordion', group: def.variantGroup, defs: [def] });
+                }
+              } else {
+                items.push({ type: 'chip', def });
+              }
+            }
+
+            return (
+              <div key={cat.label}>
+                <div className="text-[9px] text-gray-600 font-mono mb-1">{cat.label}</div>
+                <div className="flex flex-col gap-0.5">
+                  {items.map((item, i) =>
+                    item.type === 'chip' ? (
+                      <ObstacleChip key={item.def.id} def={item.def} />
+                    ) : (
+                      <AccordionGroup key={item.group + i} groupLabel={item.group} defs={item.defs} />
+                    )
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </div>
