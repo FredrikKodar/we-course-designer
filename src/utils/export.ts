@@ -133,7 +133,7 @@ function buildPrintHtml(dataUrl: string, leftContent: string): string {
     display: flex;
     align-items: flex-start;
   }
-  .map { width: 100%; height: auto; }
+  .map { max-width: 100%; max-height: 277mm; width: auto; height: auto; }
   .header-block {
     font-size: 10px;
     line-height: 1.8;
