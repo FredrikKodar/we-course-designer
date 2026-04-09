@@ -229,19 +229,19 @@ export default function Canvas() {
   // Wheel zoom
   const handleWheel = (e: Konva.KonvaEventObject<WheelEvent>) => {
     e.evt.preventDefault();
-    const delta = e.evt.deltaY > 0 ? 0.9 : 1.1;
-    // Clamp here so pan math uses the actual resulting zoom, not an unclamped value
-    const newZoom = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, zoom * delta));
-    const pointer = e.target.getStage()?.getPointerPosition();
-    if (!pointer) {
+    // Pinch (ctrlKey) or mouse wheel (deltaMode=1, line-based) → zoom; trackpad swipe → pan
+    if (e.evt.ctrlKey || e.evt.deltaMode === 1) {
+      const delta = e.evt.deltaY > 0 ? 0.9 : 1.1;
+      const newZoom = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, zoom * delta));
+      const pointer = e.target.getStage()?.getPointerPosition();
+      if (!pointer) { setZoom(newZoom); return; }
+      const newPanX = pointer.x - (pointer.x - panX) * (newZoom / zoom);
+      const newPanY = pointer.y - (pointer.y - panY) * (newZoom / zoom);
       setZoom(newZoom);
-      return;
+      setPan(newPanX, newPanY);
+    } else {
+      setPan(panX - e.evt.deltaX, panY - e.evt.deltaY);
     }
-    // Keep the world point under the pointer fixed after zoom
-    const newPanX = pointer.x - (pointer.x - panX) * (newZoom / zoom);
-    const newPanY = pointer.y - (pointer.y - panY) * (newZoom / zoom);
-    setZoom(newZoom);
-    setPan(newPanX, newPanY);
   };
 
   // Pan state
