@@ -1,5 +1,4 @@
 import type { PlacedObstacle } from '../types';
-import { MIN_OBSTACLE_SPACING } from '../data/obstacles';
 
 type ComplianceRule = (
   placed: PlacedObstacle[],
@@ -7,26 +6,7 @@ type ComplianceRule = (
   arenaH: number,
 ) => Map<string, string>;
 
-const spacingRule: ComplianceRule = (placed, _arenaW, _arenaH) => {
-  const violations = new Map<string, string>();
-  for (let i = 0; i < placed.length; i++) {
-    for (let j = i + 1; j < placed.length; j++) {
-      const a = placed[i];
-      const b = placed[j];
-      const acx = a.x + a.w / 2;
-      const acy = a.y + a.h / 2;
-      const bcx = b.x + b.w / 2;
-      const bcy = b.y + b.h / 2;
-      const d = Math.sqrt((acx - bcx) ** 2 + (acy - bcy) ** 2);
-      if (d < MIN_OBSTACLE_SPACING) {
-        const msg = `⚠ avstånd < ${MIN_OBSTACLE_SPACING} m`;
-        violations.set(a.id, msg);
-        violations.set(b.id, msg);
-      }
-    }
-  }
-  return violations;
-};
+// spacingRule disabled until spacing thresholds are properly defined per obstacle type
 
 const boundsRule: ComplianceRule = (placed, arenaW, arenaH) => {
   const violations = new Map<string, string>();
@@ -38,7 +18,7 @@ const boundsRule: ComplianceRule = (placed, arenaW, arenaH) => {
   return violations;
 };
 
-const rules: ComplianceRule[] = [spacingRule, boundsRule];
+const rules: ComplianceRule[] = [boundsRule];
 
 export function runRules(
   placed: PlacedObstacle[],

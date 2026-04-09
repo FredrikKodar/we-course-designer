@@ -13,7 +13,7 @@ export function buildPresetPieces(type: string, cx: number, cy: number): PlacedO
       y: cy - def.h / 2,
       w: def.w,
       h: def.h,
-      rotation: 0,
+      rotation: def.defaultRotation ?? 0,
     },
   ];
 }

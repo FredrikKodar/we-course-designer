@@ -8,18 +8,10 @@ export default function CompliancePanel() {
     return <div className="text-gray-300 text-[11px]">No obstacles placed</div>;
   }
 
-  const spacingOk = ![...violations.values()].some((msg) => msg.includes('avstånd') || msg.includes('pinnavstånd'));
   const boundsOk = ![...violations.values()].some((msg) => msg.includes('utanför'));
-  const spacingCount = [...violations.values()].filter(
-    (msg) => msg.includes('avstånd') || msg.includes('pinnavstånd')
-  ).length;
 
   return (
     <div className="flex flex-col gap-0.5">
-      <ComplianceItem
-        ok={spacingOk}
-        text={spacingOk ? 'Spacing OK' : `${spacingCount} spacing issue(s)`}
-      />
       <ComplianceItem
         ok={boundsOk}
         text={boundsOk ? 'All within arena' : 'Obstacle out of bounds'}
