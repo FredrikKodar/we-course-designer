@@ -69,6 +69,8 @@ export const OBSTACLES: ObstacleDef[] = [
   {
     id: 'enkelslalom',
     label: 'Enkelslalom',
+    variantGroup: 'Enkelslalom',
+    variantLabel: '5 st, 6m',
     w: 26, h: 1,
     entry: { x: -13, y: 0 },
     exit:  { x: 13, y: 0 },
@@ -83,8 +85,46 @@ export const OBSTACLES: ObstacleDef[] = [
   },
 
   {
+    id: 'enkelslalom-7m',
+    label: 'Enkelslalom',
+    variantGroup: 'Enkelslalom',
+    variantLabel: '5 st, 7m',
+    w: 30, h: 1,
+    entry: { x: -15, y: 0 },
+    exit:  { x: 15, y: 0 },
+    viewBox: '-300 -10 600 20',
+    svg: `
+      <circle cx="-280" cy="0" r="3" fill="#1a1a18"/>
+      <circle cx="-140" cy="0" r="3" fill="#1a1a18"/>
+      <circle cx="0"    cy="0" r="3" fill="#1a1a18"/>
+      <circle cx="140"  cy="0" r="3" fill="#1a1a18"/>
+      <circle cx="280"  cy="0" r="3" fill="#1a1a18"/>
+    `,
+  },
+
+  {
+    id: 'enkelslalom-8m',
+    label: 'Enkelslalom',
+    variantGroup: 'Enkelslalom',
+    variantLabel: '5 st, 8m',
+    w: 34, h: 1,
+    entry: { x: -17, y: 0 },
+    exit:  { x: 17, y: 0 },
+    viewBox: '-340 -10 680 20',
+    svg: `
+      <circle cx="-320" cy="0" r="3" fill="#1a1a18"/>
+      <circle cx="-160" cy="0" r="3" fill="#1a1a18"/>
+      <circle cx="0"    cy="0" r="3" fill="#1a1a18"/>
+      <circle cx="160"  cy="0" r="3" fill="#1a1a18"/>
+      <circle cx="320"  cy="0" r="3" fill="#1a1a18"/>
+    `,
+  },
+
+  {
     id: 'parallellslalom',
     label: 'Parallellslalom',
+    variantGroup: 'Parallellslalom',
+    variantLabel: '4+3, 6m',
     w: 21, h: 10,
     entry: { x: -10.5, y: -4.5 },
     exit: { x: 10.5, y: -4.5 },
@@ -98,16 +138,149 @@ export const OBSTACLES: ObstacleDef[] = [
       <circle cx="0"    cy="60"  r="3" fill="#1a1a18"/>
       <circle cx="120"  cy="60"  r="3" fill="#1a1a18"/>
       <path d="M -200,-90 L -180,-90
-      C -180,-90 -145,-90 -150,-60 L -150,60 
-      C -150,90 -95,100 -90,60 L -90,-60 
-      C -90,-90 -35,-100 -30,-60 L -30,60 
-      C -30,90 25,100 30,60 L 30,-60 
-      C 30,-90 85,-100 90,-60 L 90,60 
-      C 90,90 145,100 150,60 L 150,-60 
+      C -180,-90 -145,-90 -150,-60 L -150,60
+      C -150,90 -95,100 -90,60 L -90,-60
+      C -90,-90 -35,-100 -30,-60 L -30,60
+      C -30,90 25,100 30,60 L 30,-60
+      C 30,-90 85,-100 90,-60 L 90,60
+      C 90,90 145,100 150,60 L 150,-60
       C 150,-90 170,-90 180,-90  L 200,-90"
             fill="none" stroke="#1a1a18" stroke-width="1" stroke-dasharray="8 6" stroke-linecap="round"/>
     `,
-    },
+  },
+
+  {
+    id: 'parallellslalom-4x3-7m',
+    label: 'Parallellslalom',
+    variantGroup: 'Parallellslalom',
+    variantLabel: '4+3, 7m',
+    w: 24, h: 11,
+    entry: { x: -12, y: -5 },
+    exit:  { x: 12, y: -5 },
+    viewBox: '-240 -110 480 220',
+    svg: `
+      <circle cx="-210" cy="-70" r="3" fill="#1a1a18"/>
+      <circle cx="-70"  cy="-70" r="3" fill="#1a1a18"/>
+      <circle cx="70"   cy="-70" r="3" fill="#1a1a18"/>
+      <circle cx="210"  cy="-70" r="3" fill="#1a1a18"/>
+      <circle cx="-140" cy="70"  r="3" fill="#1a1a18"/>
+      <circle cx="0"    cy="70"  r="3" fill="#1a1a18"/>
+      <circle cx="140"  cy="70"  r="3" fill="#1a1a18"/>
+      <path d="M -233,-105 L -210,-105
+      C -210,-105 -169,-105 -175,-70 L -175,70
+      C -175,105 -111,117 -105,70 L -105,-70
+      C -105,-105 -41,-117 -35,-70 L -35,70
+      C -35,105 29,117 35,70 L 35,-70
+      C 35,-105 99,-117 105,-70 L 105,70
+      C 105,105 169,117 175,70 L 175,-70
+      C 175,-105 198,-105 210,-105 L 233,-105"
+            fill="none" stroke="#1a1a18" stroke-width="1" stroke-dasharray="8 6" stroke-linecap="round"/>
+    `,
+  },
+
+  {
+    id: 'parallellslalom-4x3-8m',
+    label: 'Parallellslalom',
+    variantGroup: 'Parallellslalom',
+    variantLabel: '4+3, 8m',
+    w: 27, h: 12,
+    entry: { x: -13.5, y: -5.5 },
+    exit:  { x: 13.5, y: -5.5 },
+    viewBox: '-270 -120 540 240',
+    svg: `
+      <circle cx="-240" cy="-80" r="3" fill="#1a1a18"/>
+      <circle cx="-80"  cy="-80" r="3" fill="#1a1a18"/>
+      <circle cx="80"   cy="-80" r="3" fill="#1a1a18"/>
+      <circle cx="240"  cy="-80" r="3" fill="#1a1a18"/>
+      <circle cx="-160" cy="80"  r="3" fill="#1a1a18"/>
+      <circle cx="0"    cy="80"  r="3" fill="#1a1a18"/>
+      <circle cx="160"  cy="80"  r="3" fill="#1a1a18"/>
+      <path d="M -267,-120 L -240,-120
+      C -240,-120 -193,-120 -200,-80 L -200,80
+      C -200,120 -127,133 -120,80 L -120,-80
+      C -120,-120 -47,-133 -40,-80 L -40,80
+      C -40,120 33,133 40,80 L 40,-80
+      C 40,-120 113,-133 120,-80 L 120,80
+      C 120,120 193,133 200,80 L 200,-80
+      C 200,-120 227,-120 240,-120 L 267,-120"
+            fill="none" stroke="#1a1a18" stroke-width="1" stroke-dasharray="8 6" stroke-linecap="round"/>
+    `,
+  },
+
+  {
+    id: 'parallellslalom-3x2-6m',
+    label: 'Parallellslalom',
+    variantGroup: 'Parallellslalom',
+    variantLabel: '3+2, 6m',
+    w: 14, h: 10,
+    entry: { x: -7, y: -4.5 },
+    exit:  { x: 7, y: -4.5 },
+    viewBox: '-140 -100 280 200',
+    svg: `
+      <circle cx="-120" cy="-60" r="3" fill="#1a1a18"/>
+      <circle cx="0"    cy="-60" r="3" fill="#1a1a18"/>
+      <circle cx="120"  cy="-60" r="3" fill="#1a1a18"/>
+      <circle cx="-60"  cy="60"  r="3" fill="#1a1a18"/>
+      <circle cx="60"   cy="60"  r="3" fill="#1a1a18"/>
+      <path d="M -140,-90 L -120,-90
+      C -120,-90 -85,-90 -90,-60 L -90,60
+      C -90,90 -35,100 -30,60 L -30,-60
+      C -30,-90 25,-100 30,-60 L 30,60
+      C 30,90 85,100 90,60 L 90,-60
+      C 90,-90 110,-90 120,-90 L 140,-90"
+            fill="none" stroke="#1a1a18" stroke-width="1" stroke-dasharray="8 6" stroke-linecap="round"/>
+    `,
+  },
+
+  {
+    id: 'parallellslalom-3x2-7m',
+    label: 'Parallellslalom',
+    variantGroup: 'Parallellslalom',
+    variantLabel: '3+2, 7m',
+    w: 16, h: 11,
+    entry: { x: -8, y: -5 },
+    exit:  { x: 8, y: -5 },
+    viewBox: '-160 -110 320 220',
+    svg: `
+      <circle cx="-140" cy="-70" r="3" fill="#1a1a18"/>
+      <circle cx="0"    cy="-70" r="3" fill="#1a1a18"/>
+      <circle cx="140"  cy="-70" r="3" fill="#1a1a18"/>
+      <circle cx="-70"  cy="70"  r="3" fill="#1a1a18"/>
+      <circle cx="70"   cy="70"  r="3" fill="#1a1a18"/>
+      <path d="M -163,-105 L -140,-105
+      C -140,-105 -99,-105 -105,-70 L -105,70
+      C -105,105 -41,117 -35,70 L -35,-70
+      C -35,-105 29,-117 35,-70 L 35,70
+      C 35,105 99,117 105,70 L 105,-70
+      C 105,-105 128,-105 140,-105 L 163,-105"
+            fill="none" stroke="#1a1a18" stroke-width="1" stroke-dasharray="8 6" stroke-linecap="round"/>
+    `,
+  },
+
+  {
+    id: 'parallellslalom-3x2-8m',
+    label: 'Parallellslalom',
+    variantGroup: 'Parallellslalom',
+    variantLabel: '3+2, 8m',
+    w: 18, h: 12,
+    entry: { x: -9, y: -5.5 },
+    exit:  { x: 9, y: -5.5 },
+    viewBox: '-180 -120 360 240',
+    svg: `
+      <circle cx="-160" cy="-80" r="3" fill="#1a1a18"/>
+      <circle cx="0"    cy="-80" r="3" fill="#1a1a18"/>
+      <circle cx="160"  cy="-80" r="3" fill="#1a1a18"/>
+      <circle cx="-80"  cy="80"  r="3" fill="#1a1a18"/>
+      <circle cx="80"   cy="80"  r="3" fill="#1a1a18"/>
+      <path d="M -187,-120 L -160,-120
+      C -160,-120 -113,-120 -120,-80 L -120,80
+      C -120,120 -47,133 -40,80 L -40,-80
+      C -40,-120 33,-133 40,-80 L 40,80
+      C 40,120 113,133 120,80 L 120,-80
+      C 120,-120 147,-120 160,-120 L 187,-120"
+            fill="none" stroke="#1a1a18" stroke-width="1" stroke-dasharray="8 6" stroke-linecap="round"/>
+    `,
+  },
 
   {
     id: 'ryggning',
@@ -228,16 +401,50 @@ export const OBSTACLES: ObstacleDef[] = [
   },
 
   {
+    id: 'falla-6m',
+    label: 'Fålla',
+    variantGroup: 'Fålla',
+    variantLabel: '6m',
+    w: 6, h: 6,
+    entry: { x: 0, y: -3 },
+    exit:  { x: 0, y: -3 },
+    viewBox: '-70 -70 140 140',
+    svg: `
+      <circle cx="0" cy="0" r="60" fill="none" stroke="#1a1a18" stroke-width="2.5"
+              stroke-dasharray="248 68"/>
+      <circle cx="0" cy="0" r="38" fill="none" stroke="#1a1a18" stroke-width="1.5"/>
+    `,
+  },
+
+  {
     id: 'falla',
     label: 'Fålla',
+    variantGroup: 'Fålla',
+    variantLabel: '8m',
     w: 8, h: 8,
     entry: { x: 0, y: -4 },
-    exit:  { x: 0, y:  -4 },
+    exit:  { x: 0, y: -4 },
     viewBox: '-90 -90 180 180',
     svg: `
       <circle cx="0" cy="0" r="80" fill="none" stroke="#1a1a18" stroke-width="2.5"
               stroke-dasharray="330 90"/>
       <circle cx="0" cy="0" r="50" fill="none" stroke="#1a1a18" stroke-width="1.5"/>
+    `,
+  },
+
+  {
+    id: 'falla-10m',
+    label: 'Fålla',
+    variantGroup: 'Fålla',
+    variantLabel: '10m',
+    w: 10, h: 10,
+    entry: { x: 0, y: -5 },
+    exit:  { x: 0, y: -5 },
+    viewBox: '-110 -110 220 220',
+    svg: `
+      <circle cx="0" cy="0" r="100" fill="none" stroke="#1a1a18" stroke-width="2.5"
+              stroke-dasharray="413 113"/>
+      <circle cx="0" cy="0" r="63" fill="none" stroke="#1a1a18" stroke-width="1.5"/>
     `,
   },
 
