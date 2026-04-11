@@ -44,6 +44,8 @@ export default function GateGroup({
   const reachPx = SYMBOL_REACH_M * scale;
   const circleRadPx = CIRCLE_RADIUS_M * scale;
   const minHalfPx = (MIN_GATE_WIDTH_M / 2) * scale;
+  const dotOffsetPx = 0.5 * scale;  // entry/exit dots at ±0.5m from gate center
+  const HIT_RADIUS = Math.max(14, reachPx + 6);  // larger transparent hit area for easier grabbing
 
   const lineRef = useRef<Konva.Line>(null);
   const leftSymRef = useRef<Konva.Group>(null);
@@ -165,6 +167,15 @@ export default function GateGroup({
       onMouseEnter={() => onHoverChange(true)}
       onMouseLeave={() => onHoverChange(false)}
     >
+      {/* Transparent hit area for the full gate — makes dragging the gate easier */}
+      <Rect
+        x={-halfWidthPx - reachPx}
+        y={-HIT_RADIUS}
+        width={(halfWidthPx + reachPx) * 2}
+        height={HIT_RADIUS * 2}
+        fill="transparent"
+      />
+
       {/* Dotted line between symbols */}
       <Line
         ref={lineRef}
@@ -186,10 +197,11 @@ export default function GateGroup({
         onDragEnd={(e) => handleSymbolDragEnd('left', e)}
         onMouseDown={(e) => { e.cancelBubble = true; }}
       >
+        <Circle radius={HIT_RADIUS} fill="transparent" />
         {gate.type === 'marker' ? (
-          <Line points={leftTriPoints} closed fill={GATE_COLOR} stroke={GATE_COLOR} strokeWidth={1} />
+          <Line points={leftTriPoints} closed fill={GATE_COLOR} stroke={GATE_COLOR} strokeWidth={1} listening={false} />
         ) : (
-          <Circle radius={circleRadPx} fill={GATE_COLOR} stroke={GATE_COLOR} strokeWidth={1} />
+          <Circle radius={circleRadPx} fill={GATE_COLOR} stroke={GATE_COLOR} strokeWidth={1} listening={false} />
         )}
       </Group>
 
@@ -204,19 +216,20 @@ export default function GateGroup({
         onDragEnd={(e) => handleSymbolDragEnd('right', e)}
         onMouseDown={(e) => { e.cancelBubble = true; }}
       >
+        <Circle radius={HIT_RADIUS} fill="transparent" />
         {gate.type === 'marker' ? (
-          <Line points={rightTriPoints} closed fill={GATE_COLOR} stroke={GATE_COLOR} strokeWidth={1} />
+          <Line points={rightTriPoints} closed fill={GATE_COLOR} stroke={GATE_COLOR} strokeWidth={1} listening={false} />
         ) : (
-          <Circle radius={circleRadPx} fill={GATE_COLOR} stroke={GATE_COLOR} strokeWidth={1} />
+          <Circle radius={circleRadPx} fill={GATE_COLOR} stroke={GATE_COLOR} strokeWidth={1} listening={false} />
         )}
       </Group>
 
-      {/* Connection dots — start-finish only */}
+      {/* Connection dots — start-finish only, at ±0.5m from gate center */}
       {gate.type === 'start-finish' && showDots && (
         <>
-          {/* Left dot (entry) */}
+          {/* Left dot (entry) at -0.5m */}
           <Circle
-            x={-halfWidthPx}
+            x={-dotOffsetPx}
             y={0}
             radius={5}
             fill="#4a9a2a"
@@ -228,9 +241,9 @@ export default function GateGroup({
               onDotMouseDown?.('entry', abs.x, abs.y);
             }}
           />
-          {/* Right dot (exit) */}
+          {/* Right dot (exit) at +0.5m */}
           <Circle
-            x={halfWidthPx}
+            x={dotOffsetPx}
             y={0}
             radius={5}
             fill="#4a9a2a"
@@ -247,7 +260,7 @@ export default function GateGroup({
 
       {/* Visit approach arrows + badges */}
       {gate.type === 'start-finish' && showPath && visits.map((visit) => {
-        const dotLocalX = visit.entryPoint === 'entry' ? -halfWidthPx : halfWidthPx;
+        const dotLocalX = visit.entryPoint === 'entry' ? -dotOffsetPx : dotOffsetPx;
         const label = visit.role === 'start' ? 'Start'
           : visit.role === 'finish' ? 'Mål'
           : visit.role === 'start-and-finish' ? 'Start\nMål'
