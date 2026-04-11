@@ -29,6 +29,8 @@ interface GateGroupProps {
   pathLineWeight?: number;
   pathArrowSize?: number;
   pathLineType?: PathLineType;
+  onSelectVisit?: (visitId: string) => void;
+  onUpdateVisit?: (visitId: string, updates: Partial<Visit>) => void;
   // Resize (wired in Task 4):
   onResizeEnd?: (newWidth: number, newCx: number, newCy: number) => void;
 }
@@ -36,7 +38,8 @@ interface GateGroupProps {
 export default function GateGroup({
   gate, scale, coordCtx, isSelected, isHovered,
   onHoverChange, onClick, onMove, onRotate, onDelete, onResizeEnd,
-  onDotMouseDown, visits = [], selectedVisitId: _selectedVisitId, showPath,
+  onDotMouseDown, visits = [], selectedVisitId, showPath,
+  onSelectVisit, onUpdateVisit,
 }: GateGroupProps) {
   const [sx, sy] = worldToScreen(gate.x, gate.y, coordCtx);
   const showDots = gate.type === 'start-finish' && (isHovered || isSelected);
@@ -194,7 +197,7 @@ export default function GateGroup({
         draggable
         dragBoundFunc={(pos) => ({ x: Math.min(pos.x, -minHalfPx), y: 0 })}
         onDragMove={(e) => handleSymbolDragMove('left', e)}
-        onDragEnd={(e) => handleSymbolDragEnd('left', e)}
+        onDragEnd={(e) => { handleSymbolDragEnd('left', e); e.cancelBubble = true; }}
         onMouseDown={(e) => { e.cancelBubble = true; }}
       >
         <Circle radius={HIT_RADIUS} fill="transparent" />
@@ -213,7 +216,7 @@ export default function GateGroup({
         draggable
         dragBoundFunc={(pos) => ({ x: Math.max(pos.x, minHalfPx), y: 0 })}
         onDragMove={(e) => handleSymbolDragMove('right', e)}
-        onDragEnd={(e) => handleSymbolDragEnd('right', e)}
+        onDragEnd={(e) => { handleSymbolDragEnd('right', e); e.cancelBubble = true; }}
         onMouseDown={(e) => { e.cancelBubble = true; }}
       >
         <Circle radius={HIT_RADIUS} fill="transparent" />
@@ -224,13 +227,13 @@ export default function GateGroup({
         )}
       </Group>
 
-      {/* Connection dots — start-finish only, at ±0.5m from gate center */}
+      {/* Connection dots — start-finish only, 0.5m above/below the gate line */}
       {gate.type === 'start-finish' && showDots && (
         <>
-          {/* Left dot (entry) at -0.5m */}
+          {/* Entry dot — above the line */}
           <Circle
-            x={-dotOffsetPx}
-            y={0}
+            x={0}
+            y={-dotOffsetPx}
             radius={5}
             fill="#4a9a2a"
             stroke="white"
@@ -241,10 +244,10 @@ export default function GateGroup({
               onDotMouseDown?.('entry', abs.x, abs.y);
             }}
           />
-          {/* Right dot (exit) at +0.5m */}
+          {/* Exit dot — below the line */}
           <Circle
-            x={dotOffsetPx}
-            y={0}
+            x={0}
+            y={dotOffsetPx}
             radius={5}
             fill="#4a9a2a"
             stroke="white"
@@ -260,7 +263,9 @@ export default function GateGroup({
 
       {/* Visit approach arrows + badges */}
       {gate.type === 'start-finish' && showPath && visits.map((visit) => {
-        const dotLocalX = visit.entryPoint === 'entry' ? -dotOffsetPx : dotOffsetPx;
+        // Dots are perpendicular to the gate line: entry above (y<0), exit below (y>0)
+        const dotX = 0;
+        const dotY = visit.entryPoint === 'entry' ? -dotOffsetPx : dotOffsetPx;
         const label = visit.role === 'start' ? 'Start'
           : visit.role === 'finish' ? 'Mål'
           : visit.role === 'start-and-finish' ? 'Start\nMål'
@@ -269,23 +274,40 @@ export default function GateGroup({
         const badgeOffYPx = visit.badgeOffY * scale;
         const approachAngleRad = (visit.approachAngle - gate.rotation) * Math.PI / 180;
         const approachLenPx = visit.approachLength * scale;
-        const tailX = dotLocalX - Math.sin(approachAngleRad) * approachLenPx;
-        const tailY = -Math.cos(approachAngleRad) * approachLenPx;
+        const tailX = dotX - Math.sin(approachAngleRad) * approachLenPx;
+        const tailY = dotY - Math.cos(approachAngleRad) * approachLenPx;
+        const isSel = visit.id === selectedVisitId;
 
         return (
           <Group key={visit.id}>
-            {/* Approach arrow — use Arrow (not Line) for pointer head */}
+            {/* Approach arrow — clickable to select visit */}
             <Arrow
-              points={[tailX, tailY, dotLocalX, 0]}
-              stroke="#BA7517"
-              strokeWidth={2}
-              fill="#BA7517"
+              points={[tailX, tailY, dotX, dotY]}
+              stroke={isSel ? '#d48a1e' : '#BA7517'}
+              strokeWidth={isSel ? 3 : 2}
+              fill={isSel ? '#d48a1e' : '#BA7517'}
               pointerLength={8}
               pointerWidth={6}
+              hitStrokeWidth={12}
+              onClick={(e) => { e.cancelBubble = true; onSelectVisit?.(visit.id); }}
             />
-            {/* Badge */}
-            <Group x={dotLocalX + badgeOffXPx} y={badgeOffYPx}>
-              <Circle radius={12} fill="#BA7517" />
+            {/* Badge — draggable to reposition */}
+            <Group
+              x={dotX + badgeOffXPx}
+              y={dotY + badgeOffYPx}
+              draggable
+              onMouseDown={(e) => { e.cancelBubble = true; }}
+              onClick={(e) => { e.cancelBubble = true; onSelectVisit?.(visit.id); }}
+              onDragEnd={(e) => {
+                const pos = e.target.position();
+                onUpdateVisit?.(visit.id, {
+                  badgeOffX: (pos.x - dotX) / scale,
+                  badgeOffY: (pos.y - dotY) / scale,
+                });
+                e.cancelBubble = true;
+              }}
+            >
+              <Circle radius={12} fill={isSel ? '#d48a1e' : '#BA7517'} />
               <Text
                 text={label}
                 fontSize={visit.role === 'start-and-finish' ? 7 : 9}
@@ -334,8 +356,10 @@ export default function GateGroup({
             fill="#333"
             draggable
             onDragMove={handleRotDragMove}
+            onMouseDown={(e) => { e.cancelBubble = true; }}
             onDragEnd={(e) => {
               e.target.position({ x: HANDLE_DIST, y: 0 });
+              e.cancelBubble = true;
             }}
           />
           <Text

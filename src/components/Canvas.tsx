@@ -477,6 +477,11 @@ export default function Canvas() {
                     pathLineWeight={pathLineWeight}
                     pathArrowSize={pathArrowSize}
                     pathLineType={pathLineType}
+                    onSelectVisit={(visitId) => {
+                      if (selectedVisitId === visitId) { setSelectedVisitId(null); return; }
+                      setSelectedVisitId(visitId); selectObstacle(item.id);
+                    }}
+                    onUpdateVisit={updateVisit}
                   />
                 );
               }
