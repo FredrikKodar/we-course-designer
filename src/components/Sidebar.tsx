@@ -27,6 +27,31 @@ interface AccordionGroupProps {
   defs: ObstacleDef[];
 }
 
+interface GateChipProps {
+  gateType: 'marker' | 'start-finish';
+  label: string;
+  svgContent: React.ReactNode;
+}
+
+function GateChip({ gateType, label, svgContent }: GateChipProps) {
+  const handleDragStart = (e: React.DragEvent<HTMLDivElement>) => {
+    e.dataTransfer.setData('gateType', gateType);
+    e.dataTransfer.effectAllowed = 'copy';
+  };
+  return (
+    <div
+      draggable
+      onDragStart={handleDragStart}
+      className="flex items-center gap-1.5 px-2 py-1.5 rounded-md border border-[#e8e8e4] bg-[#fafaf8] text-[11px] text-gray-500 cursor-grab select-none transition-all hover:border-[#BA7517] hover:text-[#1a1a18] hover:bg-[#fff8ee]"
+    >
+      <svg width="20" height="20" viewBox="-20 -10 40 20" className="shrink-0">
+        {svgContent}
+      </svg>
+      <span className="truncate">{label}</span>
+    </div>
+  );
+}
+
 function Toggle({ label, value, onChange }: ToggleProps) {
   return (
     <div className="flex items-center justify-between mb-1.5">
@@ -217,6 +242,36 @@ export default function Sidebar() {
           Obstacles — drag to arena
         </div>
         <div className="flex flex-col gap-2">
+          {/* Course Setup — gate objects */}
+          <div>
+            <div className="text-[9px] text-gray-600 font-mono mb-1">Course Setup</div>
+            <div className="flex flex-col gap-0.5">
+              <GateChip
+                gateType="start-finish"
+                label="Start / Mål"
+                svgContent={
+                  <>
+                    <circle cx="-14" cy="0" r="4" fill="#1a1a18" />
+                    <circle cx="14" cy="0" r="4" fill="#1a1a18" />
+                    <line x1="-10" y1="0" x2="10" y2="0" stroke="#1a1a18" strokeWidth="1" strokeDasharray="3 2" />
+                  </>
+                }
+              />
+              <GateChip
+                gateType="marker"
+                label="Markering"
+                svgContent={
+                  <>
+                    {/* Left triangle pointing right */}
+                    <polygon points="-6,0 -14,-5 -14,5" fill="#1a1a18" />
+                    {/* Right triangle pointing left */}
+                    <polygon points="6,0 14,-5 14,5" fill="#1a1a18" />
+                    <line x1="-6" y1="0" x2="6" y2="0" stroke="#1a1a18" strokeWidth="1" strokeDasharray="3 2" />
+                  </>
+                }
+              />
+            </div>
+          </div>
           {CATEGORIES.map((cat) => {
             const defs = cat.ids
               .map((id) => OBSTACLES.find((o) => o.id === id))
