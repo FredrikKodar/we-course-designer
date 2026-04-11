@@ -50,6 +50,7 @@ export default function GateGroup({
   const dotOffsetPx = 0.5 * scale;  // entry/exit dots at ±0.5m from gate center
   const HIT_RADIUS = Math.max(14, reachPx + 6);  // larger transparent hit area for easier grabbing
 
+  const outerGroupRef = useRef<Konva.Group>(null);
   const lineRef = useRef<Konva.Line>(null);
   const leftSymRef = useRef<Konva.Group>(null);
   const rightSymRef = useRef<Konva.Group>(null);
@@ -74,9 +75,11 @@ export default function GateGroup({
   const handleRotDragMove = (e: Konva.KonvaEventObject<DragEvent>) => {
     const node = e.target;
     const angle = Math.atan2(node.y(), node.x()) * 180 / Math.PI;
-    onRotate(angle);
+    // Apply rotation imperatively to avoid React re-renders during drag (prevents flicker)
+    outerGroupRef.current?.rotation(angle);
     node.x(HANDLE_DIST * Math.cos(angle * Math.PI / 180));
     node.y(HANDLE_DIST * Math.sin(angle * Math.PI / 180));
+    node.getLayer()?.batchDraw();
   };
 
   const handleSymbolDragMove = (
@@ -161,6 +164,7 @@ export default function GateGroup({
 
   return (
     <Group
+      ref={outerGroupRef}
       x={sx}
       y={sy}
       rotation={gate.rotation}
@@ -358,6 +362,9 @@ export default function GateGroup({
             onDragMove={handleRotDragMove}
             onMouseDown={(e) => { e.cancelBubble = true; }}
             onDragEnd={(e) => {
+              // Commit final rotation to store on release
+              const angle = Math.atan2(e.target.y(), e.target.x()) * 180 / Math.PI;
+              onRotate(angle);
               e.target.position({ x: HANDLE_DIST, y: 0 });
               e.cancelBubble = true;
             }}
