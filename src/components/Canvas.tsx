@@ -1,11 +1,12 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { Stage, Layer, Rect, Line, Text } from 'react-konva';
 import Konva from 'konva';
-import type { ViewMode, PlacedObstacle, ObstacleDef } from '../types';
+import type { ViewMode, PlacedItem, PlacedObstacle, ObstacleDef } from '../types';
 import useStore, { MIN_ZOOM, MAX_ZOOM } from '../store/useStore';
 import { OBSTACLES } from '../data/obstacles';
 import { screenToWorld } from '../utils/coords';
 import ObstacleGroup from './ObstacleGroup';
+import GateGroup from './GateGroup';
 
 function pointInObstacle(wx: number, wy: number, p: PlacedObstacle, def: ObstacleDef): boolean {
   const cx = p.x + def.w / 2;
@@ -141,6 +142,14 @@ export default function Canvas() {
   const pathArrowSize = useStore((s) => s.pathArrowSize);
   const deleteObstacle = useStore((s) => s.deleteObstacle);
 
+  const placeGate = useStore((s) => s.placeGate);
+  const moveGate = useStore((s) => s.moveGate);
+  const rotateGate = useStore((s) => s.rotateGate);
+  const resizeGate = useStore((s) => s.resizeGate);
+  const deleteGate = useStore((s) => s.deleteGate);
+  const addGateVisit = useStore((s) => s.addGateVisit);
+  const setVisitRole = useStore((s) => s.setVisitRole);
+
   // ResizeObserver
   useEffect(() => {
     const el = containerRef.current;
@@ -209,12 +218,17 @@ export default function Canvas() {
       }
 
       if (e.key === 'Delete' || e.key === 'Backspace') {
-        const { selectedVisitId: svId, selectedId: obId } = useStore.getState();
+        const { selectedVisitId: svId, selectedId: obId, placed: curPlaced } = useStore.getState();
         if (svId) {
           useStore.getState().deleteVisit(svId);
           e.preventDefault();
         } else if (obId) {
-          useStore.getState().deleteObstacle(obId);
+          const item = curPlaced.find((p) => p.id === obId);
+          if (item?.kind === 'gate') {
+            useStore.getState().deleteGate(obId);
+          } else {
+            useStore.getState().deleteObstacle(obId);
+          }
           e.preventDefault();
         }
       }
@@ -263,6 +277,12 @@ export default function Canvas() {
   } | null>(null);
   const [visitDragTip, setVisitDragTip] = useState<{ x: number; y: number } | null>(null);
 
+  const [rolePicker, setRolePicker] = useState<{
+    visitId: string;
+    x: number;
+    y: number;
+  } | null>(null);
+
   const handleMouseDown = (e: Konva.KonvaEventObject<MouseEvent>) => {
     // Middle mouse or shift+click
     if (e.evt.button === 1 || (e.evt.button === 0 && e.evt.shiftKey)) {
@@ -301,7 +321,13 @@ export default function Canvas() {
         if (dist > 5) {
           const approachLength = Math.min(dist / scale, 5);
           const approachAngle = ((Math.atan2(dx, -dy) * 180) / Math.PI + 360) % 360;
-          addVisit(drag.obstacleId, drag.entryPoint, approachAngle, approachLength);
+          const item = placed.find((p: PlacedItem) => p.id === drag.obstacleId);
+          if (item?.kind === 'gate' && item.type === 'start-finish') {
+            const visitId = addGateVisit(drag.obstacleId, drag.entryPoint, approachAngle, approachLength);
+            setRolePicker({ visitId, x: pos.x, y: pos.y });
+          } else {
+            addVisit(drag.obstacleId, drag.entryPoint, approachAngle, approachLength);
+          }
         }
       }
       visitDragRef.current = null;
@@ -315,6 +341,7 @@ export default function Canvas() {
 
     // All obstacles at this world point, sorted topmost-first (last in array = top z-order)
     const hits = placed
+      .filter((p): p is PlacedObstacle => p.kind === 'obstacle')
       .map((p, i) => ({ p, i }))
       .filter(({ p }) => {
         const def = OBSTACLES.find((o) => o.id === p.type);
@@ -352,6 +379,7 @@ export default function Canvas() {
     cycleRef.current = null;
     selectObstacle(null);
     setSelectedVisitId(null);
+    setRolePicker(null);
   };
 
   // Drop from sidebar
@@ -362,14 +390,21 @@ export default function Canvas() {
 
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
-    const type = e.dataTransfer.getData('obstacleType');
-    if (!type) return;
     if (!containerRef.current) return;
     const rect = containerRef.current.getBoundingClientRect();
     const sx = e.clientX - rect.left;
     const sy = e.clientY - rect.top;
     const [wx, wy] = screenToWorld(sx, sy, coordCtx);
-    placeObstacle(type, wx, wy);
+
+    const gateType = e.dataTransfer.getData('gateType') as 'marker' | 'start-finish' | '';
+    if (gateType) {
+      placeGate(gateType, wx, wy);
+      return;
+    }
+    const obstacleType = e.dataTransfer.getData('obstacleType');
+    if (obstacleType) {
+      placeObstacle(obstacleType, wx, wy);
+    }
   };
 
   return (
@@ -413,44 +448,75 @@ export default function Canvas() {
             strokeWidth={2}
           />
 
-          {/* Obstacles — selected obstacle rendered last so it is topmost and draggable */}
-          {[...placed].sort((a, b) => (a.id === selectedId ? 1 : b.id === selectedId ? -1 : 0)).map((p) => {
-            const def = OBSTACLES.find((o) => o.id === p.type);
-            if (!def) return null;
-            return (
-              <ObstacleGroup
-                key={p.id}
-                placed={p}
-                def={def}
-                scale={scale}
-                coordCtx={coordCtx}
-                isSelected={p.id === selectedId}
-                snapToGrid={snapToGrid}
-                violation={violations.get(p.id) || null}
-                onClickAtPos={handleObstacleClickAtPos}
-                onMove={(wx, wy) => moveObstacle(p.id, wx, wy)}
-                onRotate={(deg) => rotateObstacle(p.id, deg)}
-                isHovered={p.id === hoveredId}
-                onHoverChange={(hovered) => setHoveredId(hovered ? p.id : null)}
-                onDotMouseDown={(entryPoint, dotX, dotY) => {
-                  visitDragRef.current = { obstacleId: p.id, entryPoint, dotX, dotY };
-                  setVisitDragTip({ x: dotX, y: dotY });
-                }}
-                visits={visits.filter((v) => v.obstacleId === p.id)}
-                selectedVisitId={selectedVisitId}
-                showPath={showPath}
-                pathLineType={pathLineType}
-                pathLineWeight={pathLineWeight}
-                pathArrowSize={pathArrowSize}
-                onSelectVisit={(visitId) => {
-                  if (selectedVisitId === visitId) { setSelectedVisitId(null); return; }
-                  setSelectedVisitId(visitId); selectObstacle(p.id);
-                }}
-                onUpdateVisit={updateVisit}
-                onDelete={() => deleteObstacle(p.id)}
-              />
-            );
-          })}
+          {/* Obstacles and gates — selected item rendered last so it is topmost and draggable */}
+          {[...placed]
+            .sort((a, b) => (a.id === selectedId ? 1 : b.id === selectedId ? -1 : 0))
+            .map((item) => {
+              if (item.kind === 'gate') {
+                return (
+                  <GateGroup
+                    key={item.id}
+                    gate={item}
+                    scale={scale}
+                    coordCtx={coordCtx}
+                    isSelected={item.id === selectedId}
+                    isHovered={item.id === hoveredId}
+                    onHoverChange={(hovered) => setHoveredId(hovered ? item.id : null)}
+                    onClick={() => selectObstacle(item.id)}
+                    onMove={(cx, cy) => moveGate(item.id, cx, cy)}
+                    onRotate={(deg) => rotateGate(item.id, deg)}
+                    onResizeEnd={(newWidth, newCx, newCy) => resizeGate(item.id, newWidth, newCx, newCy)}
+                    onDelete={() => { deleteGate(item.id); selectObstacle(null); }}
+                    onDotMouseDown={(entryPoint, dotX, dotY) => {
+                      visitDragRef.current = { obstacleId: item.id, entryPoint, dotX, dotY };
+                      setVisitDragTip({ x: dotX, y: dotY });
+                    }}
+                    visits={visits.filter((v) => v.obstacleId === item.id)}
+                    selectedVisitId={selectedVisitId}
+                    showPath={showPath}
+                    pathLineWeight={pathLineWeight}
+                    pathArrowSize={pathArrowSize}
+                    pathLineType={pathLineType}
+                  />
+                );
+              }
+              // kind === 'obstacle'
+              const def = OBSTACLES.find((o) => o.id === item.type);
+              if (!def) return null;
+              return (
+                <ObstacleGroup
+                  key={item.id}
+                  placed={item}
+                  def={def}
+                  scale={scale}
+                  coordCtx={coordCtx}
+                  isSelected={item.id === selectedId}
+                  snapToGrid={snapToGrid}
+                  violation={violations.get(item.id) || null}
+                  onClickAtPos={handleObstacleClickAtPos}
+                  onMove={(wx, wy) => moveObstacle(item.id, wx, wy)}
+                  onRotate={(deg) => rotateObstacle(item.id, deg)}
+                  isHovered={item.id === hoveredId}
+                  onHoverChange={(hovered) => setHoveredId(hovered ? item.id : null)}
+                  onDotMouseDown={(entryPoint, dotX, dotY) => {
+                    visitDragRef.current = { obstacleId: item.id, entryPoint, dotX, dotY };
+                    setVisitDragTip({ x: dotX, y: dotY });
+                  }}
+                  visits={visits.filter((v) => v.obstacleId === item.id)}
+                  selectedVisitId={selectedVisitId}
+                  showPath={showPath}
+                  pathLineType={pathLineType}
+                  pathLineWeight={pathLineWeight}
+                  pathArrowSize={pathArrowSize}
+                  onSelectVisit={(visitId) => {
+                    if (selectedVisitId === visitId) { setSelectedVisitId(null); return; }
+                    setSelectedVisitId(visitId); selectObstacle(item.id);
+                  }}
+                  onUpdateVisit={updateVisit}
+                  onDelete={() => deleteObstacle(item.id)}
+                />
+              );
+            })}
           {/* Visit creation preview line */}
           {visitDragTip && visitDragRef.current && (
             <Line
@@ -468,6 +534,60 @@ export default function Canvas() {
           )}
         </Layer>
       </Stage>
+      {/* Role picker overlay */}
+      {rolePicker && (() => {
+        const visit = visits.find((v) => v.id === rolePicker.visitId);
+        const startClaimed = visits.some(
+          (v) => v.id !== rolePicker.visitId && (v.role === 'start' || v.role === 'start-and-finish'),
+        );
+        const finishClaimed = visits.some(
+          (v) => v.id !== rolePicker.visitId && (v.role === 'finish' || v.role === 'start-and-finish'),
+        );
+        const left = rolePicker.x;
+        const top = rolePicker.y;
+
+        return (
+          <div
+            className="absolute z-50 bg-white border border-gray-200 rounded-lg shadow-lg p-2 flex flex-col gap-1"
+            style={{ left, top, transform: 'translate(-50%, 8px)', minWidth: 120 }}
+            onMouseDown={(e) => e.stopPropagation()}
+          >
+            <div className="text-[10px] text-gray-400 font-mono mb-1">Assign role</div>
+            {(['start', 'finish', 'start-and-finish'] as const).map((role) => {
+              const disabled =
+                (role === 'start' && startClaimed) ||
+                (role === 'finish' && finishClaimed) ||
+                (role === 'start-and-finish' && (startClaimed || finishClaimed));
+              const label = role === 'start' ? 'Start' : role === 'finish' ? 'Mal' : 'Start + Mal';
+              return (
+                <button
+                  key={role}
+                  disabled={disabled}
+                  className={`text-[11px] px-2 py-1 rounded text-left transition-colors ${
+                    visit?.role === role
+                      ? 'bg-[#BA7517] text-white'
+                      : disabled
+                      ? 'text-gray-300 cursor-not-allowed'
+                      : 'hover:bg-[#fff8ee] text-gray-700 cursor-pointer'
+                  }`}
+                  onClick={() => {
+                    setVisitRole(rolePicker.visitId, role);
+                    setRolePicker(null);
+                  }}
+                >
+                  {label}
+                </button>
+              );
+            })}
+            <button
+              className="text-[10px] text-gray-300 hover:text-gray-500 mt-1 text-left"
+              onClick={() => setRolePicker(null)}
+            >
+              Cancel
+            </button>
+          </div>
+        );
+      })()}
     </div>
   );
 }
