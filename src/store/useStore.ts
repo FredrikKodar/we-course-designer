@@ -287,6 +287,7 @@ const useStore = create<StoreState>()(
         resizeGate: (id, newWidth) => {
           const clamped = Math.max(0.5, newWidth);
           set((s) => ({
+            ...snapshot(),
             placed: s.placed.map((p) =>
               p.id === id && p.kind === 'gate' ? { ...p, gateWidth: clamped } : p,
             ),
@@ -304,6 +305,7 @@ const useStore = create<StoreState>()(
               selectedVisitId: removedVisitIds.has(s.selectedVisitId ?? '') ? null : s.selectedVisitId,
             };
           });
+          get().runCompliance();
         },
 
         addGateVisit: (gateId, entryPoint, approachAngle, approachLength) => {
@@ -344,6 +346,7 @@ const useStore = create<StoreState>()(
           if (role === 'finish' && finishClaimed) return;
           if (role === 'start-and-finish' && (startClaimed || finishClaimed)) return;
           set((s) => ({
+            ...snapshot(),
             visits: s.visits.map((v) => (v.id === visitId ? { ...v, role } : v)),
           }));
         },
