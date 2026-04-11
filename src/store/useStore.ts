@@ -74,7 +74,7 @@ export interface StoreState {
   placeGate: (type: 'marker' | 'start-finish', cx: number, cy: number) => void;
   moveGate: (id: string, cx: number, cy: number) => void;
   rotateGate: (id: string, degrees: number) => void;
-  resizeGate: (id: string, newWidth: number) => void;
+  resizeGate: (id: string, newWidth: number, cx?: number, cy?: number) => void;
   deleteGate: (id: string) => void;
 
   // Actions — visit roles
@@ -284,13 +284,19 @@ const useStore = create<StoreState>()(
           }));
         },
 
-        resizeGate: (id, newWidth) => {
+        resizeGate: (id, newWidth, cx, cy) => {
           const clamped = Math.max(0.5, newWidth);
           set((s) => ({
             ...snapshot(),
-            placed: s.placed.map((p) =>
-              p.id === id && p.kind === 'gate' ? { ...p, gateWidth: clamped } : p,
-            ),
+            placed: s.placed.map((p) => {
+              if (p.id !== id || p.kind !== 'gate') return p;
+              return {
+                ...p,
+                gateWidth: clamped,
+                ...(cx !== undefined && { x: cx }),
+                ...(cy !== undefined && { y: cy }),
+              };
+            }),
           }));
         },
 

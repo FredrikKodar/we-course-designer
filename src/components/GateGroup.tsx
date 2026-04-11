@@ -63,7 +63,6 @@ export default function GateGroup({
 
   // Rotation handle distance from center
   const HANDLE_DIST = halfWidthPx + reachPx + 20;
-  const rotHandleRef = useRef<Konva.Circle>(null);
 
   const handleRotDragMove = (e: Konva.KonvaEventObject<DragEvent>) => {
     const node = e.target;
@@ -236,7 +235,6 @@ export default function GateGroup({
             listening={false}
           />
           <Circle
-            ref={rotHandleRef}
             x={HANDLE_DIST}
             y={0}
             radius={7}
