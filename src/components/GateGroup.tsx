@@ -1,5 +1,5 @@
 import { useRef } from 'react';
-import { Group, Line, Circle, Rect, Text } from 'react-konva';
+import { Group, Line, Circle, Arrow, Rect, Text } from 'react-konva';
 import Konva from 'konva';
 import type { PlacedGate, CoordCtx, Visit, PathLineType } from '../types';
 import { worldToScreen } from '../utils/coords';
@@ -34,10 +34,12 @@ interface GateGroupProps {
 }
 
 export default function GateGroup({
-  gate, scale, coordCtx, isSelected, isHovered: _isHovered,
+  gate, scale, coordCtx, isSelected, isHovered,
   onHoverChange, onClick, onMove, onRotate, onDelete, onResizeEnd,
+  onDotMouseDown, visits = [], selectedVisitId: _selectedVisitId, showPath,
 }: GateGroupProps) {
   const [sx, sy] = worldToScreen(gate.x, gate.y, coordCtx);
+  const showDots = gate.type === 'start-finish' && (isHovered || isSelected);
   const halfWidthPx = (gate.gateWidth / 2) * scale;
   const reachPx = SYMBOL_REACH_M * scale;
   const circleRadPx = CIRCLE_RADIUS_M * scale;
@@ -208,6 +210,84 @@ export default function GateGroup({
           <Circle radius={circleRadPx} fill={GATE_COLOR} stroke={GATE_COLOR} strokeWidth={1} />
         )}
       </Group>
+
+      {/* Connection dots — start-finish only */}
+      {gate.type === 'start-finish' && showDots && (
+        <>
+          {/* Left dot (entry) */}
+          <Circle
+            x={-halfWidthPx}
+            y={0}
+            radius={5}
+            fill="#4a9a2a"
+            stroke="white"
+            strokeWidth={1.5}
+            onMouseDown={(e) => {
+              e.cancelBubble = true;
+              const abs = e.target.getAbsolutePosition();
+              onDotMouseDown?.('entry', abs.x, abs.y);
+            }}
+          />
+          {/* Right dot (exit) */}
+          <Circle
+            x={halfWidthPx}
+            y={0}
+            radius={5}
+            fill="#4a9a2a"
+            stroke="white"
+            strokeWidth={1.5}
+            onMouseDown={(e) => {
+              e.cancelBubble = true;
+              const abs = e.target.getAbsolutePosition();
+              onDotMouseDown?.('exit', abs.x, abs.y);
+            }}
+          />
+        </>
+      )}
+
+      {/* Visit approach arrows + badges */}
+      {gate.type === 'start-finish' && showPath && visits.map((visit) => {
+        const dotLocalX = visit.entryPoint === 'entry' ? -halfWidthPx : halfWidthPx;
+        const label = visit.role === 'start' ? 'Start'
+          : visit.role === 'finish' ? 'Mål'
+          : visit.role === 'start-and-finish' ? 'Start\nMål'
+          : '?';
+        const badgeOffXPx = visit.badgeOffX * scale;
+        const badgeOffYPx = visit.badgeOffY * scale;
+        const approachAngleRad = (visit.approachAngle - gate.rotation) * Math.PI / 180;
+        const approachLenPx = visit.approachLength * scale;
+        const tailX = dotLocalX - Math.sin(approachAngleRad) * approachLenPx;
+        const tailY = -Math.cos(approachAngleRad) * approachLenPx;
+
+        return (
+          <Group key={visit.id}>
+            {/* Approach arrow — use Arrow (not Line) for pointer head */}
+            <Arrow
+              points={[tailX, tailY, dotLocalX, 0]}
+              stroke="#BA7517"
+              strokeWidth={2}
+              fill="#BA7517"
+              pointerLength={8}
+              pointerWidth={6}
+            />
+            {/* Badge */}
+            <Group x={dotLocalX + badgeOffXPx} y={badgeOffYPx}>
+              <Circle radius={12} fill="#BA7517" />
+              <Text
+                text={label}
+                fontSize={visit.role === 'start-and-finish' ? 7 : 9}
+                fontStyle="bold"
+                fill="white"
+                align="center"
+                x={-10}
+                y={visit.role === 'start-and-finish' ? -8 : -5}
+                width={20}
+                listening={false}
+              />
+            </Group>
+          </Group>
+        );
+      })}
 
       {/* Selection outline */}
       {isSelected && (
