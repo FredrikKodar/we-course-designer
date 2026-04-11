@@ -4,6 +4,8 @@ import Konva from 'konva';
 import type { PlacedGate, CoordCtx, Visit, PathLineType } from '../types';
 import { worldToScreen } from '../utils/coords';
 
+const MIN_GATE_WIDTH_M = 1.0;
+
 const SYMBOL_REACH_M = 0.3;    // triangle: meters from center to tip
 const CIRCLE_RADIUS_M = 0.25;  // start-finish circle radius in meters
 const GATE_COLOR = '#1a1a18';
@@ -33,12 +35,13 @@ interface GateGroupProps {
 
 export default function GateGroup({
   gate, scale, coordCtx, isSelected, isHovered: _isHovered,
-  onHoverChange, onClick, onMove, onRotate, onDelete,
+  onHoverChange, onClick, onMove, onRotate, onDelete, onResizeEnd,
 }: GateGroupProps) {
   const [sx, sy] = worldToScreen(gate.x, gate.y, coordCtx);
   const halfWidthPx = (gate.gateWidth / 2) * scale;
   const reachPx = SYMBOL_REACH_M * scale;
   const circleRadPx = CIRCLE_RADIUS_M * scale;
+  const minHalfPx = (MIN_GATE_WIDTH_M / 2) * scale;
 
   const lineRef = useRef<Konva.Line>(null);
   const leftSymRef = useRef<Konva.Group>(null);
@@ -68,6 +71,68 @@ export default function GateGroup({
     onRotate(angle);
     node.x(HANDLE_DIST * Math.cos(angle * Math.PI / 180));
     node.y(HANDLE_DIST * Math.sin(angle * Math.PI / 180));
+  };
+
+  const handleSymbolDragMove = (
+    side: 'left' | 'right',
+    e: Konva.KonvaEventObject<DragEvent>,
+  ) => {
+    const node = e.target as Konva.Group;
+    const isCtrl = e.evt.ctrlKey;
+    // Constrain to x-axis
+    node.y(0);
+
+    if (isCtrl) {
+      // Symmetric: mirror the other symbol
+      const otherRef = side === 'left' ? rightSymRef : leftSymRef;
+      otherRef.current?.x(-node.x());
+    }
+
+    // Update line imperatively
+    const leftX = side === 'left' ? node.x() : (leftSymRef.current?.x() ?? -halfWidthPx);
+    const rightX = side === 'right' ? node.x() : (rightSymRef.current?.x() ?? halfWidthPx);
+    lineRef.current?.points([leftX, 0, rightX, 0]);
+    node.getLayer()?.batchDraw();
+  };
+
+  const handleSymbolDragEnd = (
+    _side: 'left' | 'right',
+    e: Konva.KonvaEventObject<DragEvent>,
+  ) => {
+    const isCtrl = e.evt.ctrlKey;
+    const leftAbs = leftSymRef.current?.getAbsolutePosition() ?? { x: sx - halfWidthPx, y: sy };
+    const rightAbs = rightSymRef.current?.getAbsolutePosition() ?? { x: sx + halfWidthPx, y: sy };
+
+    const dx = rightAbs.x - leftAbs.x;
+    const dy = rightAbs.y - leftAbs.y;
+    const newWidthPx = Math.sqrt(dx * dx + dy * dy);
+    const newGateWidth = Math.max(MIN_GATE_WIDTH_M, newWidthPx / scale);
+
+    let newCx = gate.x;
+    let newCy = gate.y;
+
+    if (!isCtrl) {
+      // Center moved: midpoint of the two symbol absolute positions
+      const midX = (leftAbs.x + rightAbs.x) / 2;
+      const midY = (leftAbs.y + rightAbs.y) / 2;
+      const { panX, panY, viewMode, arenaH } = coordCtx;
+      if (viewMode === 'end') {
+        newCx = (midY - panY) / scale;
+        newCy = arenaH - (midX - panX) / scale;
+      } else {
+        newCx = (midX - panX) / scale;
+        newCy = (midY - panY) / scale;
+      }
+    }
+
+    onResizeEnd?.(newGateWidth, newCx, newCy);
+
+    // Reset symbol positions so React re-render is clean
+    const newHalfPx = (newGateWidth / 2) * scale;
+    leftSymRef.current?.x(-newHalfPx);
+    leftSymRef.current?.y(0);
+    rightSymRef.current?.x(newHalfPx);
+    rightSymRef.current?.y(0);
   };
 
   const handleGroupDragEnd = (e: Konva.KonvaEventObject<DragEvent>) => {
@@ -109,47 +174,39 @@ export default function GateGroup({
         listening={false}
       />
 
-      {/* Left symbol */}
-      <Group ref={leftSymRef} x={-halfWidthPx} y={0}>
+      {/* Left symbol — draggable for resize */}
+      <Group
+        ref={leftSymRef}
+        x={-halfWidthPx}
+        y={0}
+        draggable
+        dragBoundFunc={(pos) => ({ x: Math.min(pos.x, -minHalfPx), y: 0 })}
+        onDragMove={(e) => handleSymbolDragMove('left', e)}
+        onDragEnd={(e) => handleSymbolDragEnd('left', e)}
+        onMouseDown={(e) => { e.cancelBubble = true; }}
+      >
         {gate.type === 'marker' ? (
-          <Line
-            points={leftTriPoints}
-            closed
-            fill={GATE_COLOR}
-            stroke={GATE_COLOR}
-            strokeWidth={1}
-            listening={false}
-          />
+          <Line points={leftTriPoints} closed fill={GATE_COLOR} stroke={GATE_COLOR} strokeWidth={1} />
         ) : (
-          <Circle
-            radius={circleRadPx}
-            fill={GATE_COLOR}
-            stroke={GATE_COLOR}
-            strokeWidth={1}
-            listening={false}
-          />
+          <Circle radius={circleRadPx} fill={GATE_COLOR} stroke={GATE_COLOR} strokeWidth={1} />
         )}
       </Group>
 
-      {/* Right symbol */}
-      <Group ref={rightSymRef} x={halfWidthPx} y={0}>
+      {/* Right symbol — draggable for resize */}
+      <Group
+        ref={rightSymRef}
+        x={halfWidthPx}
+        y={0}
+        draggable
+        dragBoundFunc={(pos) => ({ x: Math.max(pos.x, minHalfPx), y: 0 })}
+        onDragMove={(e) => handleSymbolDragMove('right', e)}
+        onDragEnd={(e) => handleSymbolDragEnd('right', e)}
+        onMouseDown={(e) => { e.cancelBubble = true; }}
+      >
         {gate.type === 'marker' ? (
-          <Line
-            points={rightTriPoints}
-            closed
-            fill={GATE_COLOR}
-            stroke={GATE_COLOR}
-            strokeWidth={1}
-            listening={false}
-          />
+          <Line points={rightTriPoints} closed fill={GATE_COLOR} stroke={GATE_COLOR} strokeWidth={1} />
         ) : (
-          <Circle
-            radius={circleRadPx}
-            fill={GATE_COLOR}
-            stroke={GATE_COLOR}
-            strokeWidth={1}
-            listening={false}
-          />
+          <Circle radius={circleRadPx} fill={GATE_COLOR} stroke={GATE_COLOR} strokeWidth={1} />
         )}
       </Group>
 
