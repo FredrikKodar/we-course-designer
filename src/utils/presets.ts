@@ -7,6 +7,7 @@ export function buildPresetPieces(type: string, cx: number, cy: number): PlacedO
   const timestamp = Date.now();
   return [
     {
+      kind: 'obstacle' as const,
       id: `${timestamp}_${Math.random().toString(36).slice(2, 8)}`,
       type,
       x: cx - def.w / 2,
