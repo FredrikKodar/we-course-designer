@@ -4,7 +4,7 @@ import Konva from 'konva';
 import type { PlacedGate, CoordCtx, Visit, PathLineType } from '../types';
 import { worldToScreen } from '../utils/coords';
 
-const MIN_GATE_WIDTH_M = 1.0;
+const MIN_GATE_WIDTH_M = 0.5;
 
 const SYMBOL_REACH_M = 0.3;    // triangle: meters from center to tip
 const CIRCLE_RADIUS_M = 0.25;  // start-finish circle radius in meters
