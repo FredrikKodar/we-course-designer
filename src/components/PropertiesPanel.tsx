@@ -10,7 +10,7 @@ export default function PropertiesPanel() {
 
   const obstacle = placed.find((p) => p.id === selectedId);
 
-  if (!obstacle) {
+  if (!obstacle || obstacle.kind !== 'obstacle') {
     return <div className="text-gray-300 text-[11px]">Select an obstacle</div>;
   }
 

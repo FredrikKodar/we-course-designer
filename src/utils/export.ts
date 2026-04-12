@@ -156,8 +156,9 @@ function buildPrintHtml(dataUrl: string, leftContent: string): string {
 }
 
 export function printCourse(classId?: string): void {
-  const { stageRef, placed, arenaW, arenaH, panX, panY, zoom, viewMode, visits, classes, eventMeta } =
+  const { stageRef, placed: allPlaced, arenaW, arenaH, panX, panY, zoom, viewMode, visits, classes, eventMeta } =
     useStore.getState();
+  const placed = allPlaced.filter((p): p is PlacedObstacle => p.kind === 'obstacle');
   if (!stageRef) {
     console.warn('printCourse: stageRef not set');
     return;

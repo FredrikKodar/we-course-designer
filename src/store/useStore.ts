@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type Konva from 'konva';
-import type { PlacedObstacle, Visit, RouteSegment, WEClass, EventMeta, Discipline, ViewMode, PathLineType, ObstacleClassEntry } from '../types';
+import type { PlacedObstacle, PlacedGate, PlacedItem, Visit, RouteSegment, WEClass, EventMeta, Discipline, ViewMode, PathLineType, ObstacleClassEntry } from '../types';
 import { runRules } from '../utils/compliance';
 import { buildPresetPieces } from '../utils/presets';
 
@@ -20,7 +20,7 @@ export interface StoreState {
   arenaH: number;
 
   // Obstacles
-  placed: PlacedObstacle[];
+  placed: PlacedItem[];
   selectedId: string | null;
   violations: Map<string, string>;
 
@@ -53,8 +53,8 @@ export interface StoreState {
   eventMeta: EventMeta;
 
   // Undo/redo
-  past: Array<{ placed: PlacedObstacle[]; visits: Visit[] }>;
-  future: Array<{ placed: PlacedObstacle[]; visits: Visit[] }>;
+  past: Array<{ placed: PlacedItem[]; visits: Visit[] }>;
+  future: Array<{ placed: PlacedItem[]; visits: Visit[] }>;
   undo: () => void;
   redo: () => void;
 
@@ -69,6 +69,17 @@ export interface StoreState {
   rotateObstacle: (id: string, degrees: number) => void;
   deleteObstacle: (id: string) => void;
   selectObstacle: (id: string | null) => void;
+
+  // Actions — gates
+  placeGate: (type: 'marker' | 'start-finish', cx: number, cy: number) => void;
+  moveGate: (id: string, cx: number, cy: number) => void;
+  rotateGate: (id: string, degrees: number) => void;
+  resizeGate: (id: string, newWidth: number, cx?: number, cy?: number) => void;
+  deleteGate: (id: string) => void;
+
+  // Actions — visit roles
+  addGateVisit: (gateId: string, entryPoint: 'entry' | 'exit', approachAngle: number, approachLength: number) => string;
+  setVisitRole: (visitId: string, role: 'start' | 'finish' | 'start-and-finish') => void;
 
   // Actions — display
   setShowGrid: (v: boolean) => void;
@@ -105,8 +116,8 @@ const useStore = create<StoreState>()(
       const snapshot = () => {
         const { past, placed, visits } = get();
         return {
-          past: [...past, { placed, visits }].slice(-50) as Array<{ placed: PlacedObstacle[]; visits: Visit[] }>,
-          future: [] as Array<{ placed: PlacedObstacle[]; visits: Visit[] }>,
+          past: [...past, { placed, visits }].slice(-50) as Array<{ placed: PlacedItem[]; visits: Visit[] }>,
+          future: [] as Array<{ placed: PlacedItem[]; visits: Visit[] }>,
         };
       };
 
@@ -115,11 +126,13 @@ const useStore = create<StoreState>()(
       const syncClassObstacles = () => {
         const { classes, placed } = get();
         if (classes.length === 0) return;
-        const placedIds = new Set(placed.map((p) => p.id));
+        // Only PlacedObstacle items get class records — gates are excluded
+        const obstacles = placed.filter((p): p is PlacedObstacle => p.kind === 'obstacle');
+        const placedIds = new Set(obstacles.map((p) => p.id));
         const updatedClasses = classes.map((cls) => {
           const teknik = { ...cls.teknik };
           const speed = { ...cls.speed };
-          for (const p of placed) {
+          for (const p of obstacles) {
             if (!teknik[p.id]) teknik[p.id] = { inUse: true, note: '' };
             if (!speed[p.id]) speed[p.id] = { inUse: true, note: '' };
           }
@@ -196,7 +209,7 @@ const useStore = create<StoreState>()(
         moveObstacle: (id, wx, wy) => {
           const { snapToGrid: snap, placed } = get();
           const ob = placed.find((p) => p.id === id);
-          if (!ob) return;
+          if (!ob || ob.kind !== 'obstacle') return;
           const cx = wx + ob.w / 2;
           const cy = wy + ob.h / 2;
           const snappedCx = snap ? Math.round(cx) : cx;
@@ -229,6 +242,120 @@ const useStore = create<StoreState>()(
         },
 
         selectObstacle: (id) => set({ selectedId: id }),
+
+        // ── Actions — gates ──────────────────────────────────────────────
+
+        placeGate: (type, cx, cy) => {
+          const { snapToGrid: snap } = get();
+          const snappedCx = snap ? Math.round(cx) : cx;
+          const snappedCy = snap ? Math.round(cy) : cy;
+          const defaultWidth = type === 'marker' ? 2 : 6;
+          const gate: PlacedGate = {
+            kind: 'gate',
+            id: `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+            type,
+            x: snappedCx,
+            y: snappedCy,
+            gateWidth: defaultWidth,
+            rotation: 0,
+          };
+          set((s) => ({ ...snapshot(), placed: [...s.placed, gate] }));
+        },
+
+        moveGate: (id, cx, cy) => {
+          const { snapToGrid: snap } = get();
+          const snappedCx = snap ? Math.round(cx) : cx;
+          const snappedCy = snap ? Math.round(cy) : cy;
+          set((s) => ({
+            ...snapshot(),
+            placed: s.placed.map((p) =>
+              p.id === id && p.kind === 'gate' ? { ...p, x: snappedCx, y: snappedCy } : p,
+            ),
+          }));
+        },
+
+        rotateGate: (id, degrees) => {
+          const newRot = ((degrees % 360) + 360) % 360;
+          set((s) => ({
+            ...snapshot(),
+            placed: s.placed.map((p) =>
+              p.id === id && p.kind === 'gate' ? { ...p, rotation: newRot } : p,
+            ),
+          }));
+        },
+
+        resizeGate: (id, newWidth, cx, cy) => {
+          const clamped = Math.max(0.5, newWidth);
+          set((s) => ({
+            ...snapshot(),
+            placed: s.placed.map((p) => {
+              if (p.id !== id || p.kind !== 'gate') return p;
+              return {
+                ...p,
+                gateWidth: clamped,
+                ...(cx !== undefined && { x: cx }),
+                ...(cy !== undefined && { y: cy }),
+              };
+            }),
+          }));
+        },
+
+        deleteGate: (id) => {
+          set((s) => {
+            const removedVisitIds = new Set(s.visits.filter((v) => v.obstacleId === id).map((v) => v.id));
+            return {
+              ...snapshot(),
+              placed: s.placed.filter((p) => p.id !== id),
+              visits: s.visits.filter((v) => v.obstacleId !== id),
+              selectedId: s.selectedId === id ? null : s.selectedId,
+              selectedVisitId: removedVisitIds.has(s.selectedVisitId ?? '') ? null : s.selectedVisitId,
+            };
+          });
+          get().runCompliance();
+        },
+
+        addGateVisit: (gateId, entryPoint, approachAngle, approachLength) => {
+          const { visits } = get();
+          const existing = visits.find((v) => v.obstacleId === gateId && v.entryPoint === entryPoint);
+          if (existing) {
+            set((s) => ({
+              ...snapshot(),
+              visits: s.visits.map((v) =>
+                v.id === existing.id ? { ...v, approachAngle, approachLength } : v,
+              ),
+            }));
+            return existing.id;
+          }
+          const newVisit: Visit = {
+            id: crypto.randomUUID(),
+            obstacleId: gateId,
+            entryPoint,
+            num: '',
+            approachAngle,
+            approachLength,
+            badgeOffX: 0,
+            badgeOffY: -1.5,
+          };
+          set((s) => ({ ...snapshot(), visits: [...s.visits, newVisit] }));
+          return newVisit.id;
+        },
+
+        setVisitRole: (visitId, role) => {
+          const { visits } = get();
+          const startClaimed = visits.some(
+            (v) => v.id !== visitId && (v.role === 'start' || v.role === 'start-and-finish'),
+          );
+          const finishClaimed = visits.some(
+            (v) => v.id !== visitId && (v.role === 'finish' || v.role === 'start-and-finish'),
+          );
+          if (role === 'start' && startClaimed) return;
+          if (role === 'finish' && finishClaimed) return;
+          if (role === 'start-and-finish' && (startClaimed || finishClaimed)) return;
+          set((s) => ({
+            ...snapshot(),
+            visits: s.visits.map((v) => (v.id === visitId ? { ...v, role } : v)),
+          }));
+        },
 
         // ── Actions — display ────────────────────────────────────────────
 
@@ -310,8 +437,9 @@ const useStore = create<StoreState>()(
 
         addClass: (name, copyFromIdx) => {
           const { placed, classes } = get();
+          const obstacles = placed.filter((p): p is PlacedObstacle => p.kind === 'obstacle');
           const makeRecord = (): Record<string, ObstacleClassEntry> =>
-            Object.fromEntries(placed.map((p) => [p.id, { inUse: true, note: '' }]));
+            Object.fromEntries(obstacles.map((p) => [p.id, { inUse: true, note: '' }]));
 
           let teknik = makeRecord();
           let speed = makeRecord();
@@ -319,10 +447,10 @@ const useStore = create<StoreState>()(
           if (copyFromIdx !== undefined && classes[copyFromIdx]) {
             const src = classes[copyFromIdx];
             teknik = Object.fromEntries(
-              placed.map((p) => [p.id, src.teknik[p.id] ?? { inUse: true, note: '' }]),
+              obstacles.map((p) => [p.id, src.teknik[p.id] ?? { inUse: true, note: '' }]),
             );
             speed = Object.fromEntries(
-              placed.map((p) => [p.id, src.speed[p.id] ?? { inUse: true, note: '' }]),
+              obstacles.map((p) => [p.id, src.speed[p.id] ?? { inUse: true, note: '' }]),
             );
           }
 
@@ -431,7 +559,12 @@ const useStore = create<StoreState>()(
         eventMeta: state.eventMeta,
       }),
       onRehydrateStorage: () => (state) => {
-        if (state) state.runCompliance();
+        if (state) {
+          state.placed = state.placed.map((p: any) =>
+            p.kind ? p : { ...p, kind: 'obstacle' },
+          );
+          state.runCompliance();
+        }
       },
     },
   ),

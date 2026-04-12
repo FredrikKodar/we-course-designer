@@ -28,14 +28,27 @@ export interface ObstacleDef {
 // ── App state data model ───────────────────────────────────────────────────
 
 export interface PlacedObstacle {
+  kind: 'obstacle';
   id: string;
   type: string;
-  x: number;
+  x: number;          // top-left corner, world meters
   y: number;
   w: number;
   h: number;
   rotation: number;
 }
+
+export interface PlacedGate {
+  kind: 'gate';
+  id: string;
+  type: 'marker' | 'start-finish';
+  x: number;          // CENTER position, world meters (not top-left)
+  y: number;
+  gateWidth: number;  // distance between symbols, world meters
+  rotation: number;
+}
+
+export type PlacedItem = PlacedObstacle | PlacedGate;
 
 export interface Visit {
   id: string;
@@ -46,6 +59,7 @@ export interface Visit {
   approachLength: number;    // world meters, 0–5
   badgeOffX: number;         // badge offset from connection dot, obstacle-local world meters
   badgeOffY: number;
+  role?: 'start' | 'finish' | 'start-and-finish';  // only for start-finish gate visits
 }
 
 export interface RouteSegment {
