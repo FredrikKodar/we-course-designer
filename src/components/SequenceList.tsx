@@ -34,7 +34,7 @@ export default function SequenceList() {
 
   if (!entries.length) {
     return (
-      <div className="text-gray-300 text-[11px]">
+      <div className="text-gray-400 text-[12px]">
         Hover an obstacle and drag its entry or exit dot to add a visit.
       </div>
     );
@@ -99,13 +99,13 @@ export default function SequenceList() {
               setSelectedVisitId(visit.id);
               if (obstacle) selectObstacle(obstacle.id);
             }}
-            className={`flex items-center gap-1.5 px-1.5 py-1 rounded border text-[11px] cursor-pointer select-none transition-colors ${
+            className={`flex items-center gap-1.5 px-1.5 py-1 rounded border text-[12px] cursor-pointer select-none transition-colors ${
               isSel
                 ? 'border-[#BA7517] bg-[#fff8ee] text-[#1a1a18]'
-                : 'border-gray-100 bg-[#fafaf8] text-gray-500 hover:border-[#BA7517]'
+                : 'border-gray-100 bg-[#fafaf8] text-gray-700 hover:border-[#BA7517]'
             }`}
           >
-            <span className="text-gray-300 text-[11px] cursor-grab shrink-0">
+            <span className="text-gray-400 text-[11px] cursor-grab shrink-0">
               {isDraggable ? '⠇' : ' '}
             </span>
 
@@ -118,9 +118,8 @@ export default function SequenceList() {
             </span>
 
             <span className="flex-1 truncate">{itemLabel}</span>
-            <span className="text-[9px] text-gray-300 shrink-0">{visit.entryPoint}</span>
             <span
-              className="text-gray-300 text-[10px] cursor-pointer shrink-0 hover:text-red-500"
+              className="text-gray-400 text-[10px] cursor-pointer shrink-0 hover:text-red-500"
               onClick={(e) => {
                 e.stopPropagation();
                 deleteVisit(visit.id);

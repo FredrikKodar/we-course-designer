@@ -50,7 +50,7 @@ export default function Topbar() {
       <div className="text-[15px] font-semibold text-[#1a1a18] tracking-tight whitespace-nowrap">
         WE Course Designer
       </div>
-      <div className="text-[11px] text-gray-400 font-mono px-2 py-0.5 bg-[#f5f5f0] border border-[#e0e0da] rounded whitespace-nowrap">
+      <div className="text-[11px] text-gray-500 font-mono px-2 py-0.5 bg-[#f5f5f0] border border-[#e0e0da] rounded whitespace-nowrap">
         {arenaW} &times; {arenaH} m
       </div>
 

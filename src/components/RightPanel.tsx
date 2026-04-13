@@ -16,7 +16,7 @@ interface SectionProps {
 function Section({ label, children }: SectionProps) {
   return (
     <div className="p-2.5 border-b border-gray-100 last:border-b-0">
-      <div className="text-[9px] tracking-widest uppercase text-gray-600 font-mono mb-2">
+      <div className="text-[10px] tracking-widest uppercase text-gray-700 font-mono mb-2">
         {label}
       </div>
       {children}
@@ -31,10 +31,10 @@ export default function RightPanel() {
     <button
       key={t}
       onClick={() => setTab(t)}
-      className={`flex-1 text-[11px] py-1.5 border-b-2 transition-colors cursor-pointer bg-transparent border-l-0 border-r-0 border-t-0 ${
+      className={`flex-1 text-[12px] py-1.5 border-b-2 transition-colors cursor-pointer bg-transparent border-l-0 border-r-0 border-t-0 ${
         tab === t
           ? 'border-[#BA7517] text-[#BA7517] font-medium'
-          : 'border-transparent text-gray-400 hover:text-gray-600'
+          : 'border-transparent text-gray-500 hover:text-gray-600'
       }`}
     >
       {label}
@@ -42,7 +42,7 @@ export default function RightPanel() {
   );
 
   return (
-    <div className="w-[172px] border-l border-gray-200 flex flex-col shrink-0 bg-white overflow-y-auto">
+    <div className="w-[192px] border-l border-gray-200 flex flex-col shrink-0 bg-white overflow-y-auto">
       {/* Tab header */}
       <div className="flex border-b border-gray-200 shrink-0">
         {tabBtn('sequence', 'Sekvens')}
