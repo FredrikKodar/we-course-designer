@@ -59,7 +59,7 @@ export default function ClassesPanel() {
             }`}
             onClick={() => setActiveClassIdx(i)}
           >
-            <span>{cls.name || 'Unnamed'}</span>
+            <span>{cls.name || 'Namnlös'}</span>
             <button
               type="button"
               className="ml-0.5 text-[9px] opacity-60 hover:opacity-100 bg-transparent border-none p-0 cursor-pointer leading-none"
@@ -76,7 +76,7 @@ export default function ClassesPanel() {
           className="px-2 py-0.5 rounded-full text-[11px] text-[#3B6D11] border border-dashed border-[#3B6D11] hover:bg-green-50 cursor-pointer"
           onClick={() => setAdding(true)}
         >
-          + Add
+          + Lägg till
         </button>
       </div>
 
@@ -86,7 +86,7 @@ export default function ClassesPanel() {
           <input
             autoFocus
             type="text"
-            placeholder="Class name…"
+            placeholder="Klassnamn…"
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
             onKeyDown={(e) => {
@@ -102,9 +102,9 @@ export default function ClassesPanel() {
               onChange={(e) => setCopyFromIdx(e.target.value === '' ? '' : Number(e.target.value))}
               className="text-[11px] border border-gray-200 rounded px-1.5 py-0.5 bg-white focus:outline-none"
             >
-              <option value="">Copy from… (none)</option>
+              <option value="">Kopiera från… (ingen)</option>
               {classes.map((cls, i) => (
-                <option key={cls.id} value={i}>{cls.name || 'Unnamed'}</option>
+                <option key={cls.id} value={i}>{cls.name || 'Namnlös'}</option>
               ))}
             </select>
           )}
@@ -140,7 +140,7 @@ export default function ClassesPanel() {
             value={activeClass.name}
             onChange={(e) => updateClassName(activeClass.id, e.target.value)}
             className="text-[11px] font-medium border border-gray-200 rounded px-1.5 py-0.5 bg-white focus:outline-none focus:border-[#BA7517]"
-            placeholder="Class name…"
+            placeholder="Klassnamn…"
           />
 
           {/* Discipline switcher */}
@@ -163,7 +163,7 @@ export default function ClassesPanel() {
           {/* Obstacle rows */}
           {placed.length === 0 ? (
             <div className="text-[11px] text-gray-300">
-              Place obstacles on the arena first.
+              Placera hinder på arenan först.
             </div>
           ) : (
             <div className="flex flex-col gap-0.5">

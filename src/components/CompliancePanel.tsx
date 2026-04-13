@@ -5,7 +5,7 @@ export default function CompliancePanel() {
   const violations = useStore((s) => s.violations);
 
   if (!placed.length) {
-    return <div className="text-gray-300 text-[11px]">No obstacles placed</div>;
+    return <div className="text-gray-300 text-[11px]">Inga hinder placerade</div>;
   }
 
   const boundsOk = ![...violations.values()].some((msg) => msg.includes('utanför'));
@@ -14,9 +14,9 @@ export default function CompliancePanel() {
     <div className="flex flex-col gap-0.5">
       <ComplianceItem
         ok={boundsOk}
-        text={boundsOk ? 'All within arena' : 'Obstacle out of bounds'}
+        text={boundsOk ? 'Alla inom banan' : 'Hinder utanför banan'}
       />
-      <ComplianceItem ok={true} text={`${placed.length} obstacle(s)`} />
+      <ComplianceItem ok={true} text={`${placed.length} hinder`} />
     </div>
   );
 }

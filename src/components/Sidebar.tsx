@@ -3,12 +3,17 @@ import useStore from '../store/useStore';
 import { OBSTACLES } from '../data/obstacles';
 import type { ObstacleDef, PathLineType } from '../types';
 
-const CATEGORIES = [
-  { label: 'Tunnor',      ids: ['tunna', 'tva-tunnor', 'tre-tunnor', 'lans-ur-tunna', 'lans-i-tunna'] },
-  { label: 'Slalom',      ids: ['enkelslalom', 'enkelslalom-7m', 'enkelslalom-8m', 'parallellslalom', 'parallellslalom-4x3-7m', 'parallellslalom-4x3-8m', 'parallellslalom-3x2-6m', 'parallellslalom-3x2-7m', 'parallellslalom-3x2-8m', 'ryggning', 'korridor'] },
-  { label: 'Barriärer',   ids: ['grind', 'sidvarts', 'lydnad', 'flytta-mugg'] },
-  { label: 'Strukturer',  ids: ['trabro', 'vatten', 'falla-6m', 'falla', 'falla-10m', 'bord', 'hopp'] },
-  { label: 'Lans & ring', ids: ['ring'] },
+const OBSTACLE_ORDER = [
+  'tunna', 'tva-tunnor', 'tre-tunnor',
+  'enkelslalom', 'enkelslalom-7m', 'enkelslalom-8m',
+  'parallellslalom', 'parallellslalom-4x3-7m', 'parallellslalom-4x3-8m',
+  'parallellslalom-3x2-6m', 'parallellslalom-3x2-7m', 'parallellslalom-3x2-8m',
+  'falla-6m', 'falla', 'falla-10m',
+  'lans-ur-tunna', 'lans-i-tunna', 'ring',
+  'ryggning', 'korridor',
+  'grind', 'sidvarts', 'lydnad', 'flytta-mugg',
+  'trabro', 'bord',
+  'vatten', 'hopp',
 ];
 
 interface ToggleProps {
@@ -140,11 +145,11 @@ export default function Sidebar() {
       {/* Arena inputs */}
       <div className="p-2.5 border-b border-gray-100">
         <div className="text-[9px] tracking-widest uppercase text-gray-600 font-mono mb-2">
-          Arena (meters)
+          Arena (meter)
         </div>
         <div className="flex flex-col gap-1.5">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] text-gray-500">Length</span>
+            <span className="text-[11px] text-gray-500">Längd</span>
             <input
               type="number"
               min="10"
@@ -155,7 +160,7 @@ export default function Sidebar() {
             />
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-[11px] text-gray-500">Width</span>
+            <span className="text-[11px] text-gray-500">Bredd</span>
             <input
               type="number"
               min="10"
@@ -171,32 +176,32 @@ export default function Sidebar() {
       {/* Display toggles */}
       <div className="p-2.5 border-b border-gray-100">
         <div className="text-[9px] tracking-widest uppercase text-gray-600 font-mono mb-2">
-          Display
+          Visning
         </div>
-        <Toggle label="Grid" value={showGrid} onChange={setShowGrid} />
-        <Toggle label="Snap to grid" value={snapToGrid} onChange={setSnapToGrid} />
-        <Toggle label="Course path" value={showPath} onChange={setShowPath} />
+        <Toggle label="Rutnät" value={showGrid} onChange={setShowGrid} />
+        <Toggle label="Fäst till rutnät" value={snapToGrid} onChange={setSnapToGrid} />
+        <Toggle label="Ridväg" value={showPath} onChange={setShowPath} />
       </div>
 
       {/* Path style */}
       <div className="p-2.5 border-b border-gray-100">
         <div className="text-[9px] tracking-widest uppercase text-gray-600 font-mono mb-2">
-          Path style
+          Linjetyp
         </div>
         <div className="flex items-center justify-between mb-1.5">
-          <span className="text-[11px] text-gray-500">Line</span>
+          <span className="text-[11px] text-gray-500">Linje</span>
           <select
             value={pathLineType}
             onChange={(e) => setPathStyle(e.target.value as PathLineType, pathLineWeight, pathArrowSize)}
             className="text-[11px] border border-gray-200 rounded px-1 py-0.5 bg-[#f9f9f7] text-[#1a1a18]"
           >
-            <option value="dashed">Dashed</option>
-            <option value="solid">Solid</option>
-            <option value="dotted">Dotted</option>
+            <option value="dashed">Streckad</option>
+            <option value="solid">Heldragen</option>
+            <option value="dotted">Prickad</option>
           </select>
         </div>
         <div className="flex items-center justify-between mb-1.5">
-          <span className="text-[11px] text-gray-500">Weight</span>
+          <span className="text-[11px] text-gray-500">Tjocklek</span>
           <div className="flex items-center gap-1">
             <input
               type="range"
@@ -213,7 +218,7 @@ export default function Sidebar() {
           </div>
         </div>
         <div className="flex items-center justify-between">
-          <span className="text-[11px] text-gray-500">Arrows</span>
+          <span className="text-[11px] text-gray-500">Pilar</span>
           <div className="flex gap-0.5">
             {[
               { label: 'S', value: 0.5 },
@@ -239,45 +244,36 @@ export default function Sidebar() {
       {/* Obstacle chips */}
       <div className="p-2.5">
         <div className="text-[9px] tracking-widest uppercase text-gray-600 font-mono mb-2">
-          Obstacles — drag to arena
+          Hinder - drag till arena
         </div>
-        <div className="flex flex-col gap-2">
-          {/* Course Setup — gate objects */}
-          <div>
-            <div className="text-[9px] text-gray-600 font-mono mb-1">Course Setup</div>
-            <div className="flex flex-col gap-0.5">
-              <GateChip
-                gateType="start-finish"
-                label="Start / Mål"
-                svgContent={
-                  <>
-                    <circle cx="-14" cy="0" r="4" fill="#1a1a18" />
-                    <circle cx="14" cy="0" r="4" fill="#1a1a18" />
-                    <line x1="-10" y1="0" x2="10" y2="0" stroke="#1a1a18" strokeWidth="1" strokeDasharray="3 2" />
-                  </>
-                }
-              />
-              <GateChip
-                gateType="marker"
-                label="Markering"
-                svgContent={
-                  <>
-                    {/* Left triangle pointing right */}
-                    <polygon points="-6,0 -14,-5 -14,5" fill="#1a1a18" />
-                    {/* Right triangle pointing left */}
-                    <polygon points="6,0 14,-5 14,5" fill="#1a1a18" />
-                    <line x1="-6" y1="0" x2="6" y2="0" stroke="#1a1a18" strokeWidth="1" strokeDasharray="3 2" />
-                  </>
-                }
-              />
-            </div>
-          </div>
-          {CATEGORIES.map((cat) => {
-            const defs = cat.ids
+        <div className="flex flex-col gap-0.5">
+          <GateChip
+            gateType="start-finish"
+            label="Start / Mål"
+            svgContent={
+              <>
+                <circle cx="-14" cy="0" r="4" fill="#1a1a18" />
+                <circle cx="14" cy="0" r="4" fill="#1a1a18" />
+                <line x1="-10" y1="0" x2="10" y2="0" stroke="#1a1a18" strokeWidth="1" strokeDasharray="3 2" />
+              </>
+            }
+          />
+          <GateChip
+            gateType="marker"
+            label="Markering"
+            svgContent={
+              <>
+                <polygon points="-6,0 -14,-5 -14,5" fill="#1a1a18" />
+                <polygon points="6,0 14,-5 14,5" fill="#1a1a18" />
+                <line x1="-6" y1="0" x2="6" y2="0" stroke="#1a1a18" strokeWidth="1" strokeDasharray="3 2" />
+              </>
+            }
+          />
+          {(() => {
+            const defs = OBSTACLE_ORDER
               .map((id) => OBSTACLES.find((o) => o.id === id))
               .filter((d): d is ObstacleDef => !!d);
 
-            // Group consecutive same-variantGroup entries into accordions
             const items: Array<
               | { type: 'chip'; def: ObstacleDef }
               | { type: 'accordion'; group: string; defs: ObstacleDef[] }
@@ -295,21 +291,14 @@ export default function Sidebar() {
               }
             }
 
-            return (
-              <div key={cat.label}>
-                <div className="text-[9px] text-gray-600 font-mono mb-1">{cat.label}</div>
-                <div className="flex flex-col gap-0.5">
-                  {items.map((item, i) =>
-                    item.type === 'chip' ? (
-                      <ObstacleChip key={item.def.id} def={item.def} />
-                    ) : (
-                      <AccordionGroup key={item.group + i} groupLabel={item.group} defs={item.defs} />
-                    )
-                  )}
-                </div>
-              </div>
+            return items.map((item, i) =>
+              item.type === 'chip' ? (
+                <ObstacleChip key={item.def.id} def={item.def} />
+              ) : (
+                <AccordionGroup key={item.group + i} groupLabel={item.group} defs={item.defs} />
+              )
             );
-          })}
+          })()}
         </div>
       </div>
     </div>

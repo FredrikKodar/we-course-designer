@@ -11,7 +11,7 @@ export default function PropertiesPanel() {
   const obstacle = placed.find((p) => p.id === selectedId);
 
   if (!obstacle || obstacle.kind !== 'obstacle') {
-    return <div className="text-gray-300 text-[11px]">Select an obstacle</div>;
+    return <div className="text-gray-300 text-[11px]">Välj ett hinder</div>;
   }
 
   const def = OBSTACLES.find((o) => o.id === obstacle.type);
@@ -27,11 +27,11 @@ export default function PropertiesPanel() {
 
   return (
     <div>
-      <PropRow label="Type" value={def?.label || obstacle.type} />
+      <PropRow label="Typ" value={def?.label || obstacle.type} />
       <PropRow label="X" value={`${obstacle.x.toFixed(1)} m`} />
       <PropRow label="Y" value={`${obstacle.y.toFixed(1)} m`} />
-      <PropRow label="Width" value={`${obstacle.w} m`} />
-      <PropRow label="Height" value={`${obstacle.h} m`} />
+      <PropRow label="Bredd" value={`${obstacle.w} m`} />
+      <PropRow label="Höjd" value={`${obstacle.h} m`} />
 
       <div className="flex items-center justify-between mb-1">
         <span className="text-[10px] text-gray-600">Rotation</span>
@@ -53,7 +53,7 @@ export default function PropertiesPanel() {
         <RotBtn label="↺ 90°" onClick={() => rotate(-90)} />
         <RotBtn label="↻ 90°" onClick={() => rotate(90)} />
         <RotBtn label="↻ 45°" onClick={() => rotate(45)} />
-        <RotBtn label="Reset" onClick={resetRotation} />
+        <RotBtn label="Nollställ" onClick={resetRotation} />
       </div>
     </div>
   );
