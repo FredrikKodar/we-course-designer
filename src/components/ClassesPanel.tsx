@@ -127,7 +127,7 @@ export default function ClassesPanel() {
 
       {/* Empty state */}
       {classes.length === 0 && !adding && (
-        <div className="text-[11px] text-gray-300">
+        <div className="text-[12px] text-gray-400">
           Inga klasser — klicka + Add för att börja.
         </div>
       )}
@@ -149,7 +149,7 @@ export default function ClassesPanel() {
               <button
                 key={d}
                 onClick={() => setDiscipline(d)}
-                className={`flex-1 text-[11px] px-2 py-0.5 rounded border cursor-pointer transition-colors ${
+                className={`flex-1 text-[12px] px-2 py-0.5 rounded border cursor-pointer transition-colors ${
                   discipline === d
                     ? 'bg-[#BA7517] text-white border-[#BA7517]'
                     : 'bg-white text-gray-500 border-gray-200 hover:border-[#BA7517]'
@@ -162,7 +162,7 @@ export default function ClassesPanel() {
 
           {/* Obstacle rows */}
           {placed.length === 0 ? (
-            <div className="text-[11px] text-gray-300">
+            <div className="text-[12px] text-gray-400">
               Placera hinder på arenan först.
             </div>
           ) : (

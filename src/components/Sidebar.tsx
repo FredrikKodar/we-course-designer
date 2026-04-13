@@ -47,7 +47,7 @@ function GateChip({ gateType, label, svgContent }: GateChipProps) {
     <div
       draggable
       onDragStart={handleDragStart}
-      className="flex items-center gap-1.5 px-2 py-1.5 rounded-md border border-[#e8e8e4] bg-[#fafaf8] text-[11px] text-gray-500 cursor-grab select-none transition-all hover:border-[#BA7517] hover:text-[#1a1a18] hover:bg-[#fff8ee]"
+      className="flex items-center gap-1.5 px-2 py-1.5 rounded-md border border-[#e8e8e4] bg-[#fafaf8] text-[12px] text-gray-500 cursor-grab select-none transition-all hover:border-[#BA7517] hover:text-[#1a1a18] hover:bg-[#fff8ee]"
     >
       <svg width="20" height="20" viewBox="-20 -10 40 20" className="shrink-0">
         {svgContent}
@@ -60,7 +60,7 @@ function GateChip({ gateType, label, svgContent }: GateChipProps) {
 function Toggle({ label, value, onChange }: ToggleProps) {
   return (
     <div className="flex items-center justify-between mb-1.5">
-      <span className="text-[11px] text-gray-500">{label}</span>
+      <span className="text-[12px] text-gray-500">{label}</span>
       <button
         className={`w-8 h-[17px] rounded-full relative cursor-pointer transition-colors ${
           value ? 'bg-[#3B6D11]' : 'bg-gray-300'
@@ -89,7 +89,7 @@ function ObstacleChip({ def, showVariantLabel }: ObstacleChipProps) {
     <div
       draggable
       onDragStart={handleDragStart}
-      className="flex items-center gap-1.5 px-2 py-1.5 rounded-md border border-[#e8e8e4] bg-[#fafaf8] text-[11px] text-gray-500 cursor-grab select-none transition-all hover:border-[#BA7517] hover:text-[#1a1a18] hover:bg-[#fff8ee]"
+      className="flex items-center gap-1.5 px-2 py-1.5 rounded-md border border-[#e8e8e4] bg-[#fafaf8] text-[12px] text-gray-500 cursor-grab select-none transition-all hover:border-[#BA7517] hover:text-[#1a1a18] hover:bg-[#fff8ee]"
     >
       <svg
         width="20"
@@ -144,12 +144,12 @@ export default function Sidebar() {
     <div className="w-[162px] border-r border-gray-200 flex flex-col shrink-0 bg-white overflow-y-auto">
       {/* Arena inputs */}
       <div className="p-2.5 border-b border-gray-100">
-        <div className="text-[9px] tracking-widest uppercase text-gray-600 font-mono mb-2">
+        <div className="text-[10px] tracking-widest uppercase text-gray-700 font-mono mb-2">
           Arena (meter)
         </div>
         <div className="flex flex-col gap-1.5">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] text-gray-500">Längd</span>
+            <span className="text-[12px] text-gray-500">Längd</span>
             <input
               type="number"
               min="10"
@@ -160,7 +160,7 @@ export default function Sidebar() {
             />
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-[11px] text-gray-500">Bredd</span>
+            <span className="text-[12px] text-gray-500">Bredd</span>
             <input
               type="number"
               min="10"
@@ -175,7 +175,7 @@ export default function Sidebar() {
 
       {/* Display toggles */}
       <div className="p-2.5 border-b border-gray-100">
-        <div className="text-[9px] tracking-widest uppercase text-gray-600 font-mono mb-2">
+        <div className="text-[10px] tracking-widest uppercase text-gray-700 font-mono mb-2">
           Visning
         </div>
         <Toggle label="Rutnät" value={showGrid} onChange={setShowGrid} />
@@ -185,11 +185,11 @@ export default function Sidebar() {
 
       {/* Path style */}
       <div className="p-2.5 border-b border-gray-100">
-        <div className="text-[9px] tracking-widest uppercase text-gray-600 font-mono mb-2">
+        <div className="text-[10px] tracking-widest uppercase text-gray-700 font-mono mb-2">
           Linjetyp
         </div>
         <div className="flex items-center justify-between mb-1.5">
-          <span className="text-[11px] text-gray-500">Linje</span>
+          <span className="text-[12px] text-gray-500">Linje</span>
           <select
             value={pathLineType}
             onChange={(e) => setPathStyle(e.target.value as PathLineType, pathLineWeight, pathArrowSize)}
@@ -201,7 +201,7 @@ export default function Sidebar() {
           </select>
         </div>
         <div className="flex items-center justify-between mb-1.5">
-          <span className="text-[11px] text-gray-500">Tjocklek</span>
+          <span className="text-[12px] text-gray-500">Tjocklek</span>
           <div className="flex items-center gap-1">
             <input
               type="range"
@@ -218,7 +218,7 @@ export default function Sidebar() {
           </div>
         </div>
         <div className="flex items-center justify-between">
-          <span className="text-[11px] text-gray-500">Pilar</span>
+          <span className="text-[12px] text-gray-500">Pilar</span>
           <div className="flex gap-0.5">
             {[
               { label: 'S', value: 0.5 },
@@ -243,7 +243,7 @@ export default function Sidebar() {
 
       {/* Obstacle chips */}
       <div className="p-2.5">
-        <div className="text-[9px] tracking-widest uppercase text-gray-600 font-mono mb-2">
+        <div className="text-[10px] tracking-widest uppercase text-gray-700 font-mono mb-2">
           Hinder - drag till arena
         </div>
         <div className="flex flex-col gap-0.5">

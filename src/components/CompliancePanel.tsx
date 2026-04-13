@@ -7,7 +7,7 @@ export default function CompliancePanel() {
   const obstacleCount = placed.filter((p) => p.kind === 'obstacle').length;
 
   if (!obstacleCount) {
-    return <div className="text-gray-300 text-[11px]">Inga hinder placerade</div>;
+    return <div className="text-gray-400 text-[12px]">Inga hinder placerade</div>;
   }
 
   const boundsOk = ![...violations.values()].some((msg) => msg.includes('utanför'));
