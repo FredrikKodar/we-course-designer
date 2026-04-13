@@ -141,7 +141,7 @@ export default function Sidebar() {
   const setPathStyle = useStore((s) => s.setPathStyle);
 
   return (
-    <div className="w-[162px] border-r border-gray-200 flex flex-col shrink-0 bg-white overflow-y-auto">
+    <div className="w-[192px] border-r border-gray-200 flex flex-col shrink-0 bg-white overflow-y-auto">
       {/* Arena inputs */}
       <div className="p-2.5 border-b border-gray-100">
         <div className="text-[10px] tracking-widest uppercase text-gray-700 font-mono mb-2">

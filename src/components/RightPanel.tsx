@@ -42,7 +42,7 @@ export default function RightPanel() {
   );
 
   return (
-    <div className="w-[172px] border-l border-gray-200 flex flex-col shrink-0 bg-white overflow-y-auto">
+    <div className="w-[192px] border-l border-gray-200 flex flex-col shrink-0 bg-white overflow-y-auto">
       {/* Tab header */}
       <div className="flex border-b border-gray-200 shrink-0">
         {tabBtn('sequence', 'Sekvens')}
