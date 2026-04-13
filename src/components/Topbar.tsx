@@ -59,27 +59,27 @@ export default function Topbar() {
           className={`text-xs px-3 py-1.5 border rounded-md transition-all whitespace-nowrap ${canUndo ? 'bg-white border-gray-200 text-gray-500 hover:bg-[#f5f5f0] hover:border-gray-400 hover:text-gray-800 cursor-pointer' : 'bg-white border-gray-100 text-gray-300 cursor-default'}`}
           onClick={undo}
           disabled={!canUndo}
-          title="Undo (Ctrl+Z)"
+          title="Ångra (Ctrl+Z)"
         >
-          ↩ Undo
+          ↩ Ångra
         </button>
         <button
           className={`text-xs px-3 py-1.5 border rounded-md transition-all whitespace-nowrap ${canRedo ? 'bg-white border-gray-200 text-gray-500 hover:bg-[#f5f5f0] hover:border-gray-400 hover:text-gray-800 cursor-pointer' : 'bg-white border-gray-100 text-gray-300 cursor-default'}`}
           onClick={redo}
           disabled={!canRedo}
-          title="Redo (Ctrl+Y)"
+          title="Gör om (Ctrl+Y)"
         >
-          ↪ Redo
+          ↪ Gör om
         </button>
         <div className="w-px h-4 bg-gray-200 mx-0.5" />
         <button className={btnClass(showGrid)} onClick={() => setShowGrid(!showGrid)}>
-          Grid
+          Rutnät
         </button>
         <button className={btnClass(showPath)} onClick={() => setShowPath(!showPath)}>
-          Path
+          Ridväg
         </button>
-        <button className={btnClass(false)} onClick={() => useStore.getState().fitArena?.()}>
-          Fit
+        <button className={btnClass(false)} onClick={() => useStore.getState().fitArena?.()} title="Anpassa storlek till fönster">
+          Anpassa
         </button>
 
         {/* Print dropdown */}
@@ -88,7 +88,7 @@ export default function Topbar() {
             className={btnClass(false)}
             onClick={() => setPrintOpen((v) => !v)}
           >
-            Print ▾
+            Skriv ut ▾
           </button>
           {printOpen && (
             <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded shadow-md z-50 min-w-[120px]">
@@ -98,7 +98,7 @@ export default function Topbar() {
                   onClick={() => triggerPrint(undefined)}
                   className="w-full text-left text-[11px] px-3 py-1.5 hover:bg-[#f5f5f0] text-gray-600 cursor-pointer bg-transparent border-none"
                 >
-                  Print (no class)
+                  Skriv ut (ingen klass)
                 </button>
               ) : (
                 classes.map((cls) => (
@@ -108,7 +108,7 @@ export default function Topbar() {
                     onClick={() => triggerPrint(cls.id)}
                     className="w-full text-left text-[11px] px-3 py-1.5 hover:bg-[#f5f5f0] text-gray-600 cursor-pointer bg-transparent border-none"
                   >
-                    {cls.name || 'Unnamed'}
+                    {cls.name || 'Namnlös'}
                   </button>
                 ))
               )}
@@ -120,7 +120,7 @@ export default function Topbar() {
           className="text-xs px-3 py-1.5 border border-gray-200 rounded-md bg-white text-gray-500 hover:border-red-400 hover:text-red-500 cursor-pointer transition-all"
           onClick={() => { if (window.confirm('Rensa alla hinder?')) clearAll(); }}
         >
-          Clear
+          Rensa
         </button>
       </div>
     </div>

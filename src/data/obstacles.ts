@@ -53,7 +53,7 @@ export const OBSTACLES: ObstacleDef[] = [
   {
     id: 'lans-ur-tunna',
     label: 'Lans ur tunna',
-    variantGroup: 'Lans tunna',
+    variantGroup: 'Lans och ring',
     variantLabel: 'Lans ur tunna',
     w: 0.8, h: 3,
     entry: { x: 0, y:  0.4 },
@@ -69,7 +69,7 @@ export const OBSTACLES: ObstacleDef[] = [
   {
     id: 'lans-i-tunna',
     label: 'Lans i tunna',
-    variantGroup: 'Lans tunna',
+    variantGroup: 'Lans och ring',
     variantLabel: 'Lans i tunna',
     w: 0.8, h: 3,
     entry: { x: 0, y:  0.4 },
@@ -520,6 +520,7 @@ export const OBSTACLES: ObstacleDef[] = [
   {
     id: 'ring',
     label: 'Ring',
+    variantGroup: 'Lans och ring',
     w: 0.5, h: 1.5,
     entry: { x: 0, y:  0.8 },
     exit:  { x: 0, y:  0.8 },

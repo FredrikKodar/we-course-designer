@@ -1,4 +1,4 @@
-import type { PlacedObstacle, Visit, WEClass, Discipline } from '../types';
+import type { PlacedItem, Visit, WEClass, Discipline } from '../types';
 import type { ViewMode } from '../types';
 import { OBSTACLES } from '../data/obstacles';
 import useStore from '../store/useStore';
@@ -39,48 +39,72 @@ function arenaScreenBounds(
   };
 }
 
+const ROW = (content: string) =>
+  `<div style="margin-bottom:4px;font-size:10px;line-height:1.4;">${content}</div>`;
+
+/** Unnumbered row for a start-finish gate visit, shown as "Start" or "Mål". */
+function startFinishRows(allPlaced: PlacedItem[], visits: Visit[]): { start: string; finish: string } {
+  let start = '';
+  let finish = '';
+  for (const v of visits) {
+    const p = allPlaced.find((pl) => pl.id === v.obstacleId);
+    if (!p || p.kind !== 'gate' || p.type !== 'start-finish') continue;
+    if (v.role === 'start' || v.role === 'start-and-finish') {
+      start = ROW('<strong>Start</strong>');
+    }
+    if (v.role === 'finish' || v.role === 'start-and-finish') {
+      finish = ROW('<strong>Mål</strong>');
+    }
+  }
+  return { start, finish };
+}
+
+/** Obstacle visits only, sorted by num, skipping unnumbered entries. */
 function sortedVisitRows(
-  placed: PlacedObstacle[],
+  allPlaced: PlacedItem[],
   visits: Visit[],
 ): Array<{ visit: Visit; label: string; obstacleId: string }> {
   return [...visits]
+    .filter((v) => {
+      if (v.num === '') return false;
+      const p = allPlaced.find((pl) => pl.id === v.obstacleId);
+      return p?.kind === 'obstacle';
+    })
     .sort((a, b) => a.num.localeCompare(b.num, undefined, { numeric: true, sensitivity: 'base' }))
     .map((v) => {
-      const p = placed.find((pl) => pl.id === v.obstacleId);
-      const def = p ? OBSTACLES.find((o) => o.id === p.type) : null;
-      return { visit: v, label: def?.label ?? p?.type ?? '?', obstacleId: v.obstacleId };
+      const p = allPlaced.find((pl) => pl.id === v.obstacleId)!;
+      const def = OBSTACLES.find((o) => o.id === (p as { type: string }).type);
+      return { visit: v, label: def?.label ?? (p as { type: string }).type, obstacleId: v.obstacleId };
     });
 }
 
-function buildFallbackRows(placed: PlacedObstacle[], visits: Visit[]): string {
-  const rows: string[] = [];
-  for (const p of placed) {
+function buildFallbackRows(allPlaced: PlacedItem[], visits: Visit[]): string {
+  const { start, finish } = startFinishRows(allPlaced, visits);
+  const sequenced = sortedVisitRows(allPlaced, visits);
+  const middle: string[] = sequenced.map(({ visit, label }) =>
+    ROW(`<strong>${esc(visit.num)}.</strong> <strong>${esc(label)}</strong>`)
+  );
+  // append placed obstacles with no visit num
+  const sequencedIds = new Set(sequenced.map((r) => r.obstacleId));
+  for (const p of allPlaced) {
+    if (p.kind !== 'obstacle') continue;
+    if (sequencedIds.has(p.id)) continue;
     const def = OBSTACLES.find((o) => o.id === p.type);
-    const label = def?.label ?? p.type;
-    const obstacleVisits = visits
-      .filter((v) => v.obstacleId === p.id)
-      .sort((a, b) => a.num.localeCompare(b.num, undefined, { numeric: true, sensitivity: 'base' }));
-
-    if (obstacleVisits.length === 0) {
-      rows.push(`<div style="margin-bottom:4px;font-size:10px;line-height:1.4;">– <strong>${esc(label)}</strong></div>`);
-    } else {
-      for (const v of obstacleVisits) {
-        rows.push(`<div style="margin-bottom:4px;font-size:10px;line-height:1.4;"><strong>${esc(v.num)}.</strong> <strong>${esc(label)}</strong></div>`);
-      }
-    }
+    middle.push(ROW(`– <strong>${esc(def?.label ?? p.type)}</strong>`));
   }
-  return rows.join('');
+  return [start, ...middle, finish].filter(Boolean).join('');
 }
 
 function buildDisciplineSection(
   title: string,
   cls: WEClass,
   discipline: Discipline,
-  placed: PlacedObstacle[],
+  allPlaced: PlacedItem[],
   visits: Visit[],
 ): string {
-  const rows = sortedVisitRows(placed, visits);
-  const items = rows
+  const { start, finish } = startFinishRows(allPlaced, visits);
+  const rows = sortedVisitRows(allPlaced, visits);
+  const middle = rows
     .map(({ visit, label, obstacleId }) => {
       const entry = cls[discipline][obstacleId];
       const inUse = entry?.inUse ?? true;
@@ -91,6 +115,7 @@ function buildDisciplineSection(
       return `<div style="margin-bottom:3px;font-size:10px;line-height:1.4;"><strong>${esc(visit.num)}.</strong> <strong>${esc(label)}</strong>${noteHtml}</div>`;
     })
     .join('');
+  const items = [start, middle, finish].filter(Boolean).join('');
 
   return `
     <div style="margin-bottom:10px;">
@@ -158,7 +183,6 @@ function buildPrintHtml(dataUrl: string, leftContent: string): string {
 export function printCourse(classId?: string): void {
   const { stageRef, placed: allPlaced, arenaW, arenaH, panX, panY, zoom, viewMode, visits, classes, eventMeta } =
     useStore.getState();
-  const placed = allPlaced.filter((p): p is PlacedObstacle => p.kind === 'obstacle');
   if (!stageRef) {
     console.warn('printCourse: stageRef not set');
     return;
@@ -189,8 +213,8 @@ export function printCourse(classId?: string): void {
         ${eventMeta.judge ? `Domare: ${esc(eventMeta.judge)}<br>` : ''}
         ${eventMeta.courseBuilder ? `Banbyggare: ${esc(eventMeta.courseBuilder)}` : ''}
       </div>`;
-    const teknikSection = buildDisciplineSection('Teknik', cls, 'teknik', placed, visits);
-    const speedSection = buildDisciplineSection('Speed', cls, 'speed', placed, visits);
+    const teknikSection = buildDisciplineSection('Teknik', cls, 'teknik', allPlaced, visits);
+    const speedSection = buildDisciplineSection('Speed', cls, 'speed', allPlaced, visits);
     leftContent = `${header}<div class="obstacle-list">${teknikSection}${speedSection}</div>`;
   } else {
     const header = `
@@ -200,7 +224,7 @@ export function printCourse(classId?: string): void {
         ${eventMeta.judge ? `Domare: ${esc(eventMeta.judge)}<br>` : ''}
         ${eventMeta.courseBuilder ? `Banbyggare: ${esc(eventMeta.courseBuilder)}` : ''}
       </div>`;
-    const obstacleRows = buildFallbackRows(placed, visits);
+    const obstacleRows = buildFallbackRows(allPlaced, visits);
     leftContent = `${header}<div class="obstacle-list"><h3 style="font-size:9px;text-transform:uppercase;letter-spacing:0.06em;color:#555;margin-bottom:4px;border-bottom:1px solid #eee;padding-bottom:2px;">Hinder</h3>${obstacleRows}</div>`;
   }
 
