@@ -118,7 +118,6 @@ export default function SequenceList() {
             </span>
 
             <span className="flex-1 truncate">{itemLabel}</span>
-            <span className="text-[9px] text-gray-400 shrink-0">{visit.entryPoint}</span>
             <span
               className="text-gray-400 text-[10px] cursor-pointer shrink-0 hover:text-red-500"
               onClick={(e) => {
