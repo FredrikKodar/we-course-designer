@@ -4,7 +4,9 @@ export default function CompliancePanel() {
   const placed = useStore((s) => s.placed);
   const violations = useStore((s) => s.violations);
 
-  if (!placed.length) {
+  const obstacleCount = placed.filter((p) => p.kind === 'obstacle').length;
+
+  if (!obstacleCount) {
     return <div className="text-gray-300 text-[11px]">Inga hinder placerade</div>;
   }
 
@@ -16,7 +18,7 @@ export default function CompliancePanel() {
         ok={boundsOk}
         text={boundsOk ? 'Alla inom banan' : 'Hinder utanför banan'}
       />
-      <ComplianceItem ok={true} text={`${placed.length} hinder`} />
+      <ComplianceItem ok={true} text={`${obstacleCount} hinder`} />
     </div>
   );
 }
