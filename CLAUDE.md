@@ -1,5 +1,12 @@
 # WE Course Designer
 
+## Git workflow
+- Never commit directly to `main`. All work goes on a separate branch
+  (`feature/...`, `fix/...`, etc.) and gets merged/PR'd in.
+- Use Conventional Commits for all commit messages (`feat:`, `fix:`,
+  `chore:`, `docs:`, etc.) — release-please uses this to automate
+  changelog/release generation.
+
 ## What this is
 A React web app for designing Working Equitation (WE) competition courses.
 Course designers place obstacles on a true-to-scale arena canvas, draw the
