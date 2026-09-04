@@ -23,7 +23,7 @@ export default function Topbar() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleOpenClick = () => {
-    if (placed.length > 0 && !window.confirm('Öppna en bana ersätter den nuvarande. Fortsätta?')) {
+    if (placed.length > 0 && !window.confirm('Om du öppnar en design kommer den nuvarande att ersättas. Eventuella osparade ändringar förloras.. Fortsätta?')) {
       return;
     }
     fileInputRef.current?.click();
@@ -99,10 +99,10 @@ export default function Topbar() {
           Anpassa
         </button>
         <div className="w-px h-4 bg-gray-200 mx-0.5" />
-        <button className={btnClass(false)} onClick={saveCourseToFile} title="Spara banan som en JSON-fil">
+        <button className={btnClass(false)} onClick={saveCourseToFile} title="Spara aktuell bandesign som en JSON-fil">
           Spara
         </button>
-        <button className={btnClass(false)} onClick={handleOpenClick} title="Öppna en tidigare sparad bana">
+        <button className={btnClass(false)} onClick={handleOpenClick} title="Öppna en tidigare sparad bandesign">
           Öppna
         </button>
         <input

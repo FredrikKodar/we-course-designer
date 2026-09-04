@@ -53,7 +53,7 @@ export async function loadCourseFromFile(file: File): Promise<void> {
     const text = await file.text();
     parsed = JSON.parse(text);
   } catch {
-    window.alert('Kunde inte läsa filen — kontrollera att det är en giltig bankfil.');
+    window.alert('Kunde inte läsa filen.');
     return;
   }
   useStore.getState().loadCourse(migrate(parsed));
