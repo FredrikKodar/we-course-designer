@@ -1,6 +1,7 @@
 import { useRef, useState, useEffect } from 'react';
 import useStore from '../store/useStore';
 import { printCourse } from '../utils/export';
+import { saveCourseToFile, loadCourseFromFile } from '../utils/fileIO';
 
 export default function Topbar() {
   const arenaW = useStore((s) => s.arenaW);
@@ -15,9 +16,25 @@ export default function Topbar() {
   const canUndo = useStore((s) => s.past.length > 0);
   const canRedo = useStore((s) => s.future.length > 0);
   const classes = useStore((s) => s.classes);
+  const placed = useStore((s) => s.placed);
 
   const [printOpen, setPrintOpen] = useState(false);
   const printRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleOpenClick = () => {
+    if (placed.length > 0 && !window.confirm('Om du öppnar en design kommer den nuvarande att ersättas. Eventuella osparade ändringar förloras.. Fortsätta?')) {
+      return;
+    }
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    await loadCourseFromFile(file);
+  };
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -81,6 +98,20 @@ export default function Topbar() {
         <button className={btnClass(false)} onClick={() => useStore.getState().fitArena?.()} title="Anpassa storlek till fönster">
           Anpassa
         </button>
+        <div className="w-px h-4 bg-gray-200 mx-0.5" />
+        <button className={btnClass(false)} onClick={saveCourseToFile} title="Spara aktuell bandesign som en JSON-fil">
+          Spara
+        </button>
+        <button className={btnClass(false)} onClick={handleOpenClick} title="Öppna en tidigare sparad bandesign">
+          Öppna
+        </button>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="application/json,.json"
+          className="hidden"
+          onChange={handleFileChange}
+        />
 
         {/* Print dropdown */}
         <div className="relative" ref={printRef}>
