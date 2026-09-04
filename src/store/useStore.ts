@@ -9,7 +9,7 @@ export const MIN_ZOOM = 0.25;
 export const MAX_ZOOM = 4;
 
 // Subset of state stored in localStorage (must be JSON-serialisable)
-type PersistedState = Pick<
+export type PersistedState = Pick<
   StoreState,
   'placed' | 'arenaW' | 'arenaH' | 'pathLineType' | 'pathLineWeight' | 'pathArrowSize' | 'visits' | 'classes' | 'eventMeta'
 >;
@@ -108,6 +108,9 @@ export interface StoreState {
 
   // Actions — event metadata
   updateEventMeta: (patch: Partial<EventMeta>) => void;
+
+  // Actions — file I/O
+  loadCourse: (data: PersistedState) => void;
 }
 
 const useStore = create<StoreState>()(
@@ -508,6 +511,28 @@ const useStore = create<StoreState>()(
 
         updateEventMeta: (patch) => {
           set((s) => ({ eventMeta: { ...s.eventMeta, ...patch } }));
+        },
+
+        // ── Actions — file I/O ───────────────────────────────────────────
+
+        loadCourse: (data) => {
+          set({
+            placed: data.placed,
+            arenaW: data.arenaW,
+            arenaH: data.arenaH,
+            pathLineType: data.pathLineType,
+            pathLineWeight: data.pathLineWeight,
+            pathArrowSize: data.pathArrowSize,
+            visits: data.visits,
+            classes: data.classes,
+            eventMeta: data.eventMeta,
+            selectedId: null,
+            selectedVisitId: null,
+            past: [],
+            future: [],
+          });
+          get().runCompliance();
+          syncClassObstacles();
         },
 
         // ── Undo/redo ────────────────────────────────────────────────────
