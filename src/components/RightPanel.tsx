@@ -1,21 +1,21 @@
-import { useState } from 'react';
 import type { ReactNode } from 'react';
+import useStore from '../store/useStore';
+import type { RightPanelTab } from '../store/useStore';
 import PropertiesPanel from './PropertiesPanel';
 import SequenceList from './SequenceList';
 import CompliancePanel from './CompliancePanel';
 import EventMetaForm from './EventMetaForm';
 import ClassesPanel from './ClassesPanel';
 
-type Tab = 'sequence' | 'classes';
-
 interface SectionProps {
   label: string;
   children: ReactNode;
+  dataTour?: string;
 }
 
-function Section({ label, children }: SectionProps) {
+function Section({ label, children, dataTour }: SectionProps) {
   return (
-    <div className="p-2.5 border-b border-gray-100 last:border-b-0">
+    <div data-tour={dataTour} className="p-2.5 border-b border-gray-100 last:border-b-0">
       <div className="text-[10px] tracking-widest uppercase text-gray-700 font-mono mb-2">
         {label}
       </div>
@@ -25,9 +25,10 @@ function Section({ label, children }: SectionProps) {
 }
 
 export default function RightPanel() {
-  const [tab, setTab] = useState<Tab>('sequence');
+  const tab = useStore((s) => s.rightPanelTab);
+  const setTab = useStore((s) => s.setRightPanelTab);
 
-  const tabBtn = (t: Tab, label: string) => (
+  const tabBtn = (t: RightPanelTab, label: string) => (
     <button
       key={t}
       onClick={() => setTab(t)}
@@ -44,20 +45,20 @@ export default function RightPanel() {
   return (
     <div className="w-[192px] border-l border-gray-200 flex flex-col shrink-0 bg-white overflow-y-auto">
       {/* Tab header */}
-      <div className="flex border-b border-gray-200 shrink-0">
+      <div data-tour="classes-tab" className="flex border-b border-gray-200 shrink-0">
         {tabBtn('sequence', 'Sekvens')}
         {tabBtn('classes', 'Klasser')}
       </div>
 
       {tab === 'sequence' && (
         <>
-          <Section label="Tävling">
+          <Section label="Tävling" dataTour="event-meta">
             <EventMetaForm />
           </Section>
           <Section label="Egenskaper">
             <PropertiesPanel />
           </Section>
-          <Section label="Sekvens — dra för att ordna">
+          <Section label="Sekvens — dra för att ordna" dataTour="sequence-panel">
             <SequenceList />
           </Section>
           <Section label="Kontroll">

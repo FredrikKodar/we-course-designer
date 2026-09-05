@@ -1,5 +1,6 @@
 import { useRef, useState, useEffect } from 'react';
 import useStore from '../store/useStore';
+import useTourStore from '../store/useTourStore';
 import { printCourse } from '../utils/export';
 import { saveCourseToFile, loadCourseFromFile } from '../utils/fileIO';
 
@@ -17,6 +18,7 @@ export default function Topbar() {
   const canRedo = useStore((s) => s.future.length > 0);
   const classes = useStore((s) => s.classes);
   const placed = useStore((s) => s.placed);
+  const startTour = useTourStore((s) => s.start);
 
   const [printOpen, setPrintOpen] = useState(false);
   const printRef = useRef<HTMLDivElement>(null);
@@ -71,7 +73,7 @@ export default function Topbar() {
         {arenaW} &times; {arenaH} m
       </div>
 
-      <div className="ml-auto flex items-center gap-1.5">
+      <div data-tour="topbar-actions" className="ml-auto flex items-center gap-1.5">
         <button
           className={`text-xs px-3 py-1.5 border rounded-md transition-all whitespace-nowrap ${canUndo ? 'bg-white border-gray-200 text-gray-500 hover:bg-[#f5f5f0] hover:border-gray-400 hover:text-gray-800 cursor-pointer' : 'bg-white border-gray-100 text-gray-300 cursor-default'}`}
           onClick={undo}
@@ -97,6 +99,9 @@ export default function Topbar() {
         </button>
         <button className={btnClass(false)} onClick={() => useStore.getState().fitArena?.()} title="Anpassa storlek till fönster">
           Anpassa
+        </button>
+        <button className={btnClass(false)} onClick={startTour} title="Visa genomgången igen">
+          Introduktion
         </button>
         <div className="w-px h-4 bg-gray-200 mx-0.5" />
         <button className={btnClass(false)} onClick={saveCourseToFile} title="Spara aktuell bandesign som en JSON-fil">
