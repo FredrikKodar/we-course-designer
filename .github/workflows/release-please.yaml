@@ -29,4 +29,4 @@ jobs:
             -H "Content-Type: application/json" \
             -d '{}'
         env:
-          STATICHOST_WEBHOOK_URL: ${{ secrets.HOSTING_TRIGGER_DEPLOY_WEBHOOK_URL }}
+          HOSTING_TRIGGER_DEPLOY_WEBHOOK_URL: ${{ secrets.HOSTING_TRIGGER_DEPLOY_WEBHOOK_URL }}
