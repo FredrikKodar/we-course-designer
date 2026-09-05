@@ -20,7 +20,7 @@ export const tourSteps: TourStep[] = [
     id: 'arena',
     target: 'arena-size',
     title: 'Arenans mått',
-    body: 'Ange arenans längd och bredd i meter. Allt på banan ritas skalenligt, så måtten här styr hur mycket plats du har. Om du inte aktivt väljer ett annat mått kommer 60x30 meter användas.',
+    body: 'Ange arenans längd och bredd i meter. Allt på banan ritas skalenligt, så måtten här styr hur mycket plats du har. Om du inte aktivt väljer ett annat mått kommer 60x40 meter användas.',
     placement: 'right',
   },
   {

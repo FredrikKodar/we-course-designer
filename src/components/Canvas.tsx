@@ -3,6 +3,7 @@ import { Stage, Layer, Rect, Line, Text } from 'react-konva';
 import Konva from 'konva';
 import type { ViewMode, PlacedItem, PlacedObstacle, ObstacleDef } from '../types';
 import useStore, { MIN_ZOOM, MAX_ZOOM } from '../store/useStore';
+import useTourStore from '../store/useTourStore';
 import { OBSTACLES } from '../data/obstacles';
 import { screenToWorld } from '../utils/coords';
 import ObstacleGroup from './ObstacleGroup';
@@ -199,6 +200,7 @@ export default function Canvas() {
   // Keyboard shortcuts: undo, redo, delete visit/obstacle
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (useTourStore.getState().active) return;
       const tag = (e.target as HTMLElement).tagName;
       if (tag === 'INPUT' || tag === 'TEXTAREA') return;
 

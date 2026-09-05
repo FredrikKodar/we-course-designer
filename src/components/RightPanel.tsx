@@ -10,11 +10,12 @@ import ClassesPanel from './ClassesPanel';
 interface SectionProps {
   label: string;
   children: ReactNode;
+  dataTour?: string;
 }
 
-function Section({ label, children }: SectionProps) {
+function Section({ label, children, dataTour }: SectionProps) {
   return (
-    <div className="p-2.5 border-b border-gray-100 last:border-b-0">
+    <div data-tour={dataTour} className="p-2.5 border-b border-gray-100 last:border-b-0">
       <div className="text-[10px] tracking-widest uppercase text-gray-700 font-mono mb-2">
         {label}
       </div>
@@ -51,19 +52,15 @@ export default function RightPanel() {
 
       {tab === 'sequence' && (
         <>
-          <div data-tour="event-meta">
-            <Section label="Tävling">
-              <EventMetaForm />
-            </Section>
-          </div>
+          <Section label="Tävling" dataTour="event-meta">
+            <EventMetaForm />
+          </Section>
           <Section label="Egenskaper">
             <PropertiesPanel />
           </Section>
-          <div data-tour="sequence-panel">
-            <Section label="Sekvens — dra för att ordna">
-              <SequenceList />
-            </Section>
-          </div>
+          <Section label="Sekvens — dra för att ordna" dataTour="sequence-panel">
+            <SequenceList />
+          </Section>
           <Section label="Kontroll">
             <CompliancePanel />
           </Section>

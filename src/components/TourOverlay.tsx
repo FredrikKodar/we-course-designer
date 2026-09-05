@@ -22,6 +22,7 @@ function measure(target: string | null): Rect | null {
   if (!target) return null;
   const el = document.querySelector(`[data-tour="${target}"]`);
   if (!el) return null;
+  el.scrollIntoView({ block: 'nearest' });
   const r = el.getBoundingClientRect();
   return {
     top: r.top - PAD,
@@ -208,12 +209,30 @@ export default function TourOverlay() {
   // state update that flushes in a later commit, so on a tab-switching step
   // the target may not exist in the DOM yet on the commit where this first
   // runs. Re-measuring once the tab has actually swapped in picks it up.
+  //
+  // Only a deliberate `target: null` step should produce the centered,
+  // fully-dimmed fallback. When a step names a real target that simply
+  // hasn't mounted yet (e.g. its required tab hasn't swapped in on this
+  // commit), keep the previously measured rect in place instead of
+  // clearing it — the spotlight then animates from the old region straight
+  // to the new one once the target appears, rather than flashing through
+  // the full-dim fallback for one frame. Once the step's required tab is
+  // actually active and the target is still missing, it's genuinely
+  // absent, so we do fall back to the centered presentation then.
   useLayoutEffect(() => {
-    if (!step) {
+    if (!step || step.target === null) {
       setRect(null);
       return;
     }
-    const update = () => setRect(measure(step.target));
+    const update = () => {
+      const r = measure(step.target);
+      if (r) {
+        setRect(r);
+        return;
+      }
+      const tabReady = !step.tab || step.tab === rightPanelTab;
+      if (tabReady) setRect(null);
+    };
     update();
     window.addEventListener('resize', update);
     return () => window.removeEventListener('resize', update);
