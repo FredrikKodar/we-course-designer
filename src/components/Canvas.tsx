@@ -410,6 +410,7 @@ export default function Canvas() {
   return (
     <div
       ref={containerRef}
+      data-tour="canvas"
       className="flex-1 relative overflow-hidden bg-[#c8d4c4] cursor-crosshair"
       onDragOver={handleDragOver}
       onDrop={handleDrop}

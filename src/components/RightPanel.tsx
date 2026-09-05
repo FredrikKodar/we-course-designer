@@ -44,22 +44,26 @@ export default function RightPanel() {
   return (
     <div className="w-[192px] border-l border-gray-200 flex flex-col shrink-0 bg-white overflow-y-auto">
       {/* Tab header */}
-      <div className="flex border-b border-gray-200 shrink-0">
+      <div data-tour="classes-tab" className="flex border-b border-gray-200 shrink-0">
         {tabBtn('sequence', 'Sekvens')}
         {tabBtn('classes', 'Klasser')}
       </div>
 
       {tab === 'sequence' && (
         <>
-          <Section label="Tävling">
-            <EventMetaForm />
-          </Section>
+          <div data-tour="event-meta">
+            <Section label="Tävling">
+              <EventMetaForm />
+            </Section>
+          </div>
           <Section label="Egenskaper">
             <PropertiesPanel />
           </Section>
-          <Section label="Sekvens — dra för att ordna">
-            <SequenceList />
-          </Section>
+          <div data-tour="sequence-panel">
+            <Section label="Sekvens — dra för att ordna">
+              <SequenceList />
+            </Section>
+          </div>
           <Section label="Kontroll">
             <CompliancePanel />
           </Section>

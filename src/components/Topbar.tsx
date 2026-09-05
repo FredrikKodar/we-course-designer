@@ -71,7 +71,7 @@ export default function Topbar() {
         {arenaW} &times; {arenaH} m
       </div>
 
-      <div className="ml-auto flex items-center gap-1.5">
+      <div data-tour="topbar-actions" className="ml-auto flex items-center gap-1.5">
         <button
           className={`text-xs px-3 py-1.5 border rounded-md transition-all whitespace-nowrap ${canUndo ? 'bg-white border-gray-200 text-gray-500 hover:bg-[#f5f5f0] hover:border-gray-400 hover:text-gray-800 cursor-pointer' : 'bg-white border-gray-100 text-gray-300 cursor-default'}`}
           onClick={undo}
