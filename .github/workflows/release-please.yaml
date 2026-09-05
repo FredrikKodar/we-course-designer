@@ -17,16 +17,16 @@ jobs:
       - uses: googleapis/release-please-action@v4
         id: release
         with:
-          token: ${{ secrets.MY_RELEASE_PLEASE_TOKEN }}
+          token: ${{ secrets.WECD_RELEASE_PLEASE_TOKEN }}
           # this is a built-in strategy in release-please, see "Action Inputs"
           # for more options
           release-type: simple
 
-      - name: Trigger statichost.eu deploy
+      - name: Trigger hosting deploy webhook
         if: ${{ steps.release.outputs.release_created == 'true' }}
         run: |
-          curl -sS -f -X POST "$STATICHOST_WEBHOOK_URL" \
+          curl -sS -f -X POST "$HOSTING_TRIGGER_DEPLOY_WEBHOOK_URL" \
             -H "Content-Type: application/json" \
             -d '{}'
         env:
-          STATICHOST_WEBHOOK_URL: ${{ secrets.STATICHOST_WEBHOOK_URL }}
+          STATICHOST_WEBHOOK_URL: ${{ secrets.$HOSTING_TRIGGER_DEPLOY_WEBHOOK_URL }}
