@@ -7,6 +7,15 @@
   `chore:`, `docs:`, etc.) — release-please uses this to automate
   changelog/release generation.
 
+## Release & deploy
+Feature branches merge into `main` via PR. release-please watches `main`
+and keeps a running release PR that bumps the version and CHANGELOG.md.
+Merging that release PR tags a release, and that is the only thing that
+triggers a production deploy: the workflow POSTs to the statichost.eu
+build webhook (`STATICHOST_WEBHOOK_URL` repo secret). Ordinary merges to
+`main` do not deploy — statichost.eu's own push webhook is deliberately
+deactivated in the GitHub repo's webhook settings.
+
 ## What this is
 A React web app for designing Working Equitation (WE) competition courses.
 Course designers place obstacles on a true-to-scale arena canvas, draw the

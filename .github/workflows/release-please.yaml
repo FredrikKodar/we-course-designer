@@ -1,0 +1,32 @@
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+name: release-please
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: googleapis/release-please-action@v4
+        id: release
+        with:
+          token: ${{ secrets.WECD_RELEASE_PLEASE_TOKEN }}
+          # this is a built-in strategy in release-please, see "Action Inputs"
+          # for more options
+          release-type: simple
+
+      - name: Trigger hosting deploy webhook
+        if: ${{ steps.release.outputs.release_created == 'true' }}
+        run: |
+          curl -sS -f -X POST "$HOSTING_TRIGGER_DEPLOY_WEBHOOK_URL" \
+            -H "Content-Type: application/json" \
+            -d '{}'
+        env:
+          STATICHOST_WEBHOOK_URL: ${{ secrets.HOSTING_TRIGGER_DEPLOY_WEBHOOK_URL }}
