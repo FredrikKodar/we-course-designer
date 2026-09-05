@@ -15,8 +15,8 @@ interface Rect {
 const PAD = 8;        // spotlight padding around the target
 const GAP = 12;        // distance from spotlight edge to card
 const CARD_W = 300;
-const MIN_CARD_W = 160; // never shrink the card narrower than this
 const MARGIN = 12;     // keep the card this far from the viewport edge
+const CORNER_INSET = 16; // inset from a corner when the card must sit over its target
 
 function measure(target: string | null): Rect | null {
   if (!target) return null;
@@ -42,7 +42,8 @@ function clamp(v: number, lo: number, hi: number): number {
 }
 
 /**
- * Place the card beside the spotlight so it never overlaps `rect`.
+ * Place the card beside the spotlight when there's room, or over it when
+ * there isn't.
  *
  * A side "fits" only when the card's full footprint (CARD_W or cardH,
  * whichever axis that side occupies) clears the rect AND stays on screen —
@@ -51,11 +52,17 @@ function clamp(v: number, lo: number, hi: number): number {
  * sidebar column wide enough for a 300px card). When a side fits, its cross
  * axis (top for left/right, left for top/bottom) can be clamped freely
  * within the viewport without risking overlap, since the two rects are
- * already separated on the other axis.
+ * already separated on the other axis. The above/below placers also clamp
+ * their own primary axis defensively, even though today every caller of
+ * them is already gated by fitsAbove/fitsBelow.
  *
- * If none of the four sides fit at full size — the target occupies nearly
- * the whole viewport — fall back to the side with the most room and shrink
- * the card into it, rather than clamping it back on top of the spotlight.
+ * If none of the four sides fit at full size, the target is too large to
+ * seat a full-width card beside it at all (e.g. `canvas`, which occupies
+ * nearly the whole viewport) — sitting outside it isn't a real option, and
+ * the copy for these steps isn't a candidate for shrinking. Overlay the
+ * card instead, inset from the corner matching the step's requested
+ * placement, clamped fully on screen; a card over part of a near-fullscreen
+ * target doesn't hide anything the step needs to point at.
  */
 function cardPosition(rect: Rect, placement: string, cardH: number): CardPos {
   const vw = window.innerWidth;
@@ -71,10 +78,18 @@ function cardPosition(rect: Rect, placement: string, cardH: number): CardPos {
   const crossLeftFromRight = () =>
     clamp(rect.left + rect.width - CARD_W, MARGIN, Math.max(MARGIN, vw - CARD_W - MARGIN));
 
-  const placeLeft = (width = CARD_W): CardPos => ({ left: rect.left - GAP - width, top: crossTop(), width });
-  const placeRight = (width = CARD_W): CardPos => ({ left: rect.left + rect.width + GAP, top: crossTop(), width });
-  const placeAbove = (): CardPos => ({ top: rect.top - GAP - cardH, left: crossLeft(), width: CARD_W });
-  const placeBelow = (): CardPos => ({ top: rect.top + rect.height + GAP, left: crossLeftFromRight(), width: CARD_W });
+  const placeLeft = (): CardPos => ({ left: rect.left - GAP - CARD_W, top: crossTop(), width: CARD_W });
+  const placeRight = (): CardPos => ({ left: rect.left + rect.width + GAP, top: crossTop(), width: CARD_W });
+  const placeAbove = (): CardPos => ({
+    top: clamp(rect.top - GAP - cardH, MARGIN, Math.max(MARGIN, vh - cardH - MARGIN)),
+    left: crossLeft(),
+    width: CARD_W,
+  });
+  const placeBelow = (): CardPos => ({
+    top: clamp(rect.top + rect.height + GAP, MARGIN, Math.max(MARGIN, vh - cardH - MARGIN)),
+    left: crossLeftFromRight(),
+    width: CARD_W,
+  });
 
   const fitsLeft = leftClearance >= CARD_W;
   const fitsRight = rightClearance >= CARD_W;
@@ -120,12 +135,35 @@ function cardPosition(rect: Rect, placement: string, cardH: number): CardPos {
     if (pos) return pos;
   }
 
-  // Nothing fits at full size: shrink into whichever margin is largest.
-  const best = Math.max(leftClearance, rightClearance, aboveClearance, belowClearance);
-  if (best === leftClearance) return placeLeft(Math.max(MIN_CARD_W, Math.min(CARD_W, best)));
-  if (best === rightClearance) return placeRight(Math.max(MIN_CARD_W, Math.min(CARD_W, best)));
-  if (best === aboveClearance) return placeAbove();
-  return placeBelow();
+  // Too large to seat beside on any side: overlay the card on the target,
+  // inset from the corner matching the requested placement, and clamp fully
+  // on screen. Full CARD_W is kept — this path exists so author-approved
+  // copy never gets squeezed into a narrower column.
+  let left: number;
+  let top: number;
+  switch (placement) {
+    case 'right':
+      left = rect.left + rect.width - CORNER_INSET - CARD_W;
+      top = rect.top + CORNER_INSET;
+      break;
+    case 'bottom':
+      left = rect.left + rect.width - CORNER_INSET - CARD_W;
+      top = rect.top + rect.height - CORNER_INSET - cardH;
+      break;
+    case 'top':
+      left = rect.left + CORNER_INSET;
+      top = rect.top + CORNER_INSET;
+      break;
+    default: // 'left'
+      left = rect.left + CORNER_INSET;
+      top = rect.top + CORNER_INSET;
+      break;
+  }
+  return {
+    left: clamp(left, MARGIN, Math.max(MARGIN, vw - CARD_W - MARGIN)),
+    top: clamp(top, MARGIN, Math.max(MARGIN, vh - cardH - MARGIN)),
+    width: CARD_W,
+  };
 }
 
 export default function TourOverlay() {
