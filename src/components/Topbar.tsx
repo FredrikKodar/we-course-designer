@@ -1,5 +1,6 @@
 import { useRef, useState, useEffect } from 'react';
 import useStore from '../store/useStore';
+import useTourStore from '../store/useTourStore';
 import { printCourse } from '../utils/export';
 import { saveCourseToFile, loadCourseFromFile } from '../utils/fileIO';
 
@@ -17,6 +18,7 @@ export default function Topbar() {
   const canRedo = useStore((s) => s.future.length > 0);
   const classes = useStore((s) => s.classes);
   const placed = useStore((s) => s.placed);
+  const startTour = useTourStore((s) => s.start);
 
   const [printOpen, setPrintOpen] = useState(false);
   const printRef = useRef<HTMLDivElement>(null);
@@ -97,6 +99,9 @@ export default function Topbar() {
         </button>
         <button className={btnClass(false)} onClick={() => useStore.getState().fitArena?.()} title="Anpassa storlek till fönster">
           Anpassa
+        </button>
+        <button className={btnClass(false)} onClick={startTour} title="Visa genomgången igen">
+          Introduktion
         </button>
         <div className="w-px h-4 bg-gray-200 mx-0.5" />
         <button className={btnClass(false)} onClick={saveCourseToFile} title="Spara aktuell bandesign som en JSON-fil">
