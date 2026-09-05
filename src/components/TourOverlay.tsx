@@ -15,6 +15,7 @@ interface Rect {
 const PAD = 8;        // spotlight padding around the target
 const GAP = 12;        // distance from spotlight edge to card
 const CARD_W = 300;
+const MIN_CARD_W = 160; // never shrink the card narrower than this
 const MARGIN = 12;     // keep the card this far from the viewport edge
 
 function measure(target: string | null): Rect | null {
@@ -30,40 +31,101 @@ function measure(target: string | null): Rect | null {
   };
 }
 
-/** Place the card beside the spotlight, flipping to the opposite side when it would overflow. */
-function cardPosition(rect: Rect, placement: string, cardH: number) {
+interface CardPos {
+  top: number;
+  left: number;
+  width: number;
+}
+
+function clamp(v: number, lo: number, hi: number): number {
+  return Math.min(Math.max(v, lo), Math.max(lo, hi));
+}
+
+/**
+ * Place the card beside the spotlight so it never overlaps `rect`.
+ *
+ * A side "fits" only when the card's full footprint (CARD_W or cardH,
+ * whichever axis that side occupies) clears the rect AND stays on screen —
+ * checking the primary side's overflow alone isn't enough, because the
+ * flipped side can overflow too (e.g. a wide `canvas` target leaves neither
+ * sidebar column wide enough for a 300px card). When a side fits, its cross
+ * axis (top for left/right, left for top/bottom) can be clamped freely
+ * within the viewport without risking overlap, since the two rects are
+ * already separated on the other axis.
+ *
+ * If none of the four sides fit at full size — the target occupies nearly
+ * the whole viewport — fall back to the side with the most room and shrink
+ * the card into it, rather than clamping it back on top of the spotlight.
+ */
+function cardPosition(rect: Rect, placement: string, cardH: number): CardPos {
   const vw = window.innerWidth;
   const vh = window.innerHeight;
-  let top: number;
-  let left: number;
 
-  switch (placement) {
-    case 'left':
-      left = rect.left - GAP - CARD_W;
-      if (left < MARGIN) left = rect.left + rect.width + GAP;
-      top = rect.top;
-      break;
-    case 'bottom':
-      top = rect.top + rect.height + GAP;
-      if (top + cardH > vh - MARGIN) top = rect.top - GAP - cardH;
-      left = rect.left + rect.width - CARD_W;
-      break;
-    case 'top':
-      top = rect.top - GAP - cardH;
-      if (top < MARGIN) top = rect.top + rect.height + GAP;
-      left = rect.left;
-      break;
-    default: // 'right'
-      left = rect.left + rect.width + GAP;
-      if (left + CARD_W > vw - MARGIN) left = rect.left - GAP - CARD_W;
-      top = rect.top;
-      break;
+  const leftClearance = rect.left - GAP - MARGIN;
+  const rightClearance = vw - MARGIN - (rect.left + rect.width + GAP);
+  const aboveClearance = rect.top - GAP - MARGIN;
+  const belowClearance = vh - MARGIN - (rect.top + rect.height + GAP);
+
+  const crossTop = () => clamp(rect.top, MARGIN, Math.max(MARGIN, vh - cardH - MARGIN));
+  const crossLeft = () => clamp(rect.left, MARGIN, Math.max(MARGIN, vw - CARD_W - MARGIN));
+  const crossLeftFromRight = () =>
+    clamp(rect.left + rect.width - CARD_W, MARGIN, Math.max(MARGIN, vw - CARD_W - MARGIN));
+
+  const placeLeft = (width = CARD_W): CardPos => ({ left: rect.left - GAP - width, top: crossTop(), width });
+  const placeRight = (width = CARD_W): CardPos => ({ left: rect.left + rect.width + GAP, top: crossTop(), width });
+  const placeAbove = (): CardPos => ({ top: rect.top - GAP - cardH, left: crossLeft(), width: CARD_W });
+  const placeBelow = (): CardPos => ({ top: rect.top + rect.height + GAP, left: crossLeftFromRight(), width: CARD_W });
+
+  const fitsLeft = leftClearance >= CARD_W;
+  const fitsRight = rightClearance >= CARD_W;
+  const fitsAbove = aboveClearance >= cardH;
+  const fitsBelow = belowClearance >= cardH;
+
+  // Try the requested side, then its opposite, then the cross axis.
+  const candidates: Array<() => CardPos | null> = (() => {
+    switch (placement) {
+      case 'left':
+        return [
+          () => (fitsLeft ? placeLeft() : null),
+          () => (fitsRight ? placeRight() : null),
+          () => (fitsAbove ? placeAbove() : null),
+          () => (fitsBelow ? placeBelow() : null),
+        ];
+      case 'top':
+        return [
+          () => (fitsAbove ? placeAbove() : null),
+          () => (fitsBelow ? placeBelow() : null),
+          () => (fitsLeft ? placeLeft() : null),
+          () => (fitsRight ? placeRight() : null),
+        ];
+      case 'bottom':
+        return [
+          () => (fitsBelow ? placeBelow() : null),
+          () => (fitsAbove ? placeAbove() : null),
+          () => (fitsLeft ? placeLeft() : null),
+          () => (fitsRight ? placeRight() : null),
+        ];
+      default: // 'right'
+        return [
+          () => (fitsRight ? placeRight() : null),
+          () => (fitsLeft ? placeLeft() : null),
+          () => (fitsAbove ? placeAbove() : null),
+          () => (fitsBelow ? placeBelow() : null),
+        ];
+    }
+  })();
+
+  for (const candidate of candidates) {
+    const pos = candidate();
+    if (pos) return pos;
   }
 
-  // Final clamp so the card is always fully on screen
-  left = Math.min(Math.max(left, MARGIN), vw - CARD_W - MARGIN);
-  top = Math.min(Math.max(top, MARGIN), Math.max(MARGIN, vh - cardH - MARGIN));
-  return { top, left };
+  // Nothing fits at full size: shrink into whichever margin is largest.
+  const best = Math.max(leftClearance, rightClearance, aboveClearance, belowClearance);
+  if (best === leftClearance) return placeLeft(Math.max(MIN_CARD_W, Math.min(CARD_W, best)));
+  if (best === rightClearance) return placeRight(Math.max(MIN_CARD_W, Math.min(CARD_W, best)));
+  if (best === aboveClearance) return placeAbove();
+  return placeBelow();
 }
 
 export default function TourOverlay() {
@@ -74,6 +136,7 @@ export default function TourOverlay() {
   const stop = useTourStore((s) => s.stop);
 
   const setRightPanelTab = useStore((s) => s.setRightPanelTab);
+  const rightPanelTab = useStore((s) => s.rightPanelTab);
 
   const [rect, setRect] = useState<Rect | null>(null);
   const cardRef = useRef<HTMLDivElement>(null);
@@ -102,7 +165,11 @@ export default function TourOverlay() {
     if (step?.tab) setRightPanelTab(step.tab);
   }, [step, setRightPanelTab]);
 
-  // Measure the target, and re-measure on resize
+  // Measure the target, and re-measure on resize. Also re-run when
+  // rightPanelTab changes: setRightPanelTab in the effect above queues a
+  // state update that flushes in a later commit, so on a tab-switching step
+  // the target may not exist in the DOM yet on the commit where this first
+  // runs. Re-measuring once the tab has actually swapped in picks it up.
   useLayoutEffect(() => {
     if (!step) {
       setRect(null);
@@ -112,7 +179,7 @@ export default function TourOverlay() {
     update();
     window.addEventListener('resize', update);
     return () => window.removeEventListener('resize', update);
-  }, [step]);
+  }, [step, rightPanelTab]);
 
   useLayoutEffect(() => {
     if (cardRef.current) setCardH(cardRef.current.offsetHeight);
@@ -171,7 +238,7 @@ export default function TourOverlay() {
         className="absolute bg-[#f5f5f0] border border-[#e0e0da] rounded-lg shadow-lg p-4 focus:outline-none"
         style={
           pos
-            ? { top: pos.top, left: pos.left, width: CARD_W }
+            ? { top: pos.top, left: pos.left, width: pos.width }
             : { top: '50%', left: '50%', width: CARD_W, transform: 'translate(-50%, -50%)' }
         }
       >
