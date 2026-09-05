@@ -45,6 +45,14 @@ export const tourSteps: TourStep[] = [
     placement: 'left',
   },
   {
+    id: 'event-meta',
+    target: 'event-meta',
+    title: 'Tävlingsuppgifter',
+    body: 'Fyll i tävlingsplats, domare, banbyggare och datum. Uppgifterna hamnar i sidhuvudet på den utskrivna banskissen.',
+    placement: 'left',
+    tab: 'sequence',
+  },
+  {
     id: 'sequence',
     target: 'sequence-panel',
     title: 'Sekvensen',
@@ -59,14 +67,6 @@ export const tourSteps: TourStep[] = [
     body: 'Under Klasser väljer du vilka hinder som ingår i varje klass och gren, och skriver eventuella noteringar. Varje klass får sin egen banskiss.',
     placement: 'left',
     tab: 'classes',
-  },
-  {
-    id: 'event-meta',
-    target: 'event-meta',
-    title: 'Tävlingsuppgifter',
-    body: 'Fyll i tävlingsplats, domare, banbyggare och datum. Uppgifterna hamnar i sidhuvudet på den utskrivna banskissen.',
-    placement: 'left',
-    tab: 'sequence',
   },
   {
     id: 'topbar',
