@@ -1,12 +1,11 @@
-import { useState } from 'react';
 import type { ReactNode } from 'react';
+import useStore from '../store/useStore';
+import type { RightPanelTab } from '../store/useStore';
 import PropertiesPanel from './PropertiesPanel';
 import SequenceList from './SequenceList';
 import CompliancePanel from './CompliancePanel';
 import EventMetaForm from './EventMetaForm';
 import ClassesPanel from './ClassesPanel';
-
-type Tab = 'sequence' | 'classes';
 
 interface SectionProps {
   label: string;
@@ -25,9 +24,10 @@ function Section({ label, children }: SectionProps) {
 }
 
 export default function RightPanel() {
-  const [tab, setTab] = useState<Tab>('sequence');
+  const tab = useStore((s) => s.rightPanelTab);
+  const setTab = useStore((s) => s.setRightPanelTab);
 
-  const tabBtn = (t: Tab, label: string) => (
+  const tabBtn = (t: RightPanelTab, label: string) => (
     <button
       key={t}
       onClick={() => setTab(t)}

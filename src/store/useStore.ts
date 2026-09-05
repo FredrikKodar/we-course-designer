@@ -8,6 +8,8 @@ import { buildPresetPieces } from '../utils/presets';
 export const MIN_ZOOM = 0.25;
 export const MAX_ZOOM = 4;
 
+export type RightPanelTab = 'sequence' | 'classes';
+
 // Subset of state stored in localStorage (must be JSON-serialisable)
 export type PersistedState = Pick<
   StoreState,
@@ -29,6 +31,7 @@ export interface StoreState {
   snapToGrid: boolean;
   showPath: boolean;
   viewMode: ViewMode;
+  rightPanelTab: RightPanelTab;
 
   // Canvas transform
   zoom: number;
@@ -86,6 +89,7 @@ export interface StoreState {
   setSnapToGrid: (v: boolean) => void;
   setShowPath: (v: boolean) => void;
   setViewMode: (v: ViewMode) => void;
+  setRightPanelTab: (t: RightPanelTab) => void;
   setZoom: (z: number) => void;
   setPan: (x: number, y: number) => void;
   setPathStyle: (lineType: PathLineType, weight: number, arrowSize: number) => void;
@@ -165,6 +169,7 @@ const useStore = create<StoreState>()(
         snapToGrid: true,
         showPath: true,
         viewMode: 'end',
+        rightPanelTab: 'sequence',
 
         // Canvas transform
         zoom: 1,
@@ -366,6 +371,7 @@ const useStore = create<StoreState>()(
         setSnapToGrid: (v) => set({ snapToGrid: v }),
         setShowPath: (v) => set({ showPath: v }),
         setViewMode: (v) => set({ viewMode: v }),
+        setRightPanelTab: (t) => set({ rightPanelTab: t }),
         setZoom: (z) => set({ zoom: Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, z)) }),
         setPan: (x, y) => set({ panX: x, panY: y }),
         setPathStyle: (lineType, weight, arrowSize) =>
