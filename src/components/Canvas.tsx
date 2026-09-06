@@ -169,7 +169,7 @@ export default function Canvas() {
   const scale = baseScale * zoom;
   const ea = getEffectiveArena(arenaW, arenaH, viewMode);
 
-  // Fit arena (also bound to the corner button below)
+  // Fit arena (called from Topbar via store)
   const fitArena = useCallback(() => {
     const bs = getBaseScale(stageSize.width, stageSize.height, arenaW, arenaH, viewMode);
     const ea2 = getEffectiveArena(arenaW, arenaH, viewMode);
@@ -179,6 +179,11 @@ export default function Canvas() {
       panY: (stageSize.height - ea2.h * bs) / 2,
     });
   }, [stageSize.width, stageSize.height, arenaW, arenaH, viewMode]);
+
+  // Expose fitArena on store so Topbar can call it
+  useEffect(() => {
+    useStore.setState({ fitArena });
+  }, [fitArena]);
 
   // Expose stageRef on store
   useEffect(() => {
@@ -537,20 +542,6 @@ export default function Canvas() {
           )}
         </Layer>
       </Stage>
-      {/* Fit-to-window button */}
-      <button
-        type="button"
-        onClick={fitArena}
-        onMouseDown={(e) => e.stopPropagation()}
-        title="Anpassa storlek till fönster"
-        aria-label="Anpassa storlek till fönster"
-        className="absolute bottom-3 right-3 z-40 w-7 h-7 flex items-center justify-center bg-white/95 border border-gray-200 rounded-md shadow-sm text-gray-500 hover:text-gray-800 hover:border-gray-400 cursor-pointer transition-all"
-      >
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M1 5V1h4M13 5V1H9M1 9v4h4M13 9v4H9" />
-        </svg>
-      </button>
-
       {/* Role picker overlay */}
       {rolePicker && (() => {
         const visit = visits.find((v) => v.id === rolePicker.visitId);

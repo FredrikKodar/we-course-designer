@@ -61,7 +61,8 @@ export interface StoreState {
   undo: () => void;
   redo: () => void;
 
-  // stageRef set by Canvas after mount
+  // fitArena and stageRef set by Canvas after mount
+  fitArena?: () => void;
   stageRef?: Konva.Stage;
 
   // Actions — obstacles

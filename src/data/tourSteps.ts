@@ -72,7 +72,7 @@ export const tourSteps: TourStep[] = [
     id: 'topbar',
     target: 'topbar-actions',
     title: 'Spara, öppna och skriv ut',
-    body: 'Skriv ut ger dig en banskiss per klass. Under menyknappen (☰) hittar du Spara, som sparar ner banan som en fil, och Öppna, som läser in en tidigare sparad bana. Där kan du också när som helst starta om den här genomgången med Introduktion.',
+    body: 'Spara låter dig spara ner banan som en fil, Öppna läser in en tidigare sparad bana från en fil. Skriv ut ger dig en banskiss per klass. Du kan när som helst starta om den här genomgången med Introduktion.',
     placement: 'bottom',
   },
 ];
