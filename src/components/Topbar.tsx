@@ -4,13 +4,66 @@ import useTourStore from '../store/useTourStore';
 import { printCourse } from '../utils/export';
 import { saveCourseToFile, loadCourseFromFile } from '../utils/fileIO';
 
+/** Button + anchored panel that closes on outside click or Escape. */
+function Dropdown({
+  trigger,
+  triggerClass,
+  title,
+  align = 'right',
+  children,
+}: {
+  trigger: React.ReactNode;
+  triggerClass: string;
+  title?: string;
+  align?: 'left' | 'right';
+  children: (close: () => void) => React.ReactNode;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const onMouseDown = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpen(false);
+    };
+    document.addEventListener('mousedown', onMouseDown);
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', onMouseDown);
+      document.removeEventListener('keydown', onKeyDown);
+    };
+  }, [open]);
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        className={triggerClass}
+        title={title}
+        aria-haspopup="menu"
+        aria-expanded={open}
+        onClick={() => setOpen((v) => !v)}
+      >
+        {trigger}
+      </button>
+      {open && (
+        <div
+          role="menu"
+          className={`absolute ${align === 'left' ? 'left-0' : 'right-0'} top-full mt-1 bg-white border border-gray-200 rounded shadow-md z-50 min-w-[150px] py-1`}
+        >
+          {children(() => setOpen(false))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+const menuItemClass =
+  'w-full text-left text-[11px] px-3 py-1.5 hover:bg-[#f5f5f0] text-gray-600 cursor-pointer bg-transparent border-none';
+
 export default function Topbar() {
-  const arenaW = useStore((s) => s.arenaW);
-  const arenaH = useStore((s) => s.arenaH);
-  const showGrid = useStore((s) => s.showGrid);
-  const showPath = useStore((s) => s.showPath);
-  const setShowGrid = useStore((s) => s.setShowGrid);
-  const setShowPath = useStore((s) => s.setShowPath);
   const clearAll = useStore((s) => s.clearAll);
   const undo = useStore((s) => s.undo);
   const redo = useStore((s) => s.redo);
@@ -20,8 +73,6 @@ export default function Topbar() {
   const placed = useStore((s) => s.placed);
   const startTour = useTourStore((s) => s.start);
 
-  const [printOpen, setPrintOpen] = useState(false);
-  const printRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleOpenClick = () => {
@@ -38,42 +89,72 @@ export default function Topbar() {
     await loadCourseFromFile(file);
   };
 
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    if (!printOpen) return;
-    const handler = (e: MouseEvent) => {
-      if (printRef.current && !printRef.current.contains(e.target as Node)) {
-        setPrintOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, [printOpen]);
-
   const triggerPrint = (classId?: string) => {
-    setPrintOpen(false);
     useStore.getState().selectObstacle(null);
     useStore.getState().setSelectedVisitId(null);
     requestAnimationFrame(() => requestAnimationFrame(() => printCourse(classId)));
   };
 
-  const btnClass = (active: boolean) =>
-    `text-xs px-3 py-1.5 border rounded-md cursor-pointer transition-all whitespace-nowrap ${
-      active
-        ? 'bg-[#f5f5f0] border-[#BA7517] text-[#BA7517] font-medium'
-        : 'bg-white border-gray-200 text-gray-500 hover:bg-[#f5f5f0] hover:border-gray-400 hover:text-gray-800'
-    }`;
+  const btnClass =
+    'text-xs px-3 py-1.5 border rounded-md cursor-pointer transition-all whitespace-nowrap bg-white border-gray-200 text-gray-500 hover:bg-[#f5f5f0] hover:border-gray-400 hover:text-gray-800';
 
   return (
-    <div className="h-[46px] border-b border-gray-200 bg-white flex items-center px-3.5 gap-2.5 shrink-0 shadow-sm">
-      <div className="text-[15px] font-semibold text-[#1a1a18] tracking-tight whitespace-nowrap">
+    <div className="relative h-[46px] border-b border-gray-200 bg-white flex items-center px-3.5 gap-2.5 shrink-0 shadow-sm">
+      <div className="absolute left-1/2 -translate-x-1/2 text-[15px] font-semibold text-[#1a1a18] tracking-tight whitespace-nowrap pointer-events-none">
         WE Course Designer
       </div>
-      <div className="text-[11px] text-gray-500 font-mono px-2 py-0.5 bg-[#f5f5f0] border border-[#e0e0da] rounded whitespace-nowrap">
-        {arenaW} &times; {arenaH} m
-      </div>
 
-      <div data-tour="topbar-actions" className="ml-auto flex items-center gap-1.5">
+      <div data-tour="topbar-actions" className="flex items-center gap-1.5">
+        {/* Overflow menu */}
+        <Dropdown
+          trigger={<span className="text-sm leading-none">☰</span>}
+          triggerClass="text-xs px-2.5 py-1.5 border rounded-md cursor-pointer transition-all bg-white border-gray-200 text-gray-500 hover:bg-[#f5f5f0] hover:border-gray-400 hover:text-gray-800"
+          title="Meny"
+          align="left"
+        >
+          {(close) => (
+            <>
+              <button
+                type="button"
+                role="menuitem"
+                className={menuItemClass}
+                onClick={() => { close(); saveCourseToFile(); }}
+                title="Spara aktuell bandesign som en JSON-fil"
+              >
+                Spara
+              </button>
+              <button
+                type="button"
+                role="menuitem"
+                className={menuItemClass}
+                onClick={() => { close(); handleOpenClick(); }}
+                title="Öppna en tidigare sparad bandesign"
+              >
+                Öppna
+              </button>
+              <div className="h-px bg-gray-100 my-1" />
+              <button
+                type="button"
+                role="menuitem"
+                className={menuItemClass}
+                onClick={() => { close(); startTour(); }}
+                title="Visa genomgången igen"
+              >
+                Introduktion
+              </button>
+              <div className="h-px bg-gray-100 my-1" />
+              <button
+                type="button"
+                role="menuitem"
+                className="w-full text-left text-[11px] px-3 py-1.5 text-gray-600 hover:bg-red-50 hover:text-red-600 cursor-pointer bg-transparent border-none"
+                onClick={() => { close(); if (window.confirm('Rensa alla hinder?')) clearAll(); }}
+              >
+                Rensa alla hinder
+              </button>
+            </>
+          )}
+        </Dropdown>
+        <div className="w-px h-4 bg-gray-200 mx-0.5" />
         <button
           className={`text-xs px-3 py-1.5 border rounded-md transition-all whitespace-nowrap ${canUndo ? 'bg-white border-gray-200 text-gray-500 hover:bg-[#f5f5f0] hover:border-gray-400 hover:text-gray-800 cursor-pointer' : 'bg-white border-gray-100 text-gray-300 cursor-default'}`}
           onClick={undo}
@@ -91,25 +172,35 @@ export default function Topbar() {
           ↪ Gör om
         </button>
         <div className="w-px h-4 bg-gray-200 mx-0.5" />
-        <button className={btnClass(showGrid)} onClick={() => setShowGrid(!showGrid)}>
-          Rutnät
-        </button>
-        <button className={btnClass(showPath)} onClick={() => setShowPath(!showPath)}>
-          Ridväg
-        </button>
-        <button className={btnClass(false)} onClick={() => useStore.getState().fitArena?.()} title="Anpassa storlek till fönster">
-          Anpassa
-        </button>
-        <button className={btnClass(false)} onClick={startTour} title="Visa genomgången igen">
-          Introduktion
-        </button>
-        <div className="w-px h-4 bg-gray-200 mx-0.5" />
-        <button className={btnClass(false)} onClick={saveCourseToFile} title="Spara aktuell bandesign som en JSON-fil">
-          Spara
-        </button>
-        <button className={btnClass(false)} onClick={handleOpenClick} title="Öppna en tidigare sparad bandesign">
-          Öppna
-        </button>
+
+        {/* Print dropdown */}
+        <Dropdown trigger="Skriv ut ▾" triggerClass={btnClass} title="Skriv ut en banskiss per klass" align="left">
+          {(close) =>
+            classes.length === 0 ? (
+              <button
+                type="button"
+                role="menuitem"
+                onClick={() => { close(); triggerPrint(undefined); }}
+                className={menuItemClass}
+              >
+                Skriv ut (ingen klass)
+              </button>
+            ) : (
+              classes.map((cls) => (
+                <button
+                  key={cls.id}
+                  type="button"
+                  role="menuitem"
+                  onClick={() => { close(); triggerPrint(cls.id); }}
+                  className={menuItemClass}
+                >
+                  {cls.name || 'Namnlös'}
+                </button>
+              ))
+            )
+          }
+        </Dropdown>
+
         <input
           ref={fileInputRef}
           type="file"
@@ -117,47 +208,6 @@ export default function Topbar() {
           className="hidden"
           onChange={handleFileChange}
         />
-
-        {/* Print dropdown */}
-        <div className="relative" ref={printRef}>
-          <button
-            className={btnClass(false)}
-            onClick={() => setPrintOpen((v) => !v)}
-          >
-            Skriv ut ▾
-          </button>
-          {printOpen && (
-            <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded shadow-md z-50 min-w-[120px]">
-              {classes.length === 0 ? (
-                <button
-                  type="button"
-                  onClick={() => triggerPrint(undefined)}
-                  className="w-full text-left text-[11px] px-3 py-1.5 hover:bg-[#f5f5f0] text-gray-600 cursor-pointer bg-transparent border-none"
-                >
-                  Skriv ut (ingen klass)
-                </button>
-              ) : (
-                classes.map((cls) => (
-                  <button
-                    key={cls.id}
-                    type="button"
-                    onClick={() => triggerPrint(cls.id)}
-                    className="w-full text-left text-[11px] px-3 py-1.5 hover:bg-[#f5f5f0] text-gray-600 cursor-pointer bg-transparent border-none"
-                  >
-                    {cls.name || 'Namnlös'}
-                  </button>
-                ))
-              )}
-            </div>
-          )}
-        </div>
-
-        <button
-          className="text-xs px-3 py-1.5 border border-gray-200 rounded-md bg-white text-gray-500 hover:border-red-400 hover:text-red-500 cursor-pointer transition-all"
-          onClick={() => { if (window.confirm('Rensa alla hinder?')) clearAll(); }}
-        >
-          Rensa
-        </button>
       </div>
     </div>
   );
