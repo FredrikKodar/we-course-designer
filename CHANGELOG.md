@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.1.0](https://github.com/FredrikKodar/we-course-designer/compare/v1.0.0...v1.1.0) (2026-09-07)
+
+
+### Features
+
+* feedback form ([#20](https://github.com/FredrikKodar/we-course-designer/issues/20)) ([bc92f41](https://github.com/FredrikKodar/we-course-designer/commit/bc92f41a1501c76b34e85100d804ca5c75429688))
+* topbar menu ([#16](https://github.com/FredrikKodar/we-course-designer/issues/16)) ([9f4aebb](https://github.com/FredrikKodar/we-course-designer/commit/9f4aebb8d069ebf0cefced2bfe607e70762e4786))
+
+
+### Bug Fixes
+
+* canvas UI polish ([#19](https://github.com/FredrikKodar/we-course-designer/issues/19)) ([255e645](https://github.com/FredrikKodar/we-course-designer/commit/255e645f7f8a0659a7764856b3cc80e6ee52767c))
+* terminate unterminated div tag ([#18](https://github.com/FredrikKodar/we-course-designer/issues/18)) ([503e80c](https://github.com/FredrikKodar/we-course-designer/commit/503e80c5c211088e0019d04dc6d839ad4d8e1940))
+
 ## 1.0.0 (2026-09-05)
 
 
