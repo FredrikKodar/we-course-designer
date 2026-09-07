@@ -1,4 +1,5 @@
 import { useRef, useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import useStore from '../store/useStore';
 import useTourStore from '../store/useTourStore';
 import { printCourse } from '../utils/export';
@@ -75,6 +76,76 @@ function NewTabHint() {
 
 const FEEDBACK_FORM_URL =
   'https://docs.google.com/forms/d/e/1FAIpQLSdr373lpk9RbxTSnGCRNohQIx68yZWTkgwd9AnPbJmqSQQNPg/viewform';
+const FEEDBACK_FORM_EMBED_URL = `${FEEDBACK_FORM_URL}?embedded=true`;
+
+/** Modal showing the feedback Google Form in an iframe. Google's own embed
+ * snippet uses an iframe for Forms, so framing it is supported behavior. */
+function FeedbackModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') { e.preventDefault(); onClose(); }
+    };
+    window.addEventListener('keydown', onKey);
+    cardRef.current?.focus();
+    return () => window.removeEventListener('keydown', onKey);
+  }, [open, onClose]);
+
+  if (!open) return null;
+
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[100] bg-black/55 flex items-center justify-center p-4"
+      onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      <div
+        ref={cardRef}
+        tabIndex={-1}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Feedback"
+        className="bg-white rounded-lg shadow-lg flex flex-col focus:outline-none"
+        style={{ width: 'min(640px, 92vw)', height: '85vh' }}
+      >
+        <div className="flex items-center justify-between px-3 py-2 border-b border-gray-100 shrink-0">
+          <span className="text-[13px] font-semibold text-[#1a1a18]">Feedback</span>
+          <div className="flex items-center gap-3">
+            <a
+              href={FEEDBACK_FORM_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[11px] text-gray-500 hover:text-[#BA7517]"
+            >
+              Öppna i ny flik<NewTabHint />
+            </a>
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Stäng"
+              className="text-gray-400 hover:text-gray-700 text-[15px] leading-none cursor-pointer bg-transparent border-none"
+            >
+              ×
+            </button>
+          </div>
+        </div>
+        <div className="flex-1 min-h-0">
+          <iframe
+            src={FEEDBACK_FORM_EMBED_URL}
+            title="Feedback"
+            width="100%"
+            height="100%"
+            frameBorder={0}
+          >
+            Läser in …
+          </iframe>
+        </div>
+      </div>
+    </div>,
+    document.body,
+  );
+}
 
 export default function Topbar() {
   const clearAll = useStore((s) => s.clearAll);
@@ -85,6 +156,7 @@ export default function Topbar() {
   const classes = useStore((s) => s.classes);
   const placed = useStore((s) => s.placed);
   const startTour = useTourStore((s) => s.start);
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -155,17 +227,15 @@ export default function Topbar() {
               >
                 Introduktion
               </button>
-              <a
+              <button
+                type="button"
                 role="menuitem"
-                href={FEEDBACK_FORM_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={`${menuItemClass} block`}
-                onClick={close}
+                className={menuItemClass}
+                onClick={() => { close(); setFeedbackOpen(true); }}
                 title="Ge feedback eller önska en ny funktion"
               >
-                Ge feedback<NewTabHint />
-              </a>
+                Ge feedback
+              </button>
               <div className="h-px bg-gray-100 my-1" />
               <button
                 type="button"
@@ -235,6 +305,7 @@ export default function Topbar() {
         />
       </div>
       </div>
+      <FeedbackModal open={feedbackOpen} onClose={() => setFeedbackOpen(false)} />
     </div>
   );
 }
