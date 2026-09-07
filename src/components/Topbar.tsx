@@ -63,6 +63,9 @@ function Dropdown({
 const menuItemClass =
   'w-full text-left text-[11px] px-3 py-1.5 hover:bg-[#f5f5f0] text-gray-600 cursor-pointer bg-transparent border-none';
 
+const FEEDBACK_FORM_URL =
+  'https://docs.google.com/forms/d/e/1FAIpQLSdr373lpk9RbxTSnGCRNohQIx68yZWTkgwd9AnPbJmqSQQNPg/viewform';
+
 export default function Topbar() {
   const clearAll = useStore((s) => s.clearAll);
   const undo = useStore((s) => s.undo);
@@ -142,6 +145,17 @@ export default function Topbar() {
               >
                 Introduktion
               </button>
+              <a
+                role="menuitem"
+                href={FEEDBACK_FORM_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`${menuItemClass} block`}
+                onClick={close}
+                title="Ge feedback eller önska en ny funktion"
+              >
+                Ge feedback
+              </a>
               <div className="h-px bg-gray-100 my-1" />
               <button
                 type="button"
