@@ -63,6 +63,16 @@ function Dropdown({
 const menuItemClass =
   'w-full text-left text-[11px] px-3 py-1.5 hover:bg-[#f5f5f0] text-gray-600 cursor-pointer bg-transparent border-none';
 
+/** Appended to menu items/buttons that open a new tab/window, for sighted and screen-reader users alike. */
+function NewTabHint() {
+  return (
+    <>
+      <span aria-hidden="true" className="text-gray-400"> ↗</span>
+      <span className="sr-only"> (öppnas i en ny flik)</span>
+    </>
+  );
+}
+
 const FEEDBACK_FORM_URL =
   'https://docs.google.com/forms/d/e/1FAIpQLSdr373lpk9RbxTSnGCRNohQIx68yZWTkgwd9AnPbJmqSQQNPg/viewform';
 
@@ -154,7 +164,7 @@ export default function Topbar() {
                 onClick={close}
                 title="Ge feedback eller önska en ny funktion"
               >
-                Ge feedback
+                Ge feedback<NewTabHint />
               </a>
               <div className="h-px bg-gray-100 my-1" />
               <button
@@ -198,7 +208,7 @@ export default function Topbar() {
                 onClick={() => { close(); triggerPrint(undefined); }}
                 className={menuItemClass}
               >
-                Skriv ut (ingen klass)
+                Skriv ut (ingen klass)<NewTabHint />
               </button>
             ) : (
               classes.map((cls) => (
@@ -209,7 +219,7 @@ export default function Topbar() {
                   onClick={() => { close(); triggerPrint(cls.id); }}
                   className={menuItemClass}
                 >
-                  {cls.name || 'Namnlös'}
+                  {cls.name || 'Namnlös'}<NewTabHint />
                 </button>
               ))
             )
