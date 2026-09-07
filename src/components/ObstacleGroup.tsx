@@ -246,7 +246,9 @@ export default function ObstacleGroup({
             ? { x: entryDotX, y: entryDotY }
             : { x: exitDotX, y: exitDotY };
 
-        const angleRad = (visit.approachAngle * Math.PI) / 180;
+        // approachAngle is stored relative to the obstacle's own rotation, so the
+        // arrow's angle to the obstacle stays fixed as the obstacle is rotated.
+        const angleRad = ((visit.approachAngle + (placed.rotation || 0)) * Math.PI) / 180;
         const tailX = dot.x + Math.sin(angleRad) * visit.approachLength * scale;
         const tailY = dot.y - Math.cos(angleRad) * visit.approachLength * scale;
 
@@ -292,7 +294,8 @@ export default function ObstacleGroup({
                   const dy = node.y() - dot.y;
                   const dist = Math.sqrt(dx * dx + dy * dy);
                   const newLength = Math.min(dist / scale, 5);
-                  const newAngle = ((Math.atan2(dx, -dy) * 180) / Math.PI + 360) % 360;
+                  const worldAngle = ((Math.atan2(dx, -dy) * 180) / Math.PI + 360) % 360;
+                  const newAngle = ((worldAngle - (placed.rotation || 0)) % 360 + 360) % 360;
                   onUpdateVisit(visit.id, { approachAngle: newAngle, approachLength: newLength });
                   node.position({ x: tailX, y: tailY });
                 }}

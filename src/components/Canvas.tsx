@@ -317,12 +317,15 @@ export default function Canvas() {
         const dist = Math.sqrt(dx * dx + dy * dy);
         if (dist > 5) {
           const approachLength = Math.min(dist / scale, 5);
-          const approachAngle = ((Math.atan2(dx, -dy) * 180) / Math.PI + 360) % 360;
+          const worldAngle = ((Math.atan2(dx, -dy) * 180) / Math.PI + 360) % 360;
           const item = placed.find((p: PlacedItem) => p.id === drag.obstacleId);
           if (item?.kind === 'gate' && item.type === 'start-finish') {
-            const visitId = addGateVisit(drag.obstacleId, drag.entryPoint, approachAngle, approachLength);
+            const visitId = addGateVisit(drag.obstacleId, drag.entryPoint, worldAngle, approachLength);
             setRolePicker({ visitId, x: pos.x, y: pos.y });
           } else {
+            // Obstacle approach angle is stored relative to the obstacle's own
+            // rotation, so the arrow rotates together with the obstacle.
+            const approachAngle = ((worldAngle - (item?.rotation || 0)) % 360 + 360) % 360;
             addVisit(drag.obstacleId, drag.entryPoint, approachAngle, approachLength);
           }
         }
