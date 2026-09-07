@@ -210,6 +210,7 @@ export default function Topbar() {
           onChange={handleFileChange}
         />
       </div>
+      </div>
     </div>
   );
 }
