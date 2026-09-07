@@ -186,10 +186,10 @@ export default function Sidebar() {
       {/* Path style */}
       <div className="p-2.5 border-b border-gray-100">
         <div className="text-[10px] tracking-widest uppercase text-gray-700 font-mono mb-2">
-          Linjetyp
+          Linjeutseende
         </div>
         <div className="flex items-center justify-between mb-1.5">
-          <span className="text-[12px] text-gray-500">Linje</span>
+          <span className="text-[12px] text-gray-500">Typ</span>
           <select
             value={pathLineType}
             onChange={(e) => setPathStyle(e.target.value as PathLineType, pathLineWeight, pathArrowSize)}

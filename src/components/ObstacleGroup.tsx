@@ -92,7 +92,7 @@ export default function ObstacleGroup({
   onUpdateVisit,
   onDelete,
 }: ObstacleGroupProps) {
-  const HANDLE_RADIUS = 9;
+  const HANDLE_RADIUS = 13.5;
 
   // SVG image — always use def dimensions so stale localStorage w/h never distort rendering
   const pixelW = def.w * SCALE;
@@ -150,7 +150,7 @@ export default function ObstacleGroup({
   const sameDot = Math.abs(entryDotX - exitDotX) < 1 && Math.abs(entryDotY - exitDotY) < 1;
   const handleX = sx + Math.sin(rotRad) * handleDist;
   const handleY = sy - Math.cos(rotRad) * handleDist;
-  const BADGE_R = 9;
+  const BADGE_R = 13.5;
   const badgeLocalX = drawW / 2 + 5;
   const badgeLocalY = -drawH / 2 - 5;
   const badgeX = sx + badgeLocalX * Math.cos(rotRad) - badgeLocalY * Math.sin(rotRad);
@@ -173,6 +173,17 @@ export default function ObstacleGroup({
         onMouseLeave={() => onHoverChange(false)}
         rotation={placed.rotation || 0}
       >
+        {/* Invisible hit target covering the full bounding box — the SVG image only
+            registers clicks on its opaque pixels, which leaves gaps unclickable for
+            obstacles made of spaced-out parts (barrels, slalom poles, etc). */}
+        <Rect
+          x={-drawW / 2}
+          y={-drawH / 2}
+          width={drawW}
+          height={drawH}
+          fill="transparent"
+        />
+
         {/* SVG image, centred */}
         {image && (
           <KonvaImage
@@ -338,17 +349,11 @@ export default function ObstacleGroup({
       {/* Rotation handle (visible when selected) */}
       {isSelected && (
         <>
-          <Line
-            points={[sx, sy - drawH / 2, handleX, handleY + HANDLE_RADIUS]}
-            stroke="rgba(186,117,23,0.6)"
-            strokeWidth={1}
-            dash={[3, 3]}
-          />
           <Group x={handleX} y={handleY} draggable onDragMove={handleRotateDrag}>
             <Circle radius={HANDLE_RADIUS} fill="#1a1a18" cursor="grab" />
             <Text
               text="↻"
-              fontSize={14}
+              fontSize={21}
               fill="white"
               width={HANDLE_RADIUS * 2}
               height={HANDLE_RADIUS * 2}
@@ -373,7 +378,7 @@ export default function ObstacleGroup({
           <Circle radius={BADGE_R} fill="#1a1a18" cursor="pointer" />
           <Text
             text="×"
-            fontSize={13}
+            fontSize={20}
             fontStyle="bold"
             fill="white"
             width={BADGE_R * 2}

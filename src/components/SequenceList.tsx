@@ -35,7 +35,7 @@ export default function SequenceList() {
   if (!entries.length) {
     return (
       <div className="text-gray-400 text-[12px]">
-        Hover an obstacle and drag its entry or exit dot to add a visit.
+        Håll muspekaren över ett hinder och dra dess start- eller slutpunkt för att lägga till ett besök.
       </div>
     );
   }

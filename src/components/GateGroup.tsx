@@ -57,7 +57,6 @@ export default function GateGroup({
   const rightSymRef = useRef<Konva.Group>(null);
   // Rotation handle lives outside the rotating group — these refs allow imperative updates during drag
   const rotHandleRef = useRef<Konva.Circle>(null);
-  const rotLineRef = useRef<Konva.Line>(null);
   const rotTextRef = useRef<Konva.Text>(null);
 
   // Equilateral triangle points (pointing right, centered at origin)
@@ -96,10 +95,9 @@ export default function GateGroup({
     const ny = HANDLE_DIST * Math.sin(rad);
     node.x(nx);
     node.y(ny);
-    // Update the dashed line and icon imperatively
-    rotLineRef.current?.points([0, 0, nx, ny]);
-    rotTextRef.current?.x(nx - 5);
-    rotTextRef.current?.y(ny - 5);
+    // Update the icon imperatively
+    rotTextRef.current?.x(nx - 7.5);
+    rotTextRef.current?.y(ny - 7.5);
     node.getLayer()?.batchDraw();
   };
 
@@ -437,12 +435,12 @@ export default function GateGroup({
         {/* Delete badge */}
         {isSelected && (
           <Group
-            x={halfWidthPx + reachPx + 6}
-            y={-reachPx - 6}
+            x={halfWidthPx + reachPx + 9}
+            y={-reachPx - 9}
             onClick={(e) => { e.cancelBubble = true; onDelete(); }}
           >
-            <Circle radius={8} fill="#333" />
-            <Text text="×" fontSize={10} fill="white" x={-3.5} y={-5} listening={false} />
+            <Circle radius={12} fill="#333" />
+            <Text text="×" fontSize={15} fill="white" x={-5.5} y={-7.5} listening={false} />
           </Group>
         )}
       </Group>
@@ -452,19 +450,11 @@ export default function GateGroup({
           gate-center-relative coords, so atan2 is accurate and there is no flicker. */}
       {isSelected && (
         <Group x={sx} y={sy}>
-          <Line
-            ref={rotLineRef}
-            points={[0, 0, handleRelX, handleRelY]}
-            stroke="#888"
-            strokeWidth={1}
-            dash={[3, 3]}
-            listening={false}
-          />
           <Circle
             ref={rotHandleRef}
             x={handleRelX}
             y={handleRelY}
-            radius={7}
+            radius={10.5}
             fill="#333"
             draggable
             onDragMove={handleRotDragMove}
@@ -480,10 +470,10 @@ export default function GateGroup({
           />
           <Text
             ref={rotTextRef}
-            x={handleRelX - 5}
-            y={handleRelY - 5}
+            x={handleRelX - 7.5}
+            y={handleRelY - 7.5}
             text="↻"
-            fontSize={10}
+            fontSize={15}
             fill="white"
             listening={false}
           />
