@@ -377,12 +377,12 @@ export const OBSTACLES: ObstacleDef[] = [
     exit:  { x: 0, y:  1 },
     viewBox: '-50 -12 100 24',
     svg: `
-      <rect x="-44" y="-6" width="88" height="12" rx="2" fill="none" stroke="#1a1a18" stroke-width="2.5"/>
-      <line x1="-28" y1="-6" x2="-28" y2="6" stroke="#1a1a18" stroke-width="1.5"/>
-      <line x1="-12" y1="-6" x2="-12" y2="6" stroke="#1a1a18" stroke-width="1.5"/>
-      <line x1="4"   y1="-6" x2="4"   y2="6" stroke="#1a1a18" stroke-width="1.5"/>
-      <line x1="20"  y1="-6" x2="20"  y2="6" stroke="#1a1a18" stroke-width="1.5"/>
-      <line x1="36"  y1="-6" x2="36"  y2="6" stroke="#1a1a18" stroke-width="1.5"/>
+      <rect x="-44" y="-6" width="88" height="12" rx="2" fill="none" stroke="#1a1a18" stroke-width="3.75"/>
+      <line x1="-28" y1="-6" x2="-28" y2="6" stroke="#1a1a18" stroke-width="2.25"/>
+      <line x1="-12" y1="-6" x2="-12" y2="6" stroke="#1a1a18" stroke-width="2.25"/>
+      <line x1="4"   y1="-6" x2="4"   y2="6" stroke="#1a1a18" stroke-width="2.25"/>
+      <line x1="20"  y1="-6" x2="20"  y2="6" stroke="#1a1a18" stroke-width="2.25"/>
+      <line x1="36"  y1="-6" x2="36"  y2="6" stroke="#1a1a18" stroke-width="2.25"/>
     `,
   },
 
@@ -496,9 +496,9 @@ export const OBSTACLES: ObstacleDef[] = [
     exit:  { x: 0, y:  0.8 },
     viewBox: '-20 -32 40 52',
     svg: `
-      <rect x="-18" y="-2" width="36" height="18" rx="2" fill="none" stroke="#1a1a18" stroke-width="2"/>
-      <rect x="-8"  y="-18" width="16" height="18" rx="2" fill="none" stroke="#1a1a18" stroke-width="1.5"/>
-      <circle cx="0" cy="-22" r="5" fill="none" stroke="#1a1a18" stroke-width="1.5"/>
+      <rect x="-18" y="-2" width="36" height="18" rx="2" fill="none" stroke="#1a1a18" stroke-width="2.6"/>
+      <rect x="-8"  y="-18" width="16" height="18" rx="2" fill="none" stroke="#1a1a18" stroke-width="1.95"/>
+      <circle cx="0" cy="-22" r="5" fill="none" stroke="#1a1a18" stroke-width="1.95"/>
     `,
   },
 
@@ -526,8 +526,8 @@ export const OBSTACLES: ObstacleDef[] = [
     exit:  { x: 0, y:  0.8 },
     viewBox: '-16 -36 32 56',
     svg: `
-      <line x1="0" y1="16" x2="0" y2="-28" stroke="#1a1a18" stroke-width="3" stroke-linecap="round"/>
-      <ellipse cx="0" cy="-22" rx="12" ry="5" fill="none" stroke="#1a1a18" stroke-width="2.5"/>
+      <line x1="0" y1="16" x2="0" y2="-28" stroke="#1a1a18" stroke-width="4.8" stroke-linecap="round"/>
+      <ellipse cx="0" cy="-22" rx="12" ry="5" fill="none" stroke="#1a1a18" stroke-width="4"/>
     `,
   },
 

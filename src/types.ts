@@ -55,7 +55,8 @@ export interface Visit {
   obstacleId: string;
   num: string;               // "1", "2a", "11" — string to support letter suffixes
   entryPoint: 'entry' | 'exit';
-  approachAngle: number;     // degrees, 0 = north (up), clockwise
+  approachAngle: number;     // degrees, clockwise; obstacle visits: relative to the
+                              // obstacle's own rotation. Gate visits: world angle (0 = north).
   approachLength: number;    // world meters, 0–5
   badgeOffX: number;         // badge offset from connection dot, obstacle-local world meters
   badgeOffY: number;
