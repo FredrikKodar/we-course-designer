@@ -176,6 +176,9 @@ function buildPrintHtml(dataUrl: string, leftContent: string): string {
   <div class="right">
     <img class="map" src="${dataUrl}" alt="Course map">
   </div>
+  <script>
+    window.onload = function () { window.print(); };
+  </script>
 </body>
 </html>`;
 }
